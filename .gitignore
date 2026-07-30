@@ -1,0 +1,36 @@
+node_modules
+.pnpm-store
+
+# SvelteKit
+/.svelte-kit
+/build
+
+# Output (deployment)
+.output
+.vercel
+.netlify
+.wrangler
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# Devenv
+.devenv
+.pre-commit-config.yaml
+
+# AI
+.claude
+
+# Audio assets (large binaries)
+/soundfonts

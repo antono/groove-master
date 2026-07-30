@@ -1,0 +1,11 @@
+{
+  "lessons": [
+    {
+      "id": "four-on-the-floor",
+      "name": "Four on the Floor",
+      "file": "four-on-the-floor.mid",
+      "bpm": 60,
+      "bars": 4
+    }
+  ]
+}

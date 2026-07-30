@@ -1,0 +1,198 @@
+{
+  "kits": [
+    {
+      "id": 1,
+      "name": "Perfect Drums 1"
+    },
+    {
+      "id": 2,
+      "name": "Perfect Drums 2"
+    },
+    {
+      "id": 3,
+      "name": "Perfect Drums 3"
+    },
+    {
+      "id": 4,
+      "name": "Perfect Drums 4"
+    },
+    {
+      "id": 5,
+      "name": "Perfect Drums 5"
+    },
+    {
+      "id": 6,
+      "name": "Perfect Drums 6"
+    },
+    {
+      "id": 7,
+      "name": "Perfect Drums 7"
+    },
+    {
+      "id": 8,
+      "name": "Perfect Drums 8"
+    },
+    {
+      "id": 9,
+      "name": "Perfect Drums 9"
+    },
+    {
+      "id": 10,
+      "name": "Perfect Drums 10"
+    },
+    {
+      "id": 11,
+      "name": "Perfect Drums 11"
+    },
+    {
+      "id": 12,
+      "name": "Perfect Drums 12"
+    }
+  ],
+  "drums": [
+    {
+      "note": 35,
+      "name": "Ac Bass Drum"
+    },
+    {
+      "note": 36,
+      "name": "Kick"
+    },
+    {
+      "note": 37,
+      "name": "Side Stick"
+    },
+    {
+      "note": 38,
+      "name": "Snare"
+    },
+    {
+      "note": 39,
+      "name": "Hand Clap"
+    },
+    {
+      "note": 40,
+      "name": "E Snare"
+    },
+    {
+      "note": 41,
+      "name": "Lo Floor Tom"
+    },
+    {
+      "note": 42,
+      "name": "Closed HH"
+    },
+    {
+      "note": 43,
+      "name": "Hi Floor Tom"
+    },
+    {
+      "note": 44,
+      "name": "Pedal HH"
+    },
+    {
+      "note": 45,
+      "name": "Lo Tom"
+    },
+    {
+      "note": 46,
+      "name": "Open HH"
+    },
+    {
+      "note": 47,
+      "name": "LoMid Tom"
+    },
+    {
+      "note": 48,
+      "name": "HiMid Tom"
+    },
+    {
+      "note": 49,
+      "name": "Crash"
+    },
+    {
+      "note": 50,
+      "name": "Hi Tom"
+    },
+    {
+      "note": 51,
+      "name": "Ride"
+    },
+    {
+      "note": 52,
+      "name": "China"
+    },
+    {
+      "note": 53,
+      "name": "Ride Bell"
+    },
+    {
+      "note": 54,
+      "name": "Tambourine"
+    },
+    {
+      "note": 55,
+      "name": "Splash"
+    },
+    {
+      "note": 56,
+      "name": "Cowbell"
+    },
+    {
+      "note": 57,
+      "name": "Crash 2"
+    },
+    {
+      "note": 58,
+      "name": "Vibraslap"
+    },
+    {
+      "note": 59,
+      "name": "Ride 2"
+    },
+    {
+      "note": 60,
+      "name": "Hi Bongo"
+    },
+    {
+      "note": 61,
+      "name": "Lo Bongo"
+    },
+    {
+      "note": 62,
+      "name": "Mute Conga"
+    },
+    {
+      "note": 63,
+      "name": "Open Conga"
+    },
+    {
+      "note": 64,
+      "name": "Lo Conga"
+    },
+    {
+      "note": 65,
+      "name": "Hi Timbale"
+    },
+    {
+      "note": 66,
+      "name": "Lo Timbale"
+    },
+    {
+      "note": 67,
+      "name": "Hi Agogo"
+    },
+    {
+      "note": 68,
+      "name": "Lo Agogo"
+    },
+    {
+      "note": 69,
+      "name": "Cabasa"
+    },
+    {
+      "note": 70,
+      "name": "Maracas"
+    }
+  ]
+}
