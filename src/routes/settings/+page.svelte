@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 
 	const GRID = 4;
@@ -14,7 +15,7 @@
 
 	let midiAccess: MIDIAccess | null = $state(null);
 	let inputs: { id: string; name: string | null; manufacturer: string | null }[] = $state([]);
-	let selectedId: string | null = $state(null);
+	let selectedId: string | null = $state('');
 	let status: string = $state('');
 	let denied = $state(false);
 	let currentInput: MIDIInput | null = null;
@@ -36,7 +37,6 @@
 
 	let savedHint = $state('');
 	let hasSaved = $state(false);
-	let started = $state(false);
 
 	const cells = Array.from({ length: TOTAL }, (_, i) => i);
 
@@ -78,7 +78,6 @@
 	// Preload the 16 assigned drums whenever the kit or layout changes.
 	$effect(() => {
 		const kit = selectedKit;
-		if (!started) return;
 		for (const note of new Set(soundNotes)) loadBuffer(kit, note);
 	});
 
@@ -157,10 +156,27 @@
 		}
 	}
 
-	async function start() {
-		started = true;
+	// The AudioContext starts suspended until a user gesture; resume it on the
+	// first interaction so pads are audible without a dedicated "start" button.
+	function unlockAudio() {
+		audioCtx?.resume();
+	}
+
+	onMount(() => {
 		audioCtx = new AudioContext();
-		await loadManifest();
+		window.addEventListener('pointerdown', unlockAudio, { once: true });
+		window.addEventListener('keydown', unlockAudio, { once: true });
+		loadManifest();
+		connectMidi();
+		return () => {
+			window.removeEventListener('pointerdown', unlockAudio);
+			window.removeEventListener('keydown', unlockAudio);
+			if (currentInput) currentInput.onmidimessage = null;
+		};
+	});
+
+	async function connectMidi() {
+		denied = false;
 		if (!navigator.requestMIDIAccess) {
 			status = 'Web MIDI API not supported in this browser';
 			denied = true;
@@ -256,83 +272,83 @@
 	}
 </script>
 
-<h1>Padrill</h1>
+<h1>Settings</h1>
 
-{#if !started}
-	<button class="start-btn" onclick={start}>Start Padrill</button>
-{:else if denied}
-	<p>{status}</p>
-	<button class="start-btn" onclick={start}>Retry</button>
-{:else if !midiAccess}
-	<p>Connecting...</p>
-{:else}
-	<div class="toolbar">
-		<select bind:value={selectedId} aria-label="Select MIDI input">
-			<option value="">-- device --</option>
-			{#each inputs as input (input.id)}
-				<option value={input.id}>
-					{input.name || 'Unnamed'}{input.manufacturer ? ' (' + input.manufacturer + ')' : ''}
-				</option>
-			{/each}
-		</select>
-
-		<select bind:value={selectedKit} onchange={markDirty} aria-label="Select drum kit">
-			{#each kits as kit (kit.id)}
-				<option value={kit.id}>{kit.name}</option>
-			{/each}
-		</select>
-
-		<button onclick={startCapture} disabled={capturing}>Capture pads</button>
-
-		{#if selectedId && hasSavedConfig(selectedId) && !hasSaved}
-			<button onclick={() => applySaved(selectedId!)}>Load saved</button>
-		{/if}
-
-		<span class="status">{status}</span>
-	</div>
-
-	{#if savedHint}
-		<div class="savebar">
-			<span>{savedHint}</span>
-			<button onclick={saveConfig}>Save</button>
-		</div>
-	{/if}
-
-	<div class="grid">
-		{#each cells as i}
-			{@const bound = assignedNotes[i]}
-			{@const active = bound !== null && activeNotes.has(bound)}
-			{@const current = capturing && i === captureIndex}
-			<div class="cell" class:active class:current class:done={bound !== null}>
-				<div class="cell-head">
-					<span class="label">{i + 1}</span>
-					{#if bound !== null}
-						<span class="midi">{noteName(bound)}</span>
-					{:else if current}
-						<span class="hint">press</span>
-					{:else}
-						<span class="midi dim">unbound</span>
-					{/if}
-				</div>
-
-				<button class="preview" onclick={() => playCell(i)} title="Preview">
-					{drumName.get(soundNotes[i]) ?? soundNotes[i]}
-				</button>
-
-				<select
-					class="drum-select"
-					bind:value={soundNotes[i]}
-					onchange={markDirty}
-					aria-label={'Drum for pad ' + (i + 1)}
-				>
-					{#each drums as d (d.note)}
-						<option value={d.note}>{d.name}</option>
-					{/each}
-				</select>
-			</div>
-		{/each}
+{#if denied}
+	<div class="warnbar">
+		<span>{status}</span>
+		<button onclick={connectMidi}>Retry</button>
 	</div>
 {/if}
+
+<div class="toolbar">
+	<select bind:value={selectedId} aria-label="Select MIDI input">
+		<option value="">-- device --</option>
+		{#each inputs as input (input.id)}
+			<option value={input.id}>
+				{input.name || 'Unnamed'}{input.manufacturer ? ' (' + input.manufacturer + ')' : ''}
+			</option>
+		{/each}
+	</select>
+
+	<select bind:value={selectedKit} onchange={markDirty} aria-label="Select drum kit">
+		{#each kits as kit (kit.id)}
+			<option value={kit.id}>{kit.name}</option>
+		{/each}
+	</select>
+
+	<button onclick={startCapture} disabled={capturing}>Capture pads</button>
+
+	{#if selectedId && hasSavedConfig(selectedId) && !hasSaved}
+		<button onclick={() => applySaved(selectedId!)}>Load saved</button>
+	{/if}
+
+	{#if !denied}
+		<span class="status">{status}</span>
+	{/if}
+</div>
+
+{#if savedHint}
+	<div class="savebar">
+		<span>{savedHint}</span>
+		<button onclick={saveConfig}>Save</button>
+	</div>
+{/if}
+
+<div class="grid">
+	{#each cells as i}
+		{@const bound = assignedNotes[i]}
+		{@const active = bound !== null && activeNotes.has(bound)}
+		{@const current = capturing && i === captureIndex}
+		<div class="cell" class:active class:current class:done={bound !== null}>
+			<div class="cell-head">
+				<span class="label">{i + 1}</span>
+				{#if bound !== null}
+					<span class="midi">{noteName(bound)}</span>
+				{:else if current}
+					<span class="hint">press</span>
+				{:else}
+					<span class="midi dim">unbound</span>
+				{/if}
+			</div>
+
+			<button class="preview" onclick={() => playCell(i)} title="Preview">
+				{drumName.get(soundNotes[i]) ?? soundNotes[i]}
+			</button>
+
+			<select
+				class="drum-select"
+				bind:value={soundNotes[i]}
+				onchange={markDirty}
+				aria-label={'Drum for pad ' + (i + 1)}
+			>
+				{#each drums as d (d.note)}
+					<option value={d.note}>{d.name}</option>
+				{/each}
+			</select>
+		</div>
+	{/each}
+</div>
 
 <style>
 	.toolbar {
@@ -357,7 +373,7 @@
 
 	.status {
 		font-size: 0.9rem;
-		color: #666;
+		color: var(--text-muted);
 	}
 
 	.grid {
@@ -448,17 +464,31 @@
 		font-family: inherit;
 	}
 
+	.warnbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+		padding: 0.5rem 1rem;
+		background: rgba(224, 112, 112, 0.08);
+		border: 1px solid rgba(224, 112, 112, 0.4);
+		border-radius: var(--radius-sm);
+		font-size: 0.9rem;
+		color: var(--red);
+	}
+
 	.savebar {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
 		margin-bottom: 1rem;
 		padding: 0.5rem 1rem;
-		background: #e0f5e0;
-		border: 1px solid #8c8;
-		border-radius: 0.4rem;
+		background: rgba(85, 187, 136, 0.1);
+		border: 1px solid var(--green-dim);
+		border-radius: var(--radius-sm);
 		font-size: 0.9rem;
-		color: #222;
+		color: var(--green);
 	}
 
 	.savebar button {
@@ -467,10 +497,4 @@
 		cursor: pointer;
 	}
 
-	.start-btn {
-		padding: 1em 2em;
-		font-size: 1.3rem;
-		cursor: pointer;
-		margin-top: 2rem;
-	}
 </style>

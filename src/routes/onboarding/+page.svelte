@@ -1,0 +1,716 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { base } from '$app/paths';
+
+	import { MidiHub, type MidiInputInfo } from '$lib/midi-hub.svelte';
+	import { matchPreset, MAX_COLS, MAX_ROWS, type Preset } from '$lib/presets';
+	import { playScaleTone, unlockAudio } from '$lib/scale';
+	import PadGrid from '$lib/pad-grid.svelte';
+
+	// Keep saved config compatible with the Lessons and Settings pages:
+	// localStorage["padrill:<deviceId>"] = { notes, soundNotes, kit, deviceName }.
+	const STORAGE_PREFIX = 'padrill:';
+	// Grid cell -> GM drum note, mirrored from the Settings page. Bottom row =
+	// groove core; smaller grids take the *tail* so kick/snare/hats stay on the
+	// bottom row.
+	const DEFAULT_SOUND = [39, 56, 54, 55, 49, 51, 53, 52, 45, 47, 50, 44, 36, 38, 42, 46];
+
+	type Step = 'connect' | 'device' | 'grid' | 'map' | 'done';
+	const STEPS: { id: Step; label: string }[] = [
+		{ id: 'connect', label: 'Connect' },
+		{ id: 'device', label: 'Device' },
+		{ id: 'grid', label: 'Grid' },
+		{ id: 'map', label: 'Map pads' }
+	];
+
+	const midi = new MidiHub();
+
+	let step = $state<Step>('connect');
+	let deviceId = $state<string | null>(null);
+	let deviceName = $state('');
+	let detected = $state<Preset | null>(null);
+	let cols = $state(4);
+	let rows = $state(4);
+	let captured = $state<(number | null)[]>([]);
+	let captureIndex = $state(0);
+	let hitIndex = $state<number | null>(null);
+	let soundOn = $state(true);
+	let saved = $state(false);
+
+	const total = $derived(cols * rows);
+	const pct = $derived(total ? Math.round((Math.min(captureIndex, total) / total) * 100) : 0);
+	const stepIndex = $derived(STEPS.findIndex((s) => s.id === (step === 'done' ? 'map' : step)));
+
+	// note-capture debounce (pads can bounce a note-on twice)
+	let lastNote = -1;
+	let lastAt = 0;
+	let hitTimer: ReturnType<typeof setTimeout>;
+
+	onMount(() => {
+		const off = midi.onNote(handleNote);
+		return () => {
+			off();
+			midi.stop();
+			clearTimeout(hitTimer);
+		};
+	});
+
+	function handleNote(note: number) {
+		if (step !== 'map' || captureIndex >= total) return;
+		const now = performance.now();
+		if (note === lastNote && now - lastAt < 160) return; // ignore bounce
+		lastNote = note;
+		lastAt = now;
+
+		captured[captureIndex] = note;
+		captured = [...captured];
+		flashHit(captureIndex);
+		if (soundOn) playScaleTone(captureIndex, total);
+
+		captureIndex++;
+		if (captureIndex >= total) finish();
+	}
+
+	function flashHit(i: number) {
+		hitIndex = i;
+		clearTimeout(hitTimer);
+		hitTimer = setTimeout(() => (hitIndex = null), 140);
+	}
+
+	// --- step transitions --------------------------------------------------
+
+	async function connect() {
+		await unlockAudio(); // this click is our audio-unlock gesture
+		const ok = await midi.connect();
+		if (ok) step = 'device';
+	}
+
+	async function pair() {
+		await unlockAudio();
+		await midi.pairBluetooth();
+		if (midi.access) step = 'device';
+	}
+
+	function selectDevice(info: MidiInputInfo) {
+		deviceId = info.id;
+		deviceName = info.name;
+		midi.listen(info.id);
+		detected = matchPreset(info.name);
+		cols = detected?.cols ?? 4;
+		rows = detected?.rows ?? 4;
+		step = 'grid';
+	}
+
+	function setCols(n: number) {
+		cols = Math.max(1, Math.min(MAX_COLS, n));
+	}
+	function setRows(n: number) {
+		rows = Math.max(1, Math.min(MAX_ROWS, n));
+	}
+
+	function startCapture() {
+		captured = Array(total).fill(null);
+		captureIndex = 0;
+		lastNote = -1;
+		saved = false;
+		step = 'map';
+	}
+
+	function undo() {
+		if (captureIndex === 0) return;
+		captureIndex--;
+		captured[captureIndex] = null;
+		captured = [...captured];
+	}
+
+	function finish() {
+		save();
+		step = 'done';
+	}
+
+	function save() {
+		if (!deviceId) return;
+		const notes = captured.map((n) => n ?? 0);
+		const soundNotes = DEFAULT_SOUND.slice(DEFAULT_SOUND.length - total);
+		try {
+			localStorage.setItem(
+				STORAGE_PREFIX + deviceId,
+				JSON.stringify({ notes, soundNotes, kit: 1, deviceName, cols, rows })
+			);
+			localStorage.setItem(STORAGE_PREFIX + 'selectedDevice', deviceId);
+			saved = true;
+		} catch {
+			/* storage blocked (private mode) — config just isn't persisted */
+		}
+	}
+
+	function previewPad(i: number) {
+		unlockAudio();
+		playScaleTone(i, total);
+	}
+</script>
+
+<svelte:head>
+	<title>Padrill — Set up your pads</title>
+</svelte:head>
+
+<div class="wizard">
+	<!-- step rail -->
+	<ol class="rail" aria-label="Setup progress">
+		{#each STEPS as s, i (s.id)}
+			<li class="rail-step" class:active={i === stepIndex} class:done={i < stepIndex}>
+				<span class="rail-dot">{i < stepIndex ? '✓' : i + 1}</span>
+				<span class="rail-label">{s.label}</span>
+				{#if i < STEPS.length - 1}<span class="rail-line"></span>{/if}
+			</li>
+		{/each}
+	</ol>
+
+	<section class="card">
+		{#if step === 'connect'}
+			<header class="card-head">
+				<h2>Connect your pads</h2>
+				<p class="sub">Plug in a USB-MIDI controller, or pair a Bluetooth-MIDI pad. No account needed.</p>
+			</header>
+			{#if midi.error}
+				<p class="alert">{midi.error}</p>
+			{/if}
+			<div class="connect-actions">
+				<button class="primary big" onclick={connect} disabled={!midi.supported}>
+					Connect USB / MIDI
+				</button>
+				{#if midi.bluetoothSupported}
+					<button class="big" onclick={pair}>Pair Bluetooth pad</button>
+				{/if}
+			</div>
+			<p class="fine">
+				{#if !midi.supported}
+					This browser has no Web MIDI support. Use Chrome, Edge, or Opera on desktop or Android.
+				{:else}
+					Your browser will ask permission to use MIDI devices.
+				{/if}
+			</p>
+		{:else if step === 'device'}
+			<header class="card-head">
+				<h2>Choose your device</h2>
+				<p class="sub">
+					{midi.inputs.length
+						? 'Pick the controller you want to set up.'
+						: 'No MIDI inputs found yet — connect a pad and rescan.'}
+				</p>
+			</header>
+			{#if midi.error}
+				<p class="alert">{midi.error}</p>
+			{/if}
+			{#if midi.inputs.length}
+				<div class="devices">
+					{#each midi.inputs as input (input.id)}
+						{@const preset = matchPreset(input.name)}
+						<button type="button" class="device" onclick={() => selectDevice(input)}>
+							<span class="device-text">
+								<span class="device-name">{input.name}</span>
+								{#if input.manufacturer}
+									<span class="device-mfr">{input.manufacturer}</span>
+								{/if}
+							</span>
+							{#if preset}
+								<span class="tag">{preset.cols}×{preset.rows}</span>
+							{/if}
+							<span class="device-go" aria-hidden="true">→</span>
+						</button>
+					{/each}
+				</div>
+			{:else}
+				<div class="empty">
+					<span class="empty-icon" aria-hidden="true">🎛</span>
+					<span>Waiting for a controller…</span>
+				</div>
+			{/if}
+			<footer class="card-foot">
+				<button class="ghost" onclick={() => (step = 'connect')}>← Back</button>
+				<span class="btn-group">
+					<button onclick={() => midi.refresh()}>Rescan</button>
+					{#if midi.bluetoothSupported}
+						<button onclick={pair}>Pair Bluetooth</button>
+					{/if}
+				</span>
+			</footer>
+		{:else if step === 'grid'}
+			<header class="card-head">
+				<h2>Pad layout</h2>
+				<p class="sub">
+					{#if detected}
+						Detected <strong>{detected.label}</strong> — adjust if it looks wrong.
+					{:else}
+						No preset matched for <strong>{deviceName}</strong>. Set your grid size.
+					{/if}
+				</p>
+			</header>
+			<div class="steppers">
+				<div class="stepper">
+					<span class="stepper-label">Columns</span>
+					<span class="stepper-controls">
+						<button class="square" onclick={() => setCols(cols - 1)} disabled={cols <= 1}>−</button>
+						<span class="stepper-value">{cols}</span>
+						<button class="square" onclick={() => setCols(cols + 1)} disabled={cols >= MAX_COLS}>+</button>
+					</span>
+				</div>
+				<span class="steppers-x" aria-hidden="true">×</span>
+				<div class="stepper">
+					<span class="stepper-label">Rows</span>
+					<span class="stepper-controls">
+						<button class="square" onclick={() => setRows(rows - 1)} disabled={rows <= 1}>−</button>
+						<span class="stepper-value">{rows}</span>
+						<button class="square" onclick={() => setRows(rows + 1)} disabled={rows >= MAX_ROWS}>+</button>
+					</span>
+				</div>
+			</div>
+			<div class="well compact">
+				<PadGrid {cols} {rows} captured={Array(total).fill(null)} />
+				<p class="fine center">{cols} × {rows} = {total} pad{total === 1 ? '' : 's'}</p>
+			</div>
+			<footer class="card-foot">
+				<button class="ghost" onclick={() => (step = 'device')}>← Back</button>
+				<button class="primary" onclick={startCapture}>Map pads →</button>
+			</footer>
+		{:else if step === 'map'}
+			<header class="card-head">
+				<h2>Press each pad</h2>
+				<p class="sub">
+					Left to right, top to bottom — hit the glowing pad.
+					<strong class="count">{captureIndex < total ? `${captureIndex + 1} / ${total}` : 'all set!'}</strong>
+				</p>
+			</header>
+			<div class="progress" role="progressbar" aria-valuenow={pct} aria-label="Pads mapped">
+				<div class="progress-bar" style="width: {pct}%"></div>
+			</div>
+			<div class="well">
+				<PadGrid {cols} {rows} {captured} {captureIndex} {hitIndex} onpreview={previewPad} />
+			</div>
+			<label class="sound-toggle">
+				<input type="checkbox" bind:checked={soundOn} />
+				Play an A-minor tone on each press
+			</label>
+			<footer class="card-foot">
+				<button class="ghost" onclick={() => (step = 'grid')}>← Back</button>
+				<span class="btn-group">
+					<button onclick={undo} disabled={captureIndex === 0}>Undo</button>
+					<button onclick={startCapture}>Restart</button>
+				</span>
+			</footer>
+		{:else if step === 'done'}
+			<header class="card-head done-head">
+				<span class="check" aria-hidden="true">✓</span>
+				<h2>You're set up</h2>
+				<p class="sub">
+					{deviceName} · {cols}×{rows} · {total} pads mapped{saved ? ' and saved' : ''}.
+				</p>
+			</header>
+			<div class="well">
+				<PadGrid {cols} {rows} {captured} onpreview={previewPad} />
+				<p class="fine center">Tap a pad to hear its tone.</p>
+			</div>
+			<footer class="card-foot">
+				<span class="btn-group">
+					<button class="ghost" onclick={() => (step = 'device')}>Switch device</button>
+					<button onclick={startCapture}>Re-map</button>
+				</span>
+				<a class="cta" href="{base}/lessons">Start practicing →</a>
+			</footer>
+		{/if}
+	</section>
+</div>
+
+<style>
+	.wizard {
+		max-width: 560px;
+		margin: 1.5rem auto 0;
+	}
+
+	/* --- step rail --- */
+
+	.rail {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		list-style: none;
+		margin: 0 0 1.5rem;
+		padding: 0 0.25rem;
+	}
+
+	.rail-step {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		gap: 0.5rem;
+		min-width: 0;
+	}
+
+	.rail-step:last-child {
+		flex: 0 0 auto;
+	}
+
+	.rail-dot {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		flex-shrink: 0;
+		border-radius: 50%;
+		border: 2px solid var(--border-strong);
+		color: var(--text-faint);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		transition:
+			border-color 200ms ease,
+			background 200ms ease,
+			color 200ms ease;
+	}
+
+	.rail-step.active .rail-dot {
+		border-color: var(--gold);
+		color: var(--gold);
+		box-shadow: 0 0 10px var(--gold-dim);
+	}
+
+	.rail-step.done .rail-dot {
+		border-color: var(--green);
+		background: var(--green);
+		color: #0e2018;
+	}
+
+	.rail-label {
+		font-size: 0.85rem;
+		color: var(--text-faint);
+		white-space: nowrap;
+	}
+
+	.rail-step.active .rail-label {
+		color: var(--text);
+		font-weight: 600;
+	}
+
+	.rail-step.done .rail-label {
+		color: var(--text-muted);
+	}
+
+	.rail-line {
+		flex: 1;
+		height: 1px;
+		min-width: 0.75rem;
+		background: var(--border);
+	}
+
+	@media (max-width: 480px) {
+		.rail-label {
+			display: none;
+		}
+	}
+
+	/* --- card --- */
+
+	.card {
+		padding: 1.75rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: calc(var(--radius) + 4px);
+		box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+	}
+
+	@media (max-width: 480px) {
+		.card {
+			padding: 1.25rem;
+		}
+	}
+
+	.card-head {
+		margin-bottom: 1.5rem;
+	}
+
+	.sub {
+		margin: 0.25rem 0 0;
+		color: var(--text-muted);
+		font-size: 0.95rem;
+	}
+
+	.count {
+		color: var(--gold);
+		font-family: var(--font-mono);
+	}
+
+	.card-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-top: 1.5rem;
+		padding-top: 1.25rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.btn-group {
+		display: flex;
+		gap: 0.6rem;
+	}
+
+	.ghost {
+		background: transparent;
+		border-color: transparent;
+		color: var(--text-muted);
+	}
+
+	.big {
+		padding: 0.7em 1.4em;
+		font-size: 1.05rem;
+		flex: 1;
+	}
+
+	.square {
+		width: 2.2rem;
+		height: 2.2rem;
+		padding: 0;
+		font-size: 1.1rem;
+		line-height: 1;
+	}
+
+	.cta {
+		display: inline-block;
+		padding: 0.45em 1.1em;
+		border-radius: var(--radius-sm);
+		background: var(--gold);
+		border: 1px solid var(--gold);
+		color: #1a1505;
+		font-weight: 650;
+		text-decoration: none;
+		transition: background 120ms ease;
+	}
+
+	.cta:hover {
+		background: #f6cd5e;
+	}
+
+	.alert {
+		margin: 0 0 1.25rem;
+		padding: 0.6rem 0.9rem;
+		border: 1px solid rgba(224, 112, 112, 0.4);
+		border-radius: var(--radius-sm);
+		background: rgba(224, 112, 112, 0.08);
+		color: var(--red);
+		font-size: 0.9rem;
+	}
+
+	.fine {
+		margin: 1rem 0 0;
+		color: var(--text-faint);
+		font-size: 0.85rem;
+	}
+
+	.fine.center {
+		text-align: center;
+	}
+
+	.well {
+		padding: 1.5rem 1.25rem 1.25rem;
+		border-radius: var(--radius);
+		background: rgba(0, 0, 0, 0.22);
+	}
+
+	/* smaller preview on the layout step — it's a size picker, not the mapper */
+	.well.compact {
+		--pad-grid-max: 300px;
+	}
+
+	/* --- connect --- */
+
+	.connect-actions {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+
+	/* --- device list --- */
+
+	.devices {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.device {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		width: 100%;
+		padding: 0.85rem 1.1rem;
+		text-align: left;
+		background: var(--surface-2);
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius);
+	}
+
+	.device:hover:not(:disabled) {
+		border-color: var(--gold);
+		background: var(--surface-3);
+	}
+
+	.device:hover .device-go {
+		color: var(--gold);
+		transform: translateX(2px);
+	}
+
+	.device-text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		flex: 1;
+	}
+
+	.device-name {
+		font-weight: 600;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.device-mfr {
+		font-size: 0.78rem;
+		color: var(--text-muted);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.tag {
+		flex-shrink: 0;
+		padding: 0.2em 0.55em;
+		border-radius: 999px;
+		background: rgba(240, 192, 64, 0.12);
+		border: 1px solid var(--gold-dim);
+		color: var(--gold);
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+	}
+
+	.device-go {
+		flex-shrink: 0;
+		color: var(--text-faint);
+		transition:
+			color 120ms ease,
+			transform 120ms ease;
+	}
+
+	.empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 2rem 1rem;
+		border: 1px dashed var(--border-strong);
+		border-radius: var(--radius);
+		color: var(--text-faint);
+		font-size: 0.9rem;
+	}
+
+	.empty-icon {
+		font-size: 1.6rem;
+		opacity: 0.7;
+	}
+
+	/* --- grid steppers --- */
+
+	.steppers {
+		display: flex;
+		align-items: end;
+		justify-content: center;
+		gap: 1.25rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.steppers-x {
+		padding-bottom: 0.45rem;
+		color: var(--text-faint);
+		font-family: var(--font-mono);
+	}
+
+	.stepper {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.45rem;
+	}
+
+	.stepper-label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	.stepper-controls {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.stepper-value {
+		min-width: 1.6rem;
+		text-align: center;
+		font-family: var(--font-mono);
+		font-size: 1.35rem;
+		font-weight: 700;
+	}
+
+	/* --- map step --- */
+
+	.progress {
+		height: 0.45rem;
+		margin-bottom: 1.25rem;
+		border-radius: 999px;
+		background: var(--surface-3);
+		overflow: hidden;
+	}
+
+	.progress-bar {
+		height: 100%;
+		border-radius: 999px;
+		background: linear-gradient(90deg, var(--gold), #f6cd5e);
+		transition: width 200ms ease;
+	}
+
+	.sound-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-top: 1.1rem;
+		font-size: 0.88rem;
+		color: var(--text-muted);
+		user-select: none;
+		cursor: pointer;
+	}
+
+	/* --- done --- */
+
+	.done-head {
+		text-align: center;
+	}
+
+	.check {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 3rem;
+		height: 3rem;
+		margin: 0 auto 0.75rem;
+		border-radius: 50%;
+		background: rgba(85, 187, 136, 0.15);
+		border: 1px solid var(--green-dim);
+		color: var(--green);
+		font-size: 1.4rem;
+		font-weight: 700;
+	}
+</style>

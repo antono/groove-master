@@ -1,0 +1,141 @@
+/* Padrill — global design system.
+ *
+ * One dark theme. Pages consume the tokens below via var(); accent hues
+ * (gold = attention, green = success, cyan = live hit) match the pad grid's
+ * established colors. Only bare elements are styled globally so page-scoped
+ * styles keep full control.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* surfaces */
+  --bg: #0e0f17;
+  --surface: #161726;
+  --surface-2: #1d1f33;
+  --surface-3: #262943;
+  --border: #2a2c42;
+  --border-strong: #3d4060;
+
+  /* text */
+  --text: #e4e6f0;
+  --text-muted: #9298b4;
+  --text-faint: #5d617e;
+
+  /* accents */
+  --gold: #f0c040;
+  --gold-dim: rgba(240, 192, 64, 0.35);
+  --green: #55bb88;
+  --green-dim: rgba(85, 187, 136, 0.35);
+  --cyan: #66ccff;
+  --cyan-dim: rgba(102, 204, 255, 0.35);
+  --red: #e07070;
+
+  /* neumorphic pad shadows (paired light/dark so pads read as raised) */
+  --pad-shadow-dark: rgba(0, 0, 0, 0.55);
+  --pad-shadow-light: rgba(255, 255, 255, 0.05);
+
+  --radius: 12px;
+  --radius-sm: 8px;
+
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(80rem 40rem at 50% -14rem, #1b1d31 0%, transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0.5rem 0 1.25rem;
+}
+
+h2 {
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.25rem;
+}
+
+a {
+  color: var(--cyan);
+}
+
+/* --- form elements ------------------------------------------------------- */
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.45em 1.1em;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    transform 120ms ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: var(--text-faint);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button.primary {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #1a1505;
+  font-weight: 650;
+}
+
+button.primary:hover:not(:disabled) {
+  background: #f6cd5e;
+  border-color: #f6cd5e;
+}
+
+select,
+input[type="text"],
+input[type="number"] {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.4em 0.6em;
+}
+
+input[type="checkbox"],
+input[type="range"] {
+  accent-color: var(--gold);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
