@@ -82,19 +82,28 @@ def four_on_the_floor(bars=4):
     return events, bars * bar_ticks
 
 
-def offbeat_bass(bars=4):
-    """Simple house-style bass: the bar's root on every off-beat ('&').
+def octave_bass(bars=4):
+    """Disco/house octave-bounce bass over Am - F - C - G (one chord per bar).
 
-    Progression Am - F - C - G, one chord per bar.
+    Root on the down-beats, octave-up on the off-beats, with a chromatic
+    approach note on the last 8th leading into the next bar's root.
     """
     events = [(0, -1, bytes([0xC0, 0]))]  # program change (ignored by our sampler)
     roots = [33, 29, 36, 31]  # A1, F1, C2, G1
     bar_ticks = BEATS_PER_BAR * PPQ
+    eighth = PPQ // 2
     for bar in range(bars):
         base = bar * bar_ticks
         root = roots[bar % len(roots)]
-        for beat in range(BEATS_PER_BAR):
-            bass_note(events, base + beat * PPQ + PPQ // 2, root)  # the "&"
+        nxt = roots[(bar + 1) % len(roots)]
+        for i, pos in enumerate(range(0, bar_ticks, eighth)):  # 8 eighth-notes
+            if i == 7:
+                note = nxt - 1  # chromatic approach into the next root
+            elif i % 2 == 0:
+                note = root  # down-beat: root
+            else:
+                note = root + 12  # off-beat: octave up
+            bass_note(events, base + pos, note, dur=180)
     return events, bars * bar_ticks
 
 
@@ -111,7 +120,7 @@ def main():
     ]
 
     drum_events, length = four_on_the_floor(bars)
-    bass_events, _ = offbeat_bass(bars)
+    bass_events, _ = octave_bass(bars)
 
     tracks = [
         build_track("tempo", [], length, meta=conductor_meta),

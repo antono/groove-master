@@ -36,6 +36,11 @@
 	let backingCursors: number[] = []; // per-track note pointer, advanced in tick()
 	let muteBacking = $state(false);
 	let backingNames = $state(new Map<string, string>()); // "family:id" -> friendly name
+	let basses: { id: string; name: string }[] = $state([]); // selectable bass instruments
+	let selectedBass = $state('lately'); // overrides the bass id the MIDI ships with
+
+	// Which sample set a backing track actually plays (bass is user-selectable).
+	const effId = (t: BackingTrack) => (t.family === 'bass' ? selectedBass : t.id);
 
 	// MIDI + the device's saved pad->drum mapping (from the Settings page).
 	let midiAccess: MIDIAccess | null = $state(null);
@@ -108,10 +113,8 @@
 	async function loadBackingNames() {
 		try {
 			const res = await fetch(`${base}/bass/manifest.json`);
-			const basses = (await res.json()).basses ?? [];
-			const m = new Map<string, string>();
-			for (const b of basses) m.set(`bass:${b.id}`, b.name);
-			backingNames = m;
+			basses = (await res.json()).basses ?? [];
+			backingNames = new Map(basses.map((b) => [`bass:${b.id}`, b.name]));
 		} catch {}
 	}
 
@@ -181,12 +184,22 @@
 		lanes = [...new Set(parsed.notes.map((n) => n.note))].sort((a, b) => b - a);
 		backing = parsed.backing;
 		backingCursors = backing.map(() => 0);
+		const bassTrack = backing.find((t) => t.family === 'bass');
+		if (bassTrack) selectedBass = bassTrack.id; // default to what the MIDI ships with
 		resetScoring();
 		beatPos = -COUNT_IN;
 		status = '';
 		player?.preload(kit, lanes);
-		for (const t of backing) backingPlayer?.preload(t.family, t.id, t.notes.map((n) => n.note));
+		for (const t of backing) backingPlayer?.preload(t.family, effId(t), t.notes.map((n) => n.note));
 	}
+
+	// Preload the chosen bass whenever the selection changes.
+	$effect(() => {
+		const id = selectedBass;
+		for (const t of backing) {
+			if (t.family === 'bass') backingPlayer?.preload('bass', id, t.notes.map((n) => n.note));
+		}
+	});
 
 	function bars() {
 		if (!parsed) return [];
@@ -280,7 +293,7 @@
 		backing.forEach((track, ti) => {
 			let c = backingCursors[ti];
 			while (c < track.notes.length && track.notes[c].beat <= beatPos) {
-				if (!muteBacking) backingPlayer?.play(track.family, track.id, track.notes[c].note);
+				if (!muteBacking) backingPlayer?.play(track.family, effId(track), track.notes[c].note);
 				c++;
 			}
 			backingCursors[ti] = c;
@@ -490,7 +503,15 @@
 		<div class="backing">
 			<span class="backing-tag">backing</span>
 			{#each backing as t (t.family + ':' + t.id)}
-				<span class="backing-name">{backingLabel(t)}</span>
+				{#if t.family === 'bass' && basses.length}
+					<select bind:value={selectedBass} aria-label="Select bass">
+						{#each basses as b (b.id)}
+							<option value={b.id}>{b.name}</option>
+						{/each}
+					</select>
+				{:else}
+					<span class="backing-name">{backingLabel(t)}</span>
+				{/if}
 			{/each}
 			<label class="mute">
 				<input type="checkbox" bind:checked={muteBacking} /> mute
@@ -655,6 +676,11 @@
 
 	.backing-name {
 		font-weight: bold;
+	}
+
+	.backing select {
+		padding: 0.2em 0.4em;
+		font-size: 0.85rem;
 	}
 
 	.mute {
