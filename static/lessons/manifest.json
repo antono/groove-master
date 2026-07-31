@@ -1,11 +1,12 @@
 {
   "lessons": [
     {
-      "id": "four-on-the-floor",
-      "name": "Four on the Floor",
-      "file": "four-on-the-floor.mid",
+      "id": "lesson2",
+      "name": "Lesson 2",
+      "file": "lesson2.mid",
       "bpm": 60,
-      "bars": 4
+      "bars": 4,
+      "description": "The four-on-the-floor groove: kick on every beat, snare backbeat on 2 and 4, and closed hi-hats on the off-beats. A simple bass line plays along in the background. Start slow and lock in with the click."
     }
   ]
 }

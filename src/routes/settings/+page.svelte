@@ -1,12 +1,19 @@
 <script lang="ts">
+	import { base } from '$app/paths';
+
 	const GRID = 4;
 	const TOTAL = GRID * GRID;
 	const STORAGE_PREFIX = 'padrill:';
 
-	const defaultNotes = [48, 50, 51, 53, 55, 56, 58, 60, 62, 63, 65, 67, 68, 70, 72, 74];
+	// Grid cell -> GM drum note (the *sound*). Bottom row = groove core,
+	// escalating to toms / cymbals / aux toward the top. See scripts/render-drums.py.
+	const DEFAULT_SOUND = [39, 56, 54, 55, 49, 51, 53, 52, 45, 47, 50, 44, 36, 38, 42, 46];
+
+	type Kit = { id: number; name: string };
+	type Drum = { note: number; name: string };
 
 	let midiAccess: MIDIAccess | null = $state(null);
-	let inputs: { id: string; name: string; manufacturer: string }[] = $state([]);
+	let inputs: { id: string; name: string | null; manufacturer: string | null }[] = $state([]);
 	let selectedId: string | null = $state(null);
 	let status: string = $state('');
 	let denied = $state(false);
@@ -14,13 +21,68 @@
 
 	let capturing = $state(false);
 	let captureIndex = $state(0);
+	// Controller pad note bound to each cell (set via Capture).
 	let assignedNotes: (number | null)[] = $state(Array(TOTAL).fill(null));
+	// GM drum note that each cell plays (set via the per-cell dropdown).
+	let soundNotes: number[] = $state([...DEFAULT_SOUND]);
 	let activeNotes: Set<number> = $state(new Set());
 	let audioCtx: AudioContext | null = null;
+
+	// Drum kits + drum catalogue, loaded from the render manifest.
+	let kits: Kit[] = $state([]);
+	let drums: Drum[] = $state([]);
+	let selectedKit = $state(1);
+	const drumName = $derived(new Map(drums.map((d) => [d.note, d.name])));
 
 	let savedHint = $state('');
 	let hasSaved = $state(false);
 	let started = $state(false);
+
+	const cells = Array.from({ length: TOTAL }, (_, i) => i);
+
+	// --- sample playback -------------------------------------------------
+
+	const bufferCache = new Map<string, AudioBuffer>();
+
+	async function loadBuffer(kit: number, note: number): Promise<AudioBuffer | null> {
+		const key = kit + ':' + note;
+		const cached = bufferCache.get(key);
+		if (cached) return cached;
+		if (!audioCtx) return null;
+		try {
+			const res = await fetch(`${base}/drums/kit${kit}/${note}.oga`);
+			const buf = await audioCtx.decodeAudioData(await res.arrayBuffer());
+			bufferCache.set(key, buf);
+			return buf;
+		} catch {
+			return null;
+		}
+	}
+
+	function fireBuffer(buf: AudioBuffer) {
+		if (!audioCtx) return;
+		const src = audioCtx.createBufferSource();
+		src.buffer = buf;
+		src.connect(audioCtx.destination);
+		src.start();
+	}
+
+	function playCell(idx: number) {
+		const note = soundNotes[idx];
+		if (note == null) return;
+		const cached = bufferCache.get(selectedKit + ':' + note);
+		if (cached) fireBuffer(cached);
+		else loadBuffer(selectedKit, note).then((b) => b && fireBuffer(b));
+	}
+
+	// Preload the 16 assigned drums whenever the kit or layout changes.
+	$effect(() => {
+		const kit = selectedKit;
+		if (!started) return;
+		for (const note of new Set(soundNotes)) loadBuffer(kit, note);
+	});
+
+	// --- MIDI ------------------------------------------------------------
 
 	function updateInputs() {
 		if (!midiAccess) return;
@@ -38,26 +100,30 @@
 
 	function getCurrentDevice(): { id: string; name: string } | null {
 		if (!selectedId || !inputs.length) return null;
-		const dev = inputs.find(d => d.id === selectedId);
+		const dev = inputs.find((d) => d.id === selectedId);
 		return dev ? { id: dev.id, name: dev.name || dev.id } : null;
 	}
 
-	function loadSaved(deviceId: string): number[] | null {
+	function loadSaved(
+		deviceId: string
+	): { notes: number[]; soundNotes?: number[]; kit?: number } | null {
 		try {
 			const raw = localStorage.getItem(STORAGE_PREFIX + deviceId);
 			if (!raw) return null;
 			const data = JSON.parse(raw);
-			if (Array.isArray(data.notes) && data.notes.length === TOTAL) return data.notes;
-		} catch { }
+			if (Array.isArray(data.notes) && data.notes.length === TOTAL) return data;
+		} catch {}
 		return null;
 	}
 
 	function saveConfig() {
 		const dev = getCurrentDevice();
 		if (!dev) return;
-		const all = assignedNotes.every(n => n !== null);
-		if (!all) return;
-		localStorage.setItem(STORAGE_PREFIX + dev.id, JSON.stringify({ notes: assignedNotes, deviceName: dev.name }));
+		if (!assignedNotes.every((n) => n !== null)) return;
+		localStorage.setItem(
+			STORAGE_PREFIX + dev.id,
+			JSON.stringify({ notes: assignedNotes, soundNotes, kit: selectedKit, deviceName: dev.name })
+		);
 		hasSaved = true;
 		savedHint = '';
 	}
@@ -66,17 +132,35 @@
 		return loadSaved(deviceId) !== null;
 	}
 
-	function applySaved(deviceId: string) {
-		const notes = loadSaved(deviceId);
-		if (!notes) return;
-		assignedNotes = [...notes];
+	function applyConfig(data: { notes: number[]; soundNotes?: number[]; kit?: number }) {
+		assignedNotes = [...data.notes];
+		if (Array.isArray(data.soundNotes) && data.soundNotes.length === TOTAL)
+			soundNotes = [...data.soundNotes];
+		if (typeof data.kit === 'number') selectedKit = data.kit;
 		hasSaved = true;
 		status = 'Loaded saved config';
+	}
+
+	function applySaved(deviceId: string) {
+		const data = loadSaved(deviceId);
+		if (data) applyConfig(data);
+	}
+
+	async function loadManifest() {
+		try {
+			const res = await fetch(`${base}/drums/manifest.json`);
+			const data = await res.json();
+			kits = data.kits ?? [];
+			drums = data.drums ?? [];
+		} catch {
+			status = 'Could not load drum manifest — run scripts/render-drums.py';
+		}
 	}
 
 	async function start() {
 		started = true;
 		audioCtx = new AudioContext();
+		await loadManifest();
 		if (!navigator.requestMIDIAccess) {
 			status = 'Web MIDI API not supported in this browser';
 			denied = true;
@@ -102,19 +186,15 @@
 	function connectInput() {
 		if (currentInput) currentInput.onmidimessage = null;
 		if (!selectedId || !midiAccess) return;
-		currentInput = midiAccess.inputs.get(selectedId);
+		currentInput = midiAccess.inputs.get(selectedId) ?? null;
 		if (!currentInput) return;
 		currentInput.onmidimessage = handleMIDIMessage;
 	}
 
 	function initDevice() {
 		if (!selectedId) return;
-		const saved = loadSaved(selectedId);
-		if (saved) {
-			assignedNotes = [...saved];
-			hasSaved = true;
-			status = 'Loaded saved config';
-		}
+		const data = loadSaved(selectedId);
+		if (data) applyConfig(data);
 	}
 
 	$effect(() => {
@@ -146,11 +226,11 @@
 				const idx = assignedNotes.indexOf(note);
 				if (idx !== -1) {
 					activeNotes = new Set([...activeNotes, note]);
-					playNote(defaultNotes[idx]);
+					playCell(idx);
 				}
 			}
 		} else if (cmd === 0x80 || (cmd === 0x90 && velocity === 0)) {
-			activeNotes = new Set([...activeNotes].filter(n => n !== note));
+			activeNotes = new Set([...activeNotes].filter((n) => n !== note));
 		}
 	}
 
@@ -163,28 +243,17 @@
 		status = 'Press pad 1 of ' + TOTAL;
 	}
 
-	function playNote(midiNote: number) {
-		const ctx = audioCtx!;
-		const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
-		const osc = ctx.createOscillator();
-		const gain = ctx.createGain();
-		osc.type = 'triangle';
-		osc.frequency.value = freq;
-		gain.gain.setValueAtTime(0.25, ctx.currentTime);
-		gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-		osc.connect(gain);
-		gain.connect(ctx.destination);
-		osc.start();
-		osc.stop(ctx.currentTime + 0.8);
+	function markDirty() {
+		hasSaved = false;
+		if (assignedNotes.every((n) => n !== null))
+			savedHint = 'Save changes for ' + (getCurrentDevice()?.name ?? 'device') + '?';
 	}
 
-	const cells = Array.from({ length: TOTAL }, (_, i) => i);
-
-function restoreDevice() {
-	const savedId = localStorage.getItem(STORAGE_PREFIX + 'selectedDevice');
-	if (!savedId || !inputs.some(d => d.id === savedId)) return;
-	selectedId = savedId;
-}
+	function restoreDevice() {
+		const savedId = localStorage.getItem(STORAGE_PREFIX + 'selectedDevice');
+		if (!savedId || !inputs.some((d) => d.id === savedId)) return;
+		selectedId = savedId;
+	}
 </script>
 
 <h1>Padrill</h1>
@@ -207,7 +276,13 @@ function restoreDevice() {
 			{/each}
 		</select>
 
-		<button onclick={startCapture} disabled={capturing}>Capture</button>
+		<select bind:value={selectedKit} onchange={markDirty} aria-label="Select drum kit">
+			{#each kits as kit (kit.id)}
+				<option value={kit.id}>{kit.name}</option>
+			{/each}
+		</select>
+
+		<button onclick={startCapture} disabled={capturing}>Capture pads</button>
 
 		{#if selectedId && hasSavedConfig(selectedId) && !hasSaved}
 			<button onclick={() => applySaved(selectedId!)}>Load saved</button>
@@ -225,25 +300,35 @@ function restoreDevice() {
 
 	<div class="grid">
 		{#each cells as i}
-			{@const note = assignedNotes[i]}
-			{@const active = note !== null && activeNotes.has(note)}
+			{@const bound = assignedNotes[i]}
+			{@const active = bound !== null && activeNotes.has(bound)}
 			{@const current = capturing && i === captureIndex}
-			{@const done = note !== null}
-			<div
-				class="cell"
-				class:active
-				class:current
-				class:done
-			>
-				{#if done}
+			<div class="cell" class:active class:current class:done={bound !== null}>
+				<div class="cell-head">
 					<span class="label">{i + 1}</span>
-					<span class="midi">{noteName(note!)}</span>
-				{:else if current}
-					<span class="label">{i + 1}</span>
-					<span class="hint">press</span>
-				{:else}
-					<span class="label dim">{i + 1}</span>
-				{/if}
+					{#if bound !== null}
+						<span class="midi">{noteName(bound)}</span>
+					{:else if current}
+						<span class="hint">press</span>
+					{:else}
+						<span class="midi dim">unbound</span>
+					{/if}
+				</div>
+
+				<button class="preview" onclick={() => playCell(i)} title="Preview">
+					{drumName.get(soundNotes[i]) ?? soundNotes[i]}
+				</button>
+
+				<select
+					class="drum-select"
+					bind:value={soundNotes[i]}
+					onchange={markDirty}
+					aria-label={'Drum for pad ' + (i + 1)}
+				>
+					{#each drums as d (d.note)}
+						<option value={d.note}>{d.name}</option>
+					{/each}
+				</select>
 			</div>
 		{/each}
 	</div>
@@ -261,7 +346,7 @@ function restoreDevice() {
 	.toolbar select {
 		padding: 0.4em;
 		font-size: 1rem;
-		min-width: 220px;
+		min-width: 180px;
 	}
 
 	.toolbar button {
@@ -279,62 +364,88 @@ function restoreDevice() {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		gap: 0.75rem;
-		max-width: 520px;
+		max-width: 640px;
 	}
 
 	.cell {
-		aspect-ratio: 1;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+		gap: 0.4rem;
+		padding: 0.6rem;
 		border-radius: 0.5rem;
 		background: #1a1a2e;
 		border: 2px solid #333;
 		color: #ccc;
 		font-family: monospace;
-		transition: all 0.08s ease;
+		transition:
+			border-color 0.08s ease,
+			background 0.08s ease;
 		user-select: none;
+	}
+
+	.cell-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
 	}
 
 	.cell.current {
 		border-color: #f0c040;
 		box-shadow: 0 0 12px rgba(240, 192, 64, 0.5);
-		animation: pulse 0.8s ease-in-out infinite alternate;
 	}
 
 	.cell.done {
 		border-color: #4a8;
-		background: #162b1e;
 	}
 
 	.cell.active {
 		border-color: #6cf;
 		background: #1a3a4e;
 		box-shadow: 0 0 16px rgba(100, 200, 255, 0.4);
-		transform: scale(0.95);
 	}
 
 	.label {
-		font-size: 1.2rem;
+		font-size: 1.1rem;
 		font-weight: bold;
-	}
-
-	.label.dim {
-		opacity: 0.3;
 	}
 
 	.midi {
 		font-size: 0.75rem;
 		color: #8a8;
-		margin-top: 0.2rem;
+	}
+
+	.midi.dim {
+		opacity: 0.4;
 	}
 
 	.hint {
 		font-size: 0.65rem;
 		color: #f0c040;
 		text-transform: uppercase;
-		margin-top: 0.2rem;
+	}
+
+	.preview {
+		padding: 0.5rem 0.3rem;
+		font-family: inherit;
+		font-size: 0.85rem;
+		font-weight: bold;
+		color: #cde;
+		background: #24243e;
+		border: 1px solid #3a3a5a;
+		border-radius: 0.35rem;
+		cursor: pointer;
+	}
+
+	.preview:active {
+		background: #1a3a4e;
+		border-color: #6cf;
+	}
+
+	.drum-select {
+		width: 100%;
+		padding: 0.25em;
+		font-size: 0.8rem;
+		font-family: inherit;
 	}
 
 	.savebar {
@@ -361,10 +472,5 @@ function restoreDevice() {
 		font-size: 1.3rem;
 		cursor: pointer;
 		margin-top: 2rem;
-	}
-
-	@keyframes pulse {
-		from { box-shadow: 0 0 6px rgba(240, 192, 64, 0.4); }
-		to { box-shadow: 0 0 18px rgba(240, 192, 64, 0.7); }
 	}
 </style>

@@ -2,8 +2,9 @@
 	import { base } from '$app/paths';
 	import { browser } from '$app/environment';
 	import { onDestroy, onMount } from 'svelte';
-	import { parseMidi, type ParsedMidi } from '$lib/midi';
+	import { parseMidi, type ParsedMidi, type BackingTrack } from '$lib/midi';
 	import { DrumPlayer } from '$lib/drums';
+	import { Sampler } from '$lib/sampler';
 
 	type Lesson = {
 		id: string;
@@ -28,6 +29,13 @@
 
 	let audioCtx: AudioContext | null = $state(null);
 	let player: DrumPlayer | null = null;
+	let backingPlayer: Sampler | null = null;
+
+	// Backing tracks (bass, etc.) — auto-played, never shown or scored.
+	let backing: BackingTrack[] = $state([]);
+	let backingCursors: number[] = []; // per-track note pointer, advanced in tick()
+	let muteBacking = $state(false);
+	let backingNames = $state(new Map<string, string>()); // "family:id" -> friendly name
 
 	// MIDI + the device's saved pad->drum mapping (from the Settings page).
 	let midiAccess: MIDIAccess | null = $state(null);
@@ -78,6 +86,7 @@
 	async function boot() {
 		audioCtx = new AudioContext();
 		player = new DrumPlayer(audioCtx);
+		backingPlayer = new Sampler(audioCtx);
 		try {
 			const [lRes, dRes] = await Promise.all([
 				fetch(`${base}/lessons/manifest.json`),
@@ -90,9 +99,24 @@
 			status = 'Could not load manifests — run make-lessons.py & render-drums.py';
 			return;
 		}
+		await loadBackingNames();
 		await initMidi();
 		if (lessons.length) selectLesson(lessons[0]);
 	}
+
+	// Friendly names for backing instruments, e.g. "bass:lately" -> "Lately Bass".
+	async function loadBackingNames() {
+		try {
+			const res = await fetch(`${base}/bass/manifest.json`);
+			const basses = (await res.json()).basses ?? [];
+			const m = new Map<string, string>();
+			for (const b of basses) m.set(`bass:${b.id}`, b.name);
+			backingNames = m;
+		} catch {}
+	}
+
+	const backingLabel = (t: BackingTrack) =>
+		backingNames.get(`${t.family}:${t.id}`) ?? `${t.family} ${t.id}`;
 
 	async function initMidi() {
 		if (!navigator.requestMIDIAccess) {
@@ -155,10 +179,13 @@
 			return;
 		}
 		lanes = [...new Set(parsed.notes.map((n) => n.note))].sort((a, b) => b - a);
+		backing = parsed.backing;
+		backingCursors = backing.map(() => 0);
 		resetScoring();
 		beatPos = -COUNT_IN;
 		status = '';
 		player?.preload(kit, lanes);
+		for (const t of backing) backingPlayer?.preload(t.family, t.id, t.notes.map((n) => n.note));
 	}
 
 	function bars() {
@@ -249,6 +276,16 @@
 			}
 		});
 
+		// Fire backing (bass) notes as the transport reaches them.
+		backing.forEach((track, ti) => {
+			let c = backingCursors[ti];
+			while (c < track.notes.length && track.notes[c].beat <= beatPos) {
+				if (!muteBacking) backingPlayer?.play(track.family, track.id, track.notes[c].note);
+				c++;
+			}
+			backingCursors[ti] = c;
+		});
+
 		if (beatPos >= parsed.lengthBeats) {
 			finish();
 			return;
@@ -266,6 +303,7 @@
 		await audioCtx?.resume();
 		await player?.preload(kit, lanes);
 		resetScoring();
+		backingCursors = backing.map(() => 0);
 		report = null;
 		beatPos = -COUNT_IN;
 		playing = true;
@@ -448,6 +486,18 @@
 		<p class="description">{selected.description}</p>
 	{/if}
 
+	{#if backing.length && !playing}
+		<div class="backing">
+			<span class="backing-tag">backing</span>
+			{#each backing as t (t.family + ':' + t.id)}
+				<span class="backing-name">{backingLabel(t)}</span>
+			{/each}
+			<label class="mute">
+				<input type="checkbox" bind:checked={muteBacking} /> mute
+			</label>
+		</div>
+	{/if}
+
 	{#if !hasMapping}
 		<p class="warn">
 			No pad mapping for this device. Set one up on the
@@ -582,6 +632,37 @@
 		color: #aab;
 		font-size: 0.92rem;
 		line-height: 1.5;
+	}
+
+	.backing {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin: 0 0 1rem;
+		font-size: 0.85rem;
+		color: #bcd;
+	}
+
+	.backing-tag {
+		padding: 0.15em 0.5em;
+		border-radius: 0.25rem;
+		background: #2a2a4a;
+		color: #9ac;
+		font-family: monospace;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+	}
+
+	.backing-name {
+		font-weight: bold;
+	}
+
+	.mute {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		color: #99a;
+		cursor: pointer;
 	}
 
 	.warn {

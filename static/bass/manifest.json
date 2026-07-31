@@ -1,0 +1,18 @@
+{
+  "basses": [
+    {
+      "id": "lately",
+      "name": "Lately Bass"
+    },
+    {
+      "id": "synth1",
+      "name": "Synth Bass 1"
+    },
+    {
+      "id": "synth2",
+      "name": "Synth Bass 2"
+    }
+  ],
+  "lo": 28,
+  "hi": 60
+}
