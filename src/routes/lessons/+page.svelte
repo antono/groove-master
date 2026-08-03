@@ -16,7 +16,7 @@
 	};
 	type Status = 'pending' | 'perfect' | 'good' | 'off' | 'miss';
 
-	const PX_PER_BEAT = 90;
+	const PX_PER_BEAT = 280;
 	const LANE_H = 56; // resting lane height; grows to fill the viewport while playing
 	const BEATS_PER_BAR = 4;
 	const COUNT_IN = BEATS_PER_BAR; // one empty bar before the pattern
@@ -768,7 +768,7 @@
 
 	.hitline {
 		position: absolute;
-		left: 40px;
+		left: 15%;
 		top: 0;
 		bottom: 0;
 		width: 3px;
@@ -781,7 +781,7 @@
 		position: absolute;
 		top: 0;
 		bottom: 0;
-		left: 40px;
+		left: 15%;
 		will-change: transform;
 	}
 
