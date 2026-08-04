@@ -54,6 +54,26 @@
         "type": "github"
       }
     },
+    "mcp-servers-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781796074,
+        "narHash": "sha256-Kxmn/w+jz2IcQulBsc2L1/eH+u+ow20SL7VfuMpvJTk=",
+        "owner": "antono",
+        "repo": "mcp-servers-nix-plus",
+        "rev": "3e4e45f78613db240b24138b40b777d4737140e7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "antono",
+        "repo": "mcp-servers-nix-plus",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "inputs": {
         "nixpkgs-src": "nixpkgs-src"
@@ -94,6 +114,7 @@
       "inputs": {
         "devenv": "devenv",
         "git-hooks": "git-hooks",
+        "mcp-servers-nix": "mcp-servers-nix",
         "nixpkgs": "nixpkgs"
       }
     }

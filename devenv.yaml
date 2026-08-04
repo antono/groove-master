@@ -6,3 +6,12 @@ inputs:
         follows: nixpkgs
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
+  mcp-servers-nix:
+    url: github:antono/mcp-servers-nix-plus
+    inputs:
+      nixpkgs:
+        follows: nixpkgs
+
+nixpkgs:
+  permittedUnfreePackages:
+    - google-chrome
