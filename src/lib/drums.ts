@@ -5,6 +5,7 @@ import { base } from "$app/paths";
 
 export class DrumPlayer {
   private cache = new Map<string, AudioBuffer>();
+  private pending = new Map<string, Promise<AudioBuffer | null>>();
 
   constructor(private ctx: AudioContext) {}
 
@@ -12,14 +13,22 @@ export class DrumPlayer {
     const key = kit + ":" + note;
     const cached = this.cache.get(key);
     if (cached) return cached;
-    try {
-      const res = await fetch(`${base}/drums/kit${kit}/${note}.oga`);
-      const buf = await this.ctx.decodeAudioData(await res.arrayBuffer());
-      this.cache.set(key, buf);
-      return buf;
-    } catch {
-      return null;
-    }
+    const existing = this.pending.get(key);
+    if (existing) return existing;
+    const pending = (async () => {
+      try {
+        const res = await fetch(`${base}/drums/kit${kit}/${note}.oga`);
+        const buf = await this.ctx.decodeAudioData(await res.arrayBuffer());
+        this.cache.set(key, buf);
+        return buf;
+      } catch {
+        return null;
+      } finally {
+        this.pending.delete(key);
+      }
+    })();
+    this.pending.set(key, pending);
+    return pending;
   }
 
   async preload(kit: number, notes: Iterable<number>): Promise<void> {

@@ -27,13 +27,19 @@
 	// between GOOD_MS and the match window -> off (orange); past the window -> miss (red)
 	const STORAGE_PREFIX = 'padrill:';
 
+	// The audio/scoring clock runs on a coarse setInterval instead of per-frame rAF,
+	// so the main thread never wakes every vsync and the compositor scroll stays
+	// uncoupled from main-thread scheduling (see startScroll / schedule).
+	const SCHED_INTERVAL_MS = 25; // how often the scheduler runs
+	const SCHED_LOOKAHEAD_SEC = 0.1; // schedule backing audio this far ahead of the clock
+
 	let audioCtx: AudioContext | null = $state(null);
 	let player: DrumPlayer | null = null;
 	let backingPlayer: Sampler | null = null;
 
 	// Backing tracks (bass, etc.) — auto-played, never shown or scored.
 	let backing: BackingTrack[] = $state([]);
-	let backingCursors: number[] = []; // per-track note pointer, advanced in tick()
+	let backingCursors: number[] = []; // per-track note pointer, advanced by the scheduler
 	let muteBacking = $state(false);
 	let backingNames = $state(new Map<string, string>()); // "family:id" -> friendly name
 	let basses: { id: string; name: string }[] = $state([]); // selectable bass instruments
@@ -58,8 +64,10 @@
 
 	let bpm = $state(60);
 	let playing = $state(false);
+	let paused = $state(false); // transport frozen mid-lesson; highway stays up
 	let status = $state('');
 	let beatPos = -COUNT_IN;
+	let startBeat = -COUNT_IN; // beat the current scroll segment started from
 
 	// Per-target scoring state (parallel to parsed.notes).
 	let matched: boolean[] = $state([]);
@@ -68,21 +76,32 @@
 	let extras: { note: number; beat: number }[] = [];
 	let report: Report | null = $state(null);
 
+	// Note indices sorted by beat, plus a single advancing cursor, so the miss
+	// scan touches only newly-passed notes instead of the whole array each frame.
+	let missOrder: number[] = [];
+	let missCursor = 0;
+
 	let flashing: Set<number> = $state(new Set());
 	let flashTimers = new Map<number, ReturnType<typeof setTimeout>>();
 
-	let raf = 0;
-	let lastTs = 0;
+	let startAudioTime = 0; // audioCtx.currentTime at the start of the current scroll segment
+	let schedTimer: ReturnType<typeof setInterval> | 0 = 0;
+	let dpr = 1; // cached devicePixelRatio; refreshed on resize
 	let stripEl: HTMLDivElement | null = $state(null);
 
 	const laneName = (n: number) => drumNames.get(n) ?? String(n);
 	const laneRow = (n: number) => lanes.indexOf(n);
 	const hasMapping = $derived(ctrlMap.size > 0);
 
-	// Highway fills the whole viewport while playing; rests compact otherwise.
+	// A "session" spans from play until the result screen is dismissed. The highway
+	// stays fullscreen for the whole span — including while the report is shown — so
+	// finishing a lesson never collapses the layout (that reflow scored a 0.52 CLS).
+	const inSession = $derived(playing || !!report);
+
+	// Highway fills the whole viewport during a session; rests compact otherwise.
 	let winH = $state(0);
 	const laneH = $derived(
-		playing && lanes.length ? Math.max(48, Math.floor(winH / lanes.length)) : LANE_H
+		inSession && lanes.length ? Math.max(48, Math.floor(winH / lanes.length)) : LANE_H
 	);
 	const NOTE = 26; // note block size (px)
 
@@ -215,6 +234,9 @@
 		statuses = Array(n).fill('pending');
 		deltas = Array(n).fill(null);
 		extras = [];
+		const notes = parsed?.notes ?? [];
+		missOrder = notes.map((_, i) => i).sort((a, b) => notes[a].beat - notes[b].beat);
+		missCursor = 0;
 	}
 
 	function registerHit(gmNote: number, hitBeat: number) {
@@ -249,7 +271,12 @@
 		if (gm == null) return; // not a mapped pad
 		player?.play(kit, gm); // the ONLY sound source — the user's own playing
 		flash(gm);
-		if (playing && beatPos >= -0.001) registerHit(gm, beatPos);
+		// Sample the beat straight from the audio clock at the moment of the hit, so
+		// timing accuracy doesn't depend on the coarse scheduler cadence.
+		if (playing && !paused) {
+			const hitBeat = currentBeat();
+			if (hitBeat >= -0.001) registerHit(gm, hitBeat);
+		}
 	}
 
 	function flash(note: number) {
@@ -265,46 +292,102 @@
 
 	// ---- transport ------------------------------------------------------
 
-	// Drives the strip directly, bypassing Svelte reactivity so each frame only
-	// touches one DOM style write. Quantized to device pixels to avoid sub-pixel blur.
+	const beatToX = (beat: number) => -beat * PX_PER_BEAT;
+
+	// Positions the strip for a static (paused) frame, snapped to device pixels for
+	// crisp notes. While playing the strip is NOT driven from here — a single CSS
+	// transform transition animates it on the compositor (see startScroll), immune
+	// to main-thread jank. This only runs at rest / on lesson load.
 	function updateStrip() {
 		if (!stripEl) return;
-		const dpr = window.devicePixelRatio || 1;
-		const x = Math.round(-beatPos * PX_PER_BEAT * dpr) / dpr;
+		const x = Math.round(beatToX(beatPos) * dpr) / dpr;
 		stripEl.style.transform = `translate3d(${x}px, 0, 0)`;
 	}
 
-	function tick(ts: number) {
-		if (!playing || !parsed) return;
-		if (!lastTs) lastTs = ts;
-		const dt = Math.min(ts - lastTs, 100); // clamp: no teleports after rAF pauses
-		lastTs = ts;
-		beatPos += (bpm / 60) * dt / 1000;
+	// The transport beat sampled live from the audio clock. Advances continuously
+	// between scheduler ticks, so callers (hit scoring) get an exact position.
+	function currentBeat() {
+		if (!audioCtx) return beatPos;
+		return startBeat + (audioCtx.currentTime - startAudioTime) * (bpm / 60);
+	}
 
-		// Any target that has scrolled past the window unhit is a miss.
-		parsed.notes.forEach((t, i) => {
-			if (!matched[i] && t.beat < beatPos - MATCH_WINDOW_BEATS) {
-				matched[i] = true;
-				statuses[i] = 'miss';
+	// Absolute AudioContext time at which a given beat falls, for lookahead scheduling.
+	const beatToAudioTime = (beat: number) => startAudioTime + (beat - startBeat) * (60 / bpm);
+
+	// Hand the whole scroll to the compositor: one linear transform transition from
+	// `fromBeat` to the end of the pattern. The scheduler below stays only as the
+	// scoring/audio clock and never touches the transform.
+	function startScroll(fromBeat: number) {
+		if (!stripEl || !parsed) return;
+		const durationSec = ((parsed.lengthBeats - fromBeat) * 60) / bpm;
+		stripEl.style.transition = 'none';
+		stripEl.style.transform = `translate3d(${beatToX(fromBeat)}px, 0, 0)`;
+		void stripEl.offsetWidth; // force reflow so the transition starts from here
+		stripEl.style.transition = `transform ${durationSec}s linear`;
+		stripEl.style.transform = `translate3d(${beatToX(parsed.lengthBeats)}px, 0, 0)`;
+	}
+
+	// Freeze the compositor animation at wherever it currently is, then hand
+	// positioning back to updateStrip (used when stopping mid-play).
+	function freezeScroll() {
+		if (!stripEl) return;
+		const current = getComputedStyle(stripEl).transform;
+		stripEl.style.transition = 'none';
+		if (current && current !== 'none') stripEl.style.transform = current;
+	}
+
+	// The scoring/audio clock. Runs every SCHED_INTERVAL_MS off the render path — it
+	// never requests an animation frame, so the compositor scroll is uncoupled from
+	// main-thread scheduling. It only (a) marks passed notes as missed and (b) queues
+	// upcoming backing notes at sample-accurate times via the Web Audio clock.
+	function schedule() {
+		if (!playing || paused || !parsed || !audioCtx) return;
+		const ctx = audioCtx; // narrow for use inside the closure below
+		beatPos = currentBeat();
+
+		// Any target that has scrolled past the window unhit is a miss. Walk a single
+		// beat-sorted cursor so only newly-passed notes touch reactive state. A coarse
+		// cadence here is imperceptible — a note reddens a few ms late at most.
+		while (
+			missCursor < missOrder.length &&
+			parsed.notes[missOrder[missCursor]].beat < beatPos - MATCH_WINDOW_BEATS
+		) {
+			const idx = missOrder[missCursor++];
+			if (!matched[idx]) {
+				matched[idx] = true;
+				statuses[idx] = 'miss';
 			}
-		});
+		}
 
-		// Fire backing (bass) notes as the transport reaches them.
+		// Queue backing (bass) notes up to the lookahead horizon, each scheduled at its
+		// exact audio time so bass timing is sample-accurate and frame-rate independent.
+		const horizon = beatPos + (SCHED_LOOKAHEAD_SEC * bpm) / 60;
 		backing.forEach((track, ti) => {
 			let c = backingCursors[ti];
-			while (c < track.notes.length && track.notes[c].beat <= beatPos) {
-				if (!muteBacking) backingPlayer?.play(track.family, effId(track), track.notes[c].note);
+			while (c < track.notes.length && track.notes[c].beat <= horizon) {
+				if (!muteBacking) {
+					const when = Math.max(beatToAudioTime(track.notes[c].beat), ctx.currentTime);
+					backingPlayer?.playAt(track.family, effId(track), track.notes[c].note, when);
+				}
 				c++;
 			}
 			backingCursors[ti] = c;
 		});
 
-		if (beatPos >= parsed.lengthBeats) {
-			finish();
-			return;
+		if (beatPos >= parsed.lengthBeats) finish();
+	}
+
+	function startScheduler() {
+		stopScheduler();
+		schedule(); // fire once immediately so nothing waits a full interval
+		schedTimer = setInterval(schedule, SCHED_INTERVAL_MS);
+	}
+
+	function stopScheduler() {
+		if (schedTimer) {
+			clearInterval(schedTimer);
+			schedTimer = 0;
 		}
-		updateStrip();
-		raf = requestAnimationFrame(tick);
 	}
 
 	$effect(() => {
@@ -319,16 +402,40 @@
 		backingCursors = backing.map(() => 0);
 		report = null;
 		beatPos = -COUNT_IN;
+		startBeat = -COUNT_IN;
 		playing = true;
-		lastTs = 0;
-		updateStrip();
-		raf = requestAnimationFrame(tick);
+		paused = false;
+		startAudioTime = audioCtx?.currentTime ?? 0;
+		startScroll(startBeat);
+		startScheduler();
+	}
+
+	// Freeze the transport mid-lesson; resume restarts the compositor scroll
+	// from the current beat with the remaining duration.
+	function togglePause() {
+		if (!playing) return;
+		if (!paused) {
+			paused = true;
+			beatPos = currentBeat(); // freeze the clock where it currently is
+			stopScheduler();
+			freezeScroll();
+			updateStrip();
+		} else {
+			paused = false;
+			startBeat = beatPos;
+			startAudioTime = audioCtx?.currentTime ?? 0;
+			startScroll(startBeat);
+			startScheduler();
+		}
 	}
 
 	function stop() {
 		playing = false;
-		if (typeof cancelAnimationFrame !== 'undefined') cancelAnimationFrame(raf);
-		lastTs = 0;
+		paused = false;
+		stopScheduler();
+		startAudioTime = 0;
+		freezeScroll();
+		updateStrip();
 	}
 
 	function finish() {
@@ -343,6 +450,14 @@
 		}
 		report = buildReport();
 		beatPos = parsed ? parsed.lengthBeats : 0;
+		updateStrip();
+	}
+
+	// Dismiss the result screen, ending the session and collapsing the highway back
+	// to its inline size. This runs on a user click, so its layout shift is excluded.
+	function exitReport() {
+		report = null;
+		beatPos = -COUNT_IN;
 		updateStrip();
 	}
 
@@ -438,7 +553,10 @@
 	}
 
 	onMount(() => {
-		const measure = () => (winH = window.innerHeight);
+		const measure = () => {
+			winH = window.innerHeight;
+			dpr = window.devicePixelRatio || 1;
+		};
 		measure();
 		window.addEventListener('resize', measure);
 		return () => window.removeEventListener('resize', measure);
@@ -495,11 +613,11 @@
 		<span class="status">{status}</span>
 	</div>
 
-	{#if selected?.description && !playing}
+	{#if selected?.description && !inSession}
 		<p class="description">{selected.description}</p>
 	{/if}
 
-	{#if backing.length && !playing}
+	{#if backing.length && !inSession}
 		<div class="backing">
 			<span class="backing-tag">backing</span>
 			{#each backing as t (t.family + ':' + t.id)}
@@ -527,11 +645,12 @@
 	{/if}
 
 	{#if playing}
+		<button class="pause-btn" onclick={togglePause}>{paused ? '▶ Resume' : '❚❚ Pause'}</button>
 		<button class="exit" onclick={stop}>■ Stop</button>
 	{/if}
 
 	{#if parsed}
-		<div class="highway" class:full={playing} style="height: {lanes.length * laneH}px">
+		<div class="highway" class:full={inSession} style="height: {lanes.length * laneH}px">
 			<div class="labels">
 				{#each lanes as note (note)}
 					<div class="lane-label" class:flash={flashing.has(note)} style="height: {laneH}px">
@@ -600,7 +719,10 @@
 					{/each}
 				</tbody>
 			</table>
-			<button class="play" onclick={play}>Try again</button>
+			<div class="report-actions">
+				<button class="play" onclick={play}>Try again</button>
+				<button class="done" onclick={exitReport}>Done</button>
+			</div>
 		</div>
 	{/if}
 {/if}
@@ -730,6 +852,21 @@
 		cursor: pointer;
 	}
 
+	.pause-btn {
+		position: fixed;
+		top: 1rem;
+		right: 7.5rem;
+		z-index: 60;
+		padding: 0.5em 1em;
+		font-size: 1rem;
+		font-weight: bold;
+		color: #fff;
+		background: #357;
+		border: 1px solid #579;
+		border-radius: 0.3rem;
+		cursor: pointer;
+	}
+
 	.labels {
 		flex: 0 0 130px;
 		border-right: 1px solid #333;
@@ -800,24 +937,25 @@
 		margin-left: -13px;
 		border-radius: 0.3rem;
 		background: #6cf;
-		box-shadow: 0 0 8px rgba(100, 200, 255, 0.4);
+		box-shadow: 0 0 4px rgba(100, 200, 255, 0.4);
 		transition: background 0.1s ease;
+		contain: layout paint;
 	}
 
 	.note.good {
 		background: #3c8;
-		box-shadow: 0 0 8px rgba(60, 220, 140, 0.5);
+		box-shadow: 0 0 4px rgba(60, 220, 140, 0.5);
 	}
 
 	.note.perfect {
 		background: #4f7;
-		box-shadow: 0 0 16px rgba(80, 255, 150, 0.9);
+		box-shadow: 0 0 8px rgba(80, 255, 150, 0.9);
 		animation: pop 0.28s ease;
 	}
 
 	.note.off {
 		background: #f90;
-		box-shadow: 0 0 8px rgba(255, 150, 0, 0.4);
+		box-shadow: 0 0 4px rgba(255, 150, 0, 0.4);
 	}
 
 	.note.miss {
@@ -842,13 +980,37 @@
 		font-size: 0.85rem;
 	}
 
+	/* The report floats over the frozen fullscreen highway rather than pushing it
+	   out of flow, so a finished lesson never reflows the page (kills the CLS jump). */
 	.report {
-		margin-top: 1.5rem;
-		max-width: 500px;
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 60;
+		width: min(500px, calc(100vw - 2rem));
+		max-height: 90vh;
+		overflow: auto;
 		padding: 1rem 1.25rem;
 		border: 1px solid #2a2a3a;
 		border-radius: 0.5rem;
 		background: #16162a;
+		box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+	}
+
+	.report-actions {
+		display: flex;
+		gap: 0.6rem;
+	}
+
+	.done {
+		background: #333;
+		color: #ddd;
+		border: 1px solid #555;
+		border-radius: 0.3rem;
+		font-weight: bold;
+		padding: 0.4em 0.9em;
+		cursor: pointer;
 	}
 
 	.report h2 {
