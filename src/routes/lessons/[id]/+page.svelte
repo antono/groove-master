@@ -75,41 +75,53 @@
 
 	let lessons: Lesson[] = $state([]);
 	let selected: Lesson | null = $state(null);
+	// Ids the student has earned. The first lesson is always open; each next one
+	// opens when its predecessor is cleared one rung above its base (see maybeUnlock).
+	let unlockedLessons = $state(new Set<string>());
 	let parsed: ParsedMidi | null = $state(null);
 	let lanes: number[] = $state([]);
 	let drumNames = $state(new Map<number, string>());
 
-	// Query params tune a lesson without changing it: /lessons/1.2?bpm=90.
-	// Anything numeric is clamped to the transport's usable range; junk is ignored
-	// so a bad link still plays the lesson at its own tempo.
-	const BPM_MIN = 40;
-	const BPM_MAX = 240;
-	const bpmParam = $derived.by(() => {
-		const raw = page.url.searchParams.get('bpm');
-		if (!raw) return null;
-		const n = Number(raw);
-		if (!Number.isFinite(n)) return null;
-		return Math.min(BPM_MAX, Math.max(BPM_MIN, Math.round(n)));
+	// Tempo is a ladder, not a free dial: each lesson ships a base BPM (its own
+	// `bpm`, 60 for the early lessons) and every rung above is +10. The base is
+	// unlocked from the start; each higher rung unlocks only once the student clears
+	// the rung below it without skipping a note — so speed is earned, never just set.
+	const BPM_STEP = 10;
+	const LOCKED_AHEAD = 3; // locked rungs shown past the frontier before the ellipsis
+
+	let baseBpm = $state(60); // the lesson's own tempo, the ladder's bottom rung
+	// Highest rung unlocked so far, restored per lesson. Never below the base.
+	let unlockedBpm = $state(60);
+	// The rung currently chosen to play. Always a rung between base and unlockedBpm.
+	let selectedBpm = $state(60);
+
+	// The tempo everything (scroll, scheduler, scoring) runs at.
+	const bpm = $derived(selectedBpm);
+
+	// Rungs to show: every unlocked one, plus the next locked rung as the target to
+	// aim for. Clearing the top rung reveals a new locked one, so the ladder climbs
+	// as far as the student can push it.
+	const tiers = $derived.by(() => {
+		const rungs: number[] = [];
+		const top = unlockedBpm + LOCKED_AHEAD * BPM_STEP;
+		for (let v = baseBpm; v <= top; v += BPM_STEP) rungs.push(v);
+		return rungs;
 	});
 
-	let lessonBpm = $state(60); // tempo the lesson ships with, from the manifest
+	// A rung the student has not earned yet.
+	const isLocked = (v: number) => v > unlockedBpm;
+	// There is a freshly unlocked, faster rung sitting above the current choice — the
+	// cue to climb. Drives both the "Increase BPM" hint and the glow on that rung.
+	const canIncrease = $derived(selectedBpm < unlockedBpm);
 
-	// What "reset" goes back to: the lesson's own tempo, or the ?bpm= override if
-	// the link carried one.
-	const defaultBpm = $derived(bpmParam ?? lessonBpm);
-
-	// The tempo this lesson was last practised at, restored on load. Saved per
-	// lesson, never globally: 1.1 at 120 says nothing about where 2.2 should sit,
-	// and a tempo that leaked across lessons would drop the student into a speed
-	// they never chose for the pattern in front of them.
-	let savedBpm = $state<number | null>(null);
-
-	// Slider position for this visit. null = "wherever the saved/default tempo is".
-	let bpmChoice = $state<number | null>(null);
-
-	// The tempo everything (scroll, scheduler, scoring) runs at. An explicit
-	// ?bpm= outranks the remembered one — the link is the more deliberate signal.
-	const bpm = $derived(bpmChoice ?? bpmParam ?? savedBpm ?? lessonBpm);
+	// The lesson that follows this one in the curriculum order, and whether it has
+	// been earned yet — the "Next lesson →" button appears only once it is unlocked.
+	const nextLesson = $derived.by(() => {
+		if (!selected) return null;
+		const i = lessons.findIndex((l) => l.id === selected!.id);
+		return i >= 0 && i + 1 < lessons.length ? lessons[i + 1] : null;
+	});
+	const nextUnlocked = $derived(!!nextLesson && unlockedLessons.has(nextLesson.id));
 
 	let playing = $state(false);
 	let paused = $state(false); // transport frozen mid-lesson; highway stays up
@@ -247,9 +259,11 @@
 	async function selectLesson(lesson: Lesson) {
 		stop();
 		selected = lesson;
-		lessonBpm = lesson.bpm;
-		bpmChoice = null;
-		savedBpm = readSavedBpm(lesson.id);
+		// The manifest's BPM is the ladder's base; a stored unlock can only sit above
+		// it, and the chosen rung is clamped into the unlocked range.
+		baseBpm = lesson.bpm;
+		unlockedBpm = Math.max(baseBpm, readUnlocked(lesson.id) ?? baseBpm);
+		selectedBpm = Math.min(unlockedBpm, Math.max(baseBpm, readSelected(lesson.id) ?? unlockedBpm));
 		report = null;
 		status = 'Loading ' + lesson.name + '…';
 		try {
@@ -492,52 +506,94 @@
 
 	// Tempo is chosen before a run, never during one: the scroll, the scheduler and
 	// the scoring window all derive from `bpm`, so moving it mid-flight would shift
-	// the segment the compositor is already animating. The slider lives on the
+	// the segment the compositor is already animating. The ladder lives on the
 	// resting page only, and stopping Listen keeps a preview from being split
-	// across two tempos.
-	function setBpm(value: number) {
+	// across two tempos. A locked rung cannot be chosen — it must be earned first.
+	function selectTier(value: number) {
+		if (isLocked(value)) return;
 		stopDemo();
-		bpmChoice = Math.min(BPM_MAX, Math.max(BPM_MIN, Math.round(value)));
-		writeSavedBpm(bpmChoice);
+		selectedBpm = value;
+		writeSelected(value);
 	}
 
-	function resetBpm() {
-		stopDemo();
-		bpmChoice = null;
-		savedBpm = null;
-		writeSavedBpm(null);
+	// Climb one rung and run again — the natural next move after a clean run has
+	// unlocked a faster tempo. Offered on the result screen beside Try again / Done.
+	function increaseAndPlay() {
+		selectTier(Math.min(unlockedBpm, selectedBpm + BPM_STEP));
+		void play();
 	}
 
-	// ---- remembered tempo -------------------------------------------------
+	// A clean run — every target hit — at the top unlocked rung earns the next one.
+	// Clearing one rung above the base also opens the following lesson (button next
+	// to Play). Only the frontier advances: replaying an easier rung changes nothing.
+	function maybeUnlock(r: Report) {
+		if (!selected || r.total === 0 || r.miss > 0) return;
+		if (selectedBpm !== unlockedBpm) return;
+		unlockedBpm = selectedBpm + BPM_STEP;
+		writeUnlocked(selected.id, unlockedBpm);
+		if (selectedBpm >= baseBpm + BPM_STEP && nextLesson) unlockLesson(nextLesson.id);
+	}
+
+	// ---- earned progress (localStorage) -----------------------------------
 	//
-	// localStorage, not the stats database: this is a one-number preference read
-	// synchronously while the lesson page is building itself, and IndexedDB would
-	// hand it back a frame or two later — after the slider had already painted at
-	// the wrong tempo.
+	// localStorage, not the stats database: these are read synchronously while the
+	// page builds itself, and IndexedDB would hand them back a frame or two later —
+	// after the ladder had already painted with everything locked.
 
-	const bpmKey = (lessonId: string) => STORAGE_PREFIX + 'bpm:' + lessonId;
+	const unlockedKey = (lessonId: string) => STORAGE_PREFIX + 'unlocked:' + lessonId;
+	const selectedKey = (lessonId: string) => STORAGE_PREFIX + 'tier:' + lessonId;
+	const LESSONS_KEY = STORAGE_PREFIX + 'lessons-unlocked';
 
-	function readSavedBpm(lessonId: string): number | null {
+	function readRung(key: string): number | null {
 		try {
-			const raw = localStorage.getItem(bpmKey(lessonId));
+			const raw = localStorage.getItem(key);
 			if (raw == null) return null;
 			const n = Number(raw);
-			// Junk or an out-of-range leftover falls back to the lesson's own tempo
-			// rather than pinning the slider somewhere it cannot represent.
-			if (!Number.isFinite(n) || n < BPM_MIN || n > BPM_MAX) return null;
-			return Math.round(n);
+			if (!Number.isFinite(n) || n <= 0) return null;
+			// Snap to the ladder in case an old value drifted off a rung.
+			return Math.round(n / BPM_STEP) * BPM_STEP;
 		} catch {
-			return null; // no storage (private mode) — the lesson tempo still works
+			return null; // no storage (private mode) — the base tempo still works
 		}
 	}
 
-	function writeSavedBpm(value: number | null) {
+	const readUnlocked = (lessonId: string) => readRung(unlockedKey(lessonId));
+	const readSelected = (lessonId: string) => readRung(selectedKey(lessonId));
+
+	function writeUnlocked(lessonId: string, value: number) {
+		try {
+			localStorage.setItem(unlockedKey(lessonId), String(value));
+		} catch {
+			// Storage full or blocked — progress just will not be remembered.
+		}
+	}
+
+	function writeSelected(value: number) {
 		if (!selected) return;
 		try {
-			if (value == null) localStorage.removeItem(bpmKey(selected.id));
-			else localStorage.setItem(bpmKey(selected.id), String(value));
+			localStorage.setItem(selectedKey(selected.id), String(value));
 		} catch {
-			// Storage full or blocked — the tempo just will not be remembered.
+			// Storage full or blocked — the chosen rung just will not be remembered.
+		}
+	}
+
+	function readUnlockedLessons(): Set<string> {
+		try {
+			const raw = localStorage.getItem(LESSONS_KEY);
+			const ids = raw ? JSON.parse(raw) : [];
+			return new Set(Array.isArray(ids) ? ids.filter((i) => typeof i === 'string') : []);
+		} catch {
+			return new Set();
+		}
+	}
+
+	function unlockLesson(lessonId: string) {
+		if (unlockedLessons.has(lessonId)) return;
+		unlockedLessons = new Set([...unlockedLessons, lessonId]);
+		try {
+			localStorage.setItem(LESSONS_KEY, JSON.stringify([...unlockedLessons]));
+		} catch {
+			// Storage full or blocked — the unlock just will not persist.
 		}
 	}
 
@@ -620,6 +676,7 @@
 		// throws on those.
 		const built = buildReport();
 		report = built;
+		maybeUnlock(built);
 		void logSession(built);
 		beatPos = parsed ? parsed.lengthBeats : 0;
 		updateStrip();
@@ -855,6 +912,7 @@
 			dpr = window.devicePixelRatio || 1;
 		};
 		measure();
+		unlockedLessons = readUnlockedLessons();
 		window.addEventListener('resize', measure);
 		document.addEventListener('visibilitychange', handleVisibility);
 		void loadCatalogue();
@@ -920,25 +978,36 @@
 {#if !inSession}
 	<div class="launch">
 		<button class="start-btn play" onclick={() => play()} disabled={!parsed}>▶ Play</button>
-		<div class="tempo-set">
-			<label class="tempo" for="tempo">{bpm} BPM</label>
-			<input
-				id="tempo"
-				class="tempo-range"
-				type="range"
-				min={BPM_MIN}
-				max={BPM_MAX}
-				step="1"
-				value={bpm}
-				aria-label="Tempo in beats per minute"
-				oninput={(e) => setBpm(e.currentTarget.valueAsNumber)}
-			/>
-			{#if bpm !== defaultBpm}
-				<button class="tempo-reset" onclick={resetBpm}>reset to {defaultBpm}</button>
-			{:else if bpmParam != null && bpmParam !== lessonBpm}
-				<span class="tempo-note">· lesson default {lessonBpm}</span>
-			{/if}
+
+		<div class="ladder" role="group" aria-label="Tempo (beats per minute)">
+			<span class="rung label">BPM</span>
+			{#each tiers as tier (tier)}
+				<button
+					class="rung"
+					class:selected={tier === selectedBpm}
+					class:locked={isLocked(tier)}
+					class:glow={tier === unlockedBpm && canIncrease}
+					onclick={() => selectTier(tier)}
+					disabled={isLocked(tier)}
+					aria-pressed={tier === selectedBpm}
+					title={isLocked(tier) ? `Play ${tier - BPM_STEP} cleanly to unlock` : `${tier} BPM`}
+				>
+					{#if tier === unlockedBpm && canIncrease}
+						<span class="increase-hint">Increase BPM</span>
+					{/if}
+					{#if isLocked(tier)}
+						<span class="lock" aria-hidden="true">🔒</span>
+					{:else}
+						{tier}
+					{/if}
+				</button>
+			{/each}
+			<span class="rung ellipsis" aria-hidden="true">…</span>
 		</div>
+
+		{#if nextUnlocked && nextLesson}
+			<a class="next-lesson" href="{base}/lessons/{nextLesson.id}">Next lesson →</a>
+		{/if}
 	</div>
 
 	{#if status}<p class="warn">{status}</p>{/if}
@@ -1031,6 +1100,11 @@
 			</table>
 			<div class="report-actions">
 				<button class="play" onclick={() => play()}>Try again</button>
+				{#if canIncrease}
+					<button class="increase-btn" onclick={increaseAndPlay}>
+						Increase BPM → {Math.min(unlockedBpm, selectedBpm + BPM_STEP)}
+					</button>
+				{/if}
 				<button class="done" onclick={exitReport}>Done</button>
 			</div>
 		</div>
@@ -1113,58 +1187,168 @@
 		color: var(--gold);
 	}
 
+	/* Play, the tempo ladder and Next lesson share one row and one height, so the
+	   rungs read as squares sitting flush beside the buttons. */
 	.launch {
+		--ctl-h: 3.1rem;
 		display: flex;
 		align-items: center;
-		gap: 1rem;
+		gap: 0.75rem;
 		flex-wrap: wrap;
-		margin-bottom: 0.5rem;
+		margin: 2rem 0 0.5rem;
 	}
 
 	/* Tempo picker — only on the resting page, so a run can never change tempo
-	   underneath itself. */
-	.tempo-set {
+	   underneath itself. The rungs form one connected segmented control: a leading
+	   "BPM" label, every reachable rung, three locked ones ahead, then an ellipsis
+	   standing in for the climb beyond. Only the group's outer corners are rounded;
+	   the rungs share hairline dividers. A locked rung must be earned by clearing the
+	   one below it without skipping a note. */
+	.ladder {
+		display: flex;
+		align-items: stretch;
+		height: var(--ctl-h);
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius-sm);
+	}
+
+	.rung {
+		position: relative;
+		min-width: var(--ctl-h);
+		flex: 0 0 auto;
 		display: flex;
 		align-items: center;
-		gap: 0.6rem;
-		flex-wrap: wrap;
-	}
-
-	.tempo {
-		min-width: 5.5rem;
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
-		color: var(--gold);
-	}
-
-	.tempo-range {
-		width: 11rem;
-		accent-color: var(--gold);
-		cursor: pointer;
-	}
-
-	.tempo-note {
-		color: var(--text-faint);
-		font-family: var(--font-mono);
-		font-size: 0.85rem;
-	}
-
-	.tempo-reset {
-		padding: 0.2em 0.6em;
-		background: transparent;
-		border: 1px solid var(--border-strong);
-		border-radius: 0.3rem;
+		justify-content: center;
+		padding: 0 0.35rem;
+		background: var(--surface-2);
+		border: none;
+		border-right: 1px solid var(--border-strong);
+		border-radius: 0;
 		color: var(--text-muted);
-		font-size: 0.78rem;
+		font-family: var(--font-mono);
+		font-size: 0.95rem;
 		cursor: pointer;
+		transition:
+			color 120ms ease,
+			background 120ms ease;
 	}
 
-	.tempo-reset:hover {
+	/* Only the group's outer corners are rounded — round the end segments to match
+	   the container so a coloured rung never squares off a corner. */
+	.rung:first-child {
+		border-top-left-radius: var(--radius-sm);
+		border-bottom-left-radius: var(--radius-sm);
+	}
+
+	.rung:last-child {
+		border-right: none;
+		border-top-right-radius: var(--radius-sm);
+		border-bottom-right-radius: var(--radius-sm);
+	}
+
+	/* The "BPM" caption and the trailing ellipsis are read-outs, not controls. */
+	.rung.label,
+	.rung.ellipsis {
+		cursor: default;
+		background: var(--surface);
+		color: var(--text-faint);
+		font-size: 0.75rem;
+		letter-spacing: 0.04em;
+	}
+
+	.rung.ellipsis {
+		font-size: 1rem;
+	}
+
+	.rung:not(.locked):not(.label):not(.ellipsis):hover {
+		color: var(--text);
+		background: var(--surface-3, var(--border));
+	}
+
+	.rung.selected {
+		color: #1a1505;
+		background: var(--gold);
+		font-weight: 700;
+	}
+
+	.rung.locked {
+		cursor: not-allowed;
+		color: var(--text-faint);
+	}
+
+	.rung .lock {
+		font-size: 0.75rem;
+		line-height: 1;
+	}
+
+	/* The freshly unlocked rung pulses gold until the student climbs to it. A
+	   background pulse (not an outer glow) so the clipped segmented group shows it. */
+	.rung.glow {
+		color: var(--gold);
+		animation: rung-glow 1.2s ease-in-out infinite;
+	}
+
+	@keyframes rung-glow {
+		0%,
+		100% {
+			background: var(--surface-2);
+		}
+		50% {
+			background: color-mix(in srgb, var(--gold) 32%, var(--surface-2));
+		}
+	}
+
+	/* A callout that sits above the freshly unlocked rung and points down at it, so
+	   "Increase BPM" is tied to the rung to climb to — not floating by the buttons. */
+	.increase-hint {
+		position: absolute;
+		bottom: calc(100% + 8px);
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 0.3em 0.6em;
+		border-radius: var(--radius-sm);
+		background: var(--gold);
+		color: #1a1505;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		white-space: nowrap;
+		pointer-events: none;
+	}
+
+	/* Little downward arrow joining the callout to the rung. */
+	.increase-hint::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 5px solid transparent;
+		border-top-color: var(--gold);
+	}
+
+	.next-lesson {
+		display: inline-flex;
+		align-items: center;
+		height: var(--ctl-h);
+		padding: 0 1.1rem;
+		border-radius: var(--radius-sm);
+		background: var(--surface-2);
+		border: 1px solid var(--border-strong);
+		color: var(--text);
+		font-size: 0.95rem;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	.next-lesson:hover {
 		border-color: var(--gold);
 		color: var(--gold);
 	}
 
 	.play {
+		height: var(--ctl-h, auto);
+		padding: 0.5em 1.5rem;
 		background: #2a7;
 		color: #fff;
 		border: 1px solid #185;
@@ -1389,6 +1573,22 @@
 		cursor: pointer;
 	}
 
+	/* Climb-a-rung shortcut on the result screen — gold, so it reads as the reward
+	   for a clean run rather than just another neutral action. */
+	.increase-btn {
+		background: var(--gold);
+		color: #1a1505;
+		border: 1px solid var(--gold);
+		border-radius: 0.3rem;
+		font-weight: bold;
+		padding: 0.4em 0.9em;
+		cursor: pointer;
+	}
+
+	.increase-btn:hover {
+		background: #f6cd5e;
+	}
+
 	.report h2 {
 		margin: 0;
 		font-size: 1.2rem;
@@ -1495,9 +1695,7 @@
 	}
 
 	.start-btn {
-		padding: 1em 2em;
-		font-size: 1.3rem;
+		font-size: 1.15rem;
 		cursor: pointer;
-		margin-top: 2rem;
 	}
 </style>
