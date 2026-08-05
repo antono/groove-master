@@ -10,6 +10,10 @@ This file credits each source, what was taken, its license, and the authors.
 
 - **Samples taken:** every GM percussion note (MIDI 35–70) of all 12 kits,
   rendered to `static/drums/kit<N>/<note>.oga` via `scripts/render-drums.py`.
+- **Not in the SoundFont:** three notes have no key zone and render as silence, so
+  they are derived from other samples in the same bank rather than taken from it —
+  47 "LoMid Tom" (45 Lo Tom, resampled up two semitones), 68 "Lo Agogo" (67 Hi
+  Agogo, down a major third), and 39 "Hand Clap" on kits 7–12 (kit 6's clap).
 - **Authors:** lukinhas, TEC Again.
 - **Source file:** `soundfonts/Perfect_Drums.sf2`.
 - **License:** not specified by the SoundFont (community/GM percussion bank).

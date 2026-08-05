@@ -3,6 +3,68 @@
 
 import { base } from "$app/paths";
 
+/** GM percussion notes rendered for every kit — see scripts/render-drums.py. */
+export const DRUM_NOTES: number[] = Array.from(
+  { length: 36 },
+  (_, i) => 35 + i,
+);
+
+export function drumUrl(kit: number, note: number) {
+  return `${base}/drums/kit${kit}/${note}.oga`;
+}
+
+/**
+ * Wait until a service worker is controlling the page, so fetches actually
+ * reach it and get stored.
+ *
+ * On a first visit the document loads before the worker exists; it installs,
+ * then calls clients.claim(), which fires `controllerchange`. Anything fetched
+ * before that bypasses the worker entirely and is downloaded for nothing. The
+ * timeout covers browsers with no service worker at all — warming still fills
+ * the HTTP cache there, so it is worth doing anyway.
+ */
+async function whenCaching(timeoutMs = 5000): Promise<void> {
+  if (!("serviceWorker" in navigator) || navigator.serviceWorker.controller)
+    return;
+  await new Promise<void>((resolve) => {
+    const done = () => resolve();
+    navigator.serviceWorker.addEventListener("controllerchange", done, {
+      once: true,
+    });
+    setTimeout(done, timeoutMs);
+  });
+}
+
+/**
+ * Pull a whole kit into the service-worker cache (~700 KB).
+ *
+ * Fetch only — no decoding, so this needs no AudioContext and therefore no
+ * user gesture, and can run on page load. Once the service worker has them,
+ * later loads and kit switches are served locally.
+ */
+export async function warmKit(kit: number, concurrency = 6): Promise<void> {
+  await whenCaching();
+  const queue = [...DRUM_NOTES];
+  const canCheck = typeof caches !== "undefined";
+  const worker = async () => {
+    for (let note = queue.pop(); note !== undefined; note = queue.pop()) {
+      const url = drumUrl(kit, note);
+      try {
+        // Only fetch what isn't stored yet, so a repeat visit does no work at
+        // all. caches.match searches every cache, so this needs no cache name.
+        if (canCheck && (await caches.match(url))) continue;
+        const res = await fetch(url);
+        // Read the body out: an unread response can be cancelled before the
+        // service worker finishes writing it.
+        await res.arrayBuffer();
+      } catch {
+        // Offline or 404 — nothing to warm, the normal load path still tries.
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: concurrency }, worker));
+}
+
 export class DrumPlayer {
   private cache = new Map<string, AudioBuffer>();
   private pending = new Map<string, Promise<AudioBuffer | null>>();
@@ -17,7 +79,7 @@ export class DrumPlayer {
     if (existing) return existing;
     const pending = (async () => {
       try {
-        const res = await fetch(`${base}/drums/kit${kit}/${note}.oga`);
+        const res = await fetch(drumUrl(kit, note));
         const buf = await this.ctx.decodeAudioData(await res.arrayBuffer());
         this.cache.set(key, buf);
         return buf;

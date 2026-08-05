@@ -34,6 +34,19 @@ in
     opencode
     typescript-language-server
     vscode-langservers-extracted
+
+    # Sample pipeline — scripts/render-{drums,bass}.py shell out to these.
+    python3
+    fluidsynth # renders the .sf2 SoundFonts to one-shots
+    ffmpeg # pitch-shifts stand-ins for GM notes the .sf2 leaves unmapped
+
+    # Inspecting what came out. macOS has no Ogg Vorbis decoder, so afinfo and
+    # QuickTime are both useless on static/**/*.oga:
+    #   ogginfo <f>            bitrate, duration, channels
+    #   sox <f> -n stat        peak/RMS — catches a silent render
+    #   ffmpeg -i <f> -af volumedetect -f null -
+    vorbis-tools
+    sox
   ];
 
   scripts.dev = {
@@ -56,6 +69,16 @@ in
     description = "Lint SvelteKit app";
   };
 
+  scripts.audit-samples = {
+    exec = "python3 scripts/render-drums.py --audit";
+    description = "Check static/drums for silently-rendered samples";
+  };
+
+  scripts.repair-samples = {
+    exec = "python3 scripts/render-drums.py --repair";
+    description = "Substitute silent samples in place (needs ffmpeg, not the .sf2)";
+  };
+
   enterShell = ''
     ln -sfT ${mcpConfig} "${config.devenv.root}/.mcp.json"
     echo "✦ SvelteKit dev environment ready"
@@ -64,6 +87,7 @@ in
     echo "  check – type-check"
     echo "  lint  – run linter"
     echo "  mcp   – chrome-devtools (.mcp.json)"
+    echo "  audit-samples / repair-samples – drum sample health"
   '';
 
   processes.dev.exec = "pnpm dev --host";

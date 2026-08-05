@@ -2,9 +2,11 @@
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 
+	import { STORAGE_PREFIX } from '$lib/config';
+	import { DrumPlayer } from '$lib/drums';
+
 	const GRID = 4;
 	const TOTAL = GRID * GRID;
-	const STORAGE_PREFIX = 'padrill:';
 
 	// Grid cell -> GM drum note (the *sound*). Bottom row = groove core,
 	// escalating to toms / cymbals / aux toward the top. See scripts/render-drums.py.
@@ -28,6 +30,10 @@
 	let soundNotes: number[] = $state([...DEFAULT_SOUND]);
 	let activeNotes: Set<number> = $state(new Set());
 	let audioCtx: AudioContext | null = null;
+	// Reactive so the preload effect below re-runs the moment onMount supplies a
+	// player, rather than silently doing nothing on its first pass.
+	let player: DrumPlayer | null = $state(null);
+	let warming = $state(false);
 
 	// Drum kits + drum catalogue, loaded from the render manifest.
 	let kits: Kit[] = $state([]);
@@ -42,43 +48,30 @@
 
 	// --- sample playback -------------------------------------------------
 
-	const bufferCache = new Map<string, AudioBuffer>();
-
-	async function loadBuffer(kit: number, note: number): Promise<AudioBuffer | null> {
-		const key = kit + ':' + note;
-		const cached = bufferCache.get(key);
-		if (cached) return cached;
-		if (!audioCtx) return null;
-		try {
-			const res = await fetch(`${base}/drums/kit${kit}/${note}.oga`);
-			const buf = await audioCtx.decodeAudioData(await res.arrayBuffer());
-			bufferCache.set(key, buf);
-			return buf;
-		} catch {
-			return null;
-		}
-	}
-
-	function fireBuffer(buf: AudioBuffer) {
-		if (!audioCtx) return;
-		const src = audioCtx.createBufferSource();
-		src.buffer = buf;
-		src.connect(audioCtx.destination);
-		src.start();
-	}
-
-	function playCell(idx: number) {
+	async function playCell(idx: number) {
 		const note = soundNotes[idx];
-		if (note == null) return;
-		const cached = bufferCache.get(selectedKit + ':' + note);
-		if (cached) fireBuffer(cached);
-		else loadBuffer(selectedKit, note).then((b) => b && fireBuffer(b));
+		const kit = selectedKit;
+		if (note == null || !player) return;
+		// Awaiting the shared load joins whatever the preload already has in
+		// flight instead of starting a second fetch+decode of the same file —
+		// that duplicate was what made a fresh kit's first hit arrive late.
+		await player.load(kit, note);
+		// Dropped rather than fired if the kit changed while this was loading,
+		// so a switch can't be followed by the previous kit's sound.
+		if (kit === selectedKit) player.play(kit, note);
 	}
 
-	// Preload the 16 assigned drums whenever the kit or layout changes.
+	// Warm the 16 assigned drums whenever the kit, the layout, or the player
+	// changes, so pads are instant once this settles.
 	$effect(() => {
 		const kit = selectedKit;
-		for (const note of new Set(soundNotes)) loadBuffer(kit, note);
+		const notes = new Set(soundNotes);
+		if (!player) return;
+		warming = true;
+		player.preload(kit, notes).then(() => {
+			// A later switch owns the flag by then; don't clear someone else's.
+			if (kit === selectedKit) warming = false;
+		});
 	});
 
 	// --- MIDI ------------------------------------------------------------
@@ -164,6 +157,7 @@
 
 	onMount(() => {
 		audioCtx = new AudioContext();
+		player = new DrumPlayer(audioCtx);
 		window.addEventListener('pointerdown', unlockAudio, { once: true });
 		window.addEventListener('keydown', unlockAudio, { once: true });
 		loadManifest();
@@ -297,6 +291,10 @@
 		{/each}
 	</select>
 
+	{#if warming}
+		<span class="warming">loading samples…</span>
+	{/if}
+
 	<button onclick={startCapture} disabled={capturing}>Capture pads</button>
 
 	{#if selectedId && hasSavedConfig(selectedId) && !hasSaved}
@@ -374,6 +372,12 @@
 	.status {
 		font-size: 0.9rem;
 		color: var(--text-muted);
+	}
+
+	.warming {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+		font-style: italic;
 	}
 
 	.grid {

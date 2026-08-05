@@ -1,10 +1,27 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
 	import favicon from '$lib/assets/favicon.svg';
 	import { base } from '$app/paths';
 	import { page } from '$app/state';
 
+	import { savedKit } from '$lib/config';
+	import { warmKit } from '$lib/drums';
+
 	let { children } = $props();
+
+	// Pull the current kit's samples into the service-worker cache while the page
+	// is idle, so the first pad press is never waiting on a download. After the
+	// first visit these are all cache hits, so it costs nothing to repeat.
+	onMount(() => {
+		const warm = () => warmKit(savedKit());
+		if (typeof requestIdleCallback === 'function') {
+			const handle = requestIdleCallback(warm, { timeout: 3000 });
+			return () => cancelIdleCallback(handle);
+		}
+		const timer = setTimeout(warm, 1500);
+		return () => clearTimeout(timer);
+	});
 
 	const links = [
 		{ href: `${base}/lessons`, route: '/lessons', label: 'Lessons' },

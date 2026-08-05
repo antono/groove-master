@@ -36,9 +36,37 @@ drumming is supported.
 - `python3 scripts/render-drums.py` pre-renders each kit's drums to
   `static/drums/kit<N>/<note>.oga` plus `static/drums/manifest.json`
   (kits + drum catalogue). Re-run after changing the SoundFont or layout.
+- **Some GM notes have no key zone in the .sf2**, and fluidsynth renders those as
+  five seconds of silence while still exiting 0 — a pad that decodes fine and
+  plays nothing. So the script audits every render and fills silent ones from its
+  `FALLBACKS` table (a stand-in from another kit, or a neighbour note resampled
+  with ffmpeg); it exits non-zero if any file is still silent. Currently notes 39
+  (kits 7-12), 47 and 68 are covered this way.
+  - `audit-samples` (`--audit`) lists silent samples — no SoundFont needed.
+  - `repair-samples` (`--repair`) substitutes them in place; needs ffmpeg, but
+    still no SoundFont, so the shipped assets can be fixed without the 244 MB .sf2.
+- Sample levels in this SoundFont are uneven (-33 to -7.5 dBFS across a kit), so
+  when choosing a stand-in, match the level of its neighbours on the grid, not
+  just the nearest pitch.
 - The grid uses two mappings: **controller note → cell** (Capture) and
   **cell → GM drum note** (per-cell dropdown). Both are saved per device in
   `localStorage`.
+
+## Sample caching
+
+- `src/service-worker.ts` caches `**/*.oga` cache-first, so samples are kept on
+  the user's machine and a kit switch is instant after the first visit. The audio
+  is _not_ precached (~10 MB); `serviceWorker.files` in `vite.config.ts` keeps it
+  out of the `$service-worker` manifest.
+- `warmKit()` in `$lib/drums.ts` pulls the saved kit (~700 KB) into that cache
+  from `+layout.svelte` on idle, skipping anything already stored. It waits for
+  the worker to control the page first — on a first visit the document loads
+  before the worker exists, and fetches made before `clients.claim()` bypass it
+  and are downloaded for nothing.
+- Samples live at stable URLs, so a re-render only reaches people when the
+  version-keyed cache is replaced on activate. Verify with
+  `pnpm build && pnpm preview`; in dev `build` is empty so only the runtime
+  audio caching is exercised.
 
 ## Lessons
 
