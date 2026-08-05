@@ -3,7 +3,7 @@
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
 	import { onDestroy, onMount, tick } from 'svelte';
-	import { parseMidi, type ParsedMidi, type BackingTrack } from '$lib/midi';
+	import { parseMidi, COUNT_IN_BEATS, type ParsedMidi, type BackingTrack, type MidiNote } from '$lib/midi';
 	import { DrumPlayer } from '$lib/drums';
 	import { Sampler } from '$lib/sampler';
 	import LessonChart from '$lib/lesson-chart.svelte';
@@ -22,7 +22,10 @@
 	const PX_PER_BEAT = 280;
 	const LANE_H = 56; // resting lane height; grows to fill the viewport while playing
 	const BEATS_PER_BAR = 4;
-	const COUNT_IN = BEATS_PER_BAR; // one empty bar before the pattern
+	// One bar of lead-in before the pattern. It is no longer empty: the lesson MIDI
+	// carries a "count-in" track whose clicks live in exactly this bar, so the
+	// constant is shared with the parser that shifts them onto the beat axis.
+	const COUNT_IN = COUNT_IN_BEATS;
 	const MATCH_WINDOW_BEATS = 0.4; // how far a hit may be from a target to count at all
 	// Beginner-friendly timing grades (|error| in ms):
 	const PERFECT_MS = 25; // exact  -> green, pops
@@ -44,6 +47,11 @@
 	// instrument plays is whatever the lesson MIDI names in its track ("bass:lately").
 	let backing: BackingTrack[] = $state([]);
 	let backingCursors: number[] = []; // per-track note pointer, advanced by the scheduler
+
+	// Count-in clicks, all at negative beats (beat 0 is the student's). Played on
+	// their own kit through the drum player, never shown and never scored.
+	let countIn: MidiNote[] = $state([]);
+	let countInCursor = 0;
 
 	// MIDI + the device's saved pad->drum mapping (from the Settings page).
 	let midiAccess: MIDIAccess | null = $state(null);
@@ -105,6 +113,9 @@
 
 	const laneName = (n: number) => drumNames.get(n) ?? String(n);
 	const laneRow = (n: number) => lanes.indexOf(n);
+	// Everything the drum player needs decoded before a run: the lesson's own pads
+	// plus the count-in click, which is no lane and so never appears in `lanes`.
+	const kitNotes = $derived([...lanes, ...countIn.map((n) => n.note)]);
 	const hasMapping = $derived(ctrlMap.size > 0);
 
 	// A "session" spans from play until the result screen is dismissed. The highway
@@ -152,7 +163,7 @@
 		player = new DrumPlayer(audioCtx);
 		backingPlayer = new Sampler(audioCtx);
 		void initMidi();
-		await player.preload(kit, lanes);
+		await player.preload(kit, kitNotes);
 		for (const t of backing) backingPlayer.preload(t.family, t.id, t.notes.map((n) => n.note));
 	}
 
@@ -219,10 +230,12 @@
 		lanes = [...new Set(parsed.notes.map((n) => n.note))].sort((a, b) => b - a);
 		backing = parsed.backing;
 		backingCursors = backing.map(() => 0);
+		countIn = parsed.countIn;
+		countInCursor = 0;
 		resetScoring();
 		beatPos = -COUNT_IN;
 		status = '';
-		player?.preload(kit, lanes);
+		player?.preload(kit, kitNotes);
 		for (const t of backing) backingPlayer?.preload(t.family, t.id, t.notes.map((n) => n.note));
 	}
 
@@ -368,6 +381,14 @@
 		// Queue backing (bass) notes up to the lookahead horizon, each scheduled at its
 		// exact audio time so bass timing is sample-accurate and frame-rate independent.
 		const horizon = beatPos + (SCHED_LOOKAHEAD_SEC * bpm) / 60;
+
+		// The count-in rides the same clock and the same lookahead, so the three
+		// clicks sit exactly one beat apart ahead of the student's first hit.
+		while (countInCursor < countIn.length && countIn[countInCursor].beat <= horizon) {
+			const click = countIn[countInCursor++];
+			player?.playAt(kit, click.note, Math.max(beatToAudioTime(click.beat), ctx.currentTime));
+		}
+
 		backing.forEach((track, ti) => {
 			let c = backingCursors[ti];
 			while (c < track.notes.length && track.notes[c].beat <= horizon) {
@@ -403,9 +424,10 @@
 		await enableAudio(); // no-op once audio is already up
 		stopDemo(); // the in-place preview and the real run never overlap
 		await audioCtx?.resume();
-		await player?.preload(kit, lanes);
+		await player?.preload(kit, kitNotes);
 		resetScoring();
 		backingCursors = backing.map(() => 0);
+		countInCursor = 0;
 		report = null;
 		beatPos = -COUNT_IN;
 		startBeat = -COUNT_IN;
@@ -487,9 +509,12 @@
 		await enableAudio();
 		if (!parsed || !audioCtx) return;
 		await audioCtx.resume();
-		await player?.preload(kit, lanes);
+		await player?.preload(kit, kitNotes);
 		demoDrumCursor = 0;
 		demoBackCursors = backing.map(() => 0);
+		// Listen skips the count-in and starts on beat 0 straight away: nobody is
+		// playing along, so a bar of clicks would just be a wait before the preview.
+		// Counting in belongs to Play, where it lines the student up.
 		demoStart = audioCtx.currentTime + 0.25; // brief lead-in so nothing clips
 		demoing = true;
 		demoSchedule();

@@ -8,6 +8,14 @@ Track roles are chosen by the track name:
   - "drums"        -> playable: shown on the highway and scored.
   - "family:id"    -> backing:  auto-played from static/<family>/<id>/<note>.oga
                       (e.g. "bass:lately"), never shown or scored.
+  - "count-in"     -> the stick count that leads the student in; audible but
+                      never shown or scored (see COUNT-IN RULE below).
+
+COUNT-IN RULE: every lesson must have three stick clicks before it starts, on the
+last three beats of the lead-in bar. Nothing clicks on the pattern's first beat —
+that one is the student's. build_lesson() adds the track to every lesson
+automatically, so a new entry in LESSONS gets it for free — do not hand-roll one
+per lesson, and do not remove it.
 
 Re-run after adding or editing a lesson:
   python3 scripts/make-lessons.py
@@ -22,8 +30,11 @@ OUT = os.path.join(ROOT, "static", "lessons")
 PPQ = 480
 BEATS_PER_BAR = 4
 
-# GM percussion notes used by the drum lessons.
-KICK, SNARE, CLOSED_HH = 36, 38, 42
+# GM percussion notes used by the drum lessons. The count-in clicks on the side
+# stick: a dry rim sound that cuts through a kit without being mistaken for one
+# of the pads the student is about to play. (GM 31 "Sticks" would read better
+# still, but render-drums.py only renders 35-70.)
+KICK, SNARE, CLOSED_HH, OPEN_HH, SIDE_STICK = 36, 38, 42, 46, 37
 
 
 def varint(n):
@@ -69,6 +80,21 @@ def bass_note(events, tick, note, dur=200):
     events.append((tick + dur, 0, bytes([0x80, note, 0])))
 
 
+def count_in_sticks():
+    """The stick count that leads the student in — three clicks, then silence.
+
+    Written in a lead-in bar of its own: beats 2, 3 and 4 of that bar click, and
+    the bar line that follows IS the pattern's first beat. The app plays this
+    track one bar early (it already holds an empty bar of lead-in before the
+    pattern), so the count runs "click, click, click" and the student's own first
+    hit lands on the empty down-beat that follows.
+    """
+    events = []
+    for beat in (1, 2, 3):  # the 4th beat is left silent — the down-beat is theirs
+        hit(events, beat * PPQ, SIDE_STICK)
+    return events, BEATS_PER_BAR * PPQ
+
+
 def quarter_kick(bars=4):
     """Kick on every beat — one limb, straight quarter notes."""
     events = []
@@ -104,6 +130,27 @@ def four_on_the_floor(bars=4):
             hit(events, base + beat * PPQ, SNARE)
         for eighth in range(BEATS_PER_BAR * 2):
             hit(events, base + eighth * (PPQ // 2), CLOSED_HH)
+    return events, bars * bar_ticks
+
+
+def disco_open_hats(bars=4):
+    """2.1's groove with the off-beat hats opened up — four pads.
+
+    Kick on every beat and snare on 2 & 4 are unchanged from four-on-the-floor;
+    the 8th-note hat line now splits across two pads, closed on the beats and
+    open on the "and"s, so the hat hand has to alternate instead of repeat.
+    """
+    events = []
+    bar_ticks = BEATS_PER_BAR * PPQ
+    eighth = PPQ // 2
+    for bar in range(bars):
+        base = bar * bar_ticks
+        for beat in range(BEATS_PER_BAR):
+            hit(events, base + beat * PPQ, KICK)
+            hit(events, base + beat * PPQ, CLOSED_HH)  # down-beat: closed
+            hit(events, base + beat * PPQ + eighth, OPEN_HH)  # "and": open
+        for beat in (1, 3):  # beats 2 and 4
+            hit(events, base + beat * PPQ, SNARE)
     return events, bars * bar_ticks
 
 
@@ -253,6 +300,40 @@ LESSONS = [
             "hand out and let the fingers bounce instead of pressing.",
         ],
     },
+    {
+        "id": "2.2",
+        "name": "2.2 — Disco Open Hats",
+        "bpm": 60,
+        "bars": 4,
+        "drums": disco_open_hats,
+        "bass": ("lately", octave_bass),
+        "summary": "Four-on-the-floor with the off-beats opened up: closed hat "
+        "on the beats, open hat on every \"and\".",
+        "description": "Lesson 2.1's groove, one pad wider. Kick still lands on "
+        "every beat and the snare still answers on 2 and 4, but the 8th-note "
+        "hat line now splits in two: closed hat on the numbers, open hat on "
+        "every \"and\". The same octave-bouncing bass runs underneath, "
+        "so only your part got harder — the hat hand has to move between "
+        "two pads instead of repeating one.",
+        "hints": [
+            "Four voices now. Give the two hats neighbouring pads on your weak "
+            "hand — index closed, middle open — with snare and kick "
+            "on the strong hand.",
+            "Drill the hat hand alone first: \"closed-open-closed-open\" "
+            "for a full bar, no kick, no snare. Only add the other hand once "
+            "that alternation runs without looking.",
+            "The open hat is a swing door, not a stab — let it ring into "
+            "the next closed hit instead of clipping it short.",
+            "Every open hat sits alone between two stacks — it is the only "
+            "moment nothing else fires. Use it to breathe and reset the hand.",
+            "Say \"boom-tss, bap-tss\" and keep the \"tss\" "
+            "louder than in 2.1 — if the open hats disappear, you are "
+            "landing on the closed pad twice.",
+            "Losing the alternation halfway through a bar means the hat hand is "
+            "leading with the wrong finger. Stop, reset on the next bar line, "
+            "start the pair from closed.",
+        ],
+    },
 ]
 
 
@@ -266,9 +347,12 @@ def build_lesson(lesson):
     ]
 
     drum_events, length = lesson["drums"](bars)
+    count_events, count_length = count_in_sticks()
     tracks = [
         build_track("tempo", [], length, meta=conductor_meta),
         build_track("drums", drum_events, length),
+        # Every lesson counts in — see COUNT-IN RULE at the top of this file.
+        build_track("count-in", count_events, count_length),
     ]
     if lesson.get("bass"):
         bass_id, builder = lesson["bass"]

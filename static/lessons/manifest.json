@@ -48,6 +48,23 @@
         "Sing it before you play it: \"boom-tick, bap-tick, boom-tick, bap-tick.\" If you can say it, your hands can find it.",
         "Missing hats usually means the wrist is tensing up. Shake the hand out and let the fingers bounce instead of pressing."
       ]
+    },
+    {
+      "id": "2.2",
+      "name": "2.2 — Disco Open Hats",
+      "file": "lesson-2.2.mid",
+      "bpm": 60,
+      "bars": 4,
+      "summary": "Four-on-the-floor with the off-beats opened up: closed hat on the beats, open hat on every \"and\".",
+      "description": "Lesson 2.1's groove, one pad wider. Kick still lands on every beat and the snare still answers on 2 and 4, but the 8th-note hat line now splits in two: closed hat on the numbers, open hat on every \"and\". The same octave-bouncing bass runs underneath, so only your part got harder — the hat hand has to move between two pads instead of repeating one.",
+      "hints": [
+        "Four voices now. Give the two hats neighbouring pads on your weak hand — index closed, middle open — with snare and kick on the strong hand.",
+        "Drill the hat hand alone first: \"closed-open-closed-open\" for a full bar, no kick, no snare. Only add the other hand once that alternation runs without looking.",
+        "The open hat is a swing door, not a stab — let it ring into the next closed hit instead of clipping it short.",
+        "Every open hat sits alone between two stacks — it is the only moment nothing else fires. Use it to breathe and reset the hand.",
+        "Say \"boom-tss, bap-tss\" and keep the \"tss\" louder than in 2.1 — if the open hats disappear, you are landing on the closed pad twice.",
+        "Losing the alternation halfway through a bar means the hat hand is leading with the wrong finger. Stop, reset on the next bar line, start the pair from closed."
+      ]
     }
   ]
 }

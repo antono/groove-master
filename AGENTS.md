@@ -77,6 +77,12 @@ drumming is supported.
   `hints` — the practice tips listed under the schematic.
 - Hints must not tell the student to change tempo: BPM is fixed per lesson and
   only overridable via `?bpm=`.
+- **Every lesson counts in**: three side-stick clicks on the last three beats of
+  the lead-in bar, with the pattern's first beat left silent for the student. It
+  ships as a `count-in` track in each MIDI, written in the lead-in bar the
+  highway already had; `parseMidi` shifts it to beats -3, -2, -1 and keeps it out
+  of the lanes, the chart and the scoring. `build_lesson` adds it to every
+  lesson, so new entries get it for free. Play counts in; Listen skips it.
 
 ## Bass samples (backing track)
 
