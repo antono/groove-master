@@ -53,6 +53,39 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "static", "lessons")
 
 
+PRINT_WIDTH = 80  # prettier's default
+
+
+def render(value, indent=0):
+    """JSON the way prettier writes it, so regenerating is never a diff.
+
+    `json.dump(indent=2)` explodes every array onto its own lines; prettier
+    keeps one on a single line when it fits inside the print width, so the two
+    disagree on `"prereq": ["kick-quarters"]` and the pre-commit hook rewrites
+    the file every run. Objects always expand — prettier does not join them
+    back up — so only arrays need the width test.
+    """
+    pad = " " * indent
+    inner = " " * (indent + 2)
+    if isinstance(value, dict):
+        if not value:
+            return "{}"
+        items = [
+            f"{inner}{json.dumps(k, ensure_ascii=False)}: {render(v, indent + 2)}"
+            for k, v in value.items()
+        ]
+        return "{\n" + ",\n".join(items) + f"\n{pad}}}"
+    if isinstance(value, list):
+        if not value:
+            return "[]"
+        flat = "[" + ", ".join(render(v) for v in value) + "]"
+        if "\n" not in flat and indent + len(flat) <= PRINT_WIDTH:
+            return flat
+        items = [f"{inner}{render(v, indent + 2)}" for v in value]
+        return "[\n" + ",\n".join(items) + f"\n{pad}]"
+    return json.dumps(value, ensure_ascii=False)
+
+
 def stage_dir(stage):
     return f"stage-{stage['number']:02d}-{stage['slug']}"
 
@@ -193,10 +226,7 @@ def main():
     ]
 
     with open(os.path.join(OUT, "manifest.json"), "w") as f:
-        # Trailing newline so the file matches what prettier (pre-commit) expects
-        # and regenerating never shows up as a diff.
-        json.dump({"stages": stages, "lessons": lessons}, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+        f.write(render({"stages": stages, "lessons": lessons}) + "\n")
 
     planned = sum(1 for _s, _m, e, _n in entries if e.get("planned"))
     print(f"wrote {len(lessons)} lesson(s) ({planned} planned) to {OUT}")
