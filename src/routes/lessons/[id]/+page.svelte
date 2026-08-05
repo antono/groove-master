@@ -88,6 +88,7 @@
 	// the rung below it without skipping a note — so speed is earned, never just set.
 	const BPM_STEP = 10;
 	const LOCKED_AHEAD = 3; // locked rungs shown past the frontier before the ellipsis
+	const NEXT_LESSON_BPM = 80; // finishing at or above this opens the next lesson
 
 	let baseBpm = $state(60); // the lesson's own tempo, the ladder's bottom rung
 	// Highest rung unlocked so far, restored per lesson. Never below the base.
@@ -523,15 +524,17 @@
 		void play();
 	}
 
-	// A clean run — every target hit — at the top unlocked rung earns the next one.
-	// Clearing one rung above the base also opens the following lesson (button next
-	// to Play). Only the frontier advances: replaying an easier rung changes nothing.
+	// Two things can be earned by finishing a run:
+	//  - the next rung, when the run was clean (no skipped note) at the top unlocked
+	//    rung — only the frontier advances, so replaying an easier rung does nothing;
+	//  - the next lesson, once the run was finished at NEXT_LESSON_BPM or faster.
 	function maybeUnlock(r: Report) {
-		if (!selected || r.total === 0 || r.miss > 0) return;
-		if (selectedBpm !== unlockedBpm) return;
-		unlockedBpm = selectedBpm + BPM_STEP;
-		writeUnlocked(selected.id, unlockedBpm);
-		if (selectedBpm >= baseBpm + BPM_STEP && nextLesson) unlockLesson(nextLesson.id);
+		if (!selected) return;
+		if (r.total > 0 && r.miss === 0 && selectedBpm === unlockedBpm) {
+			unlockedBpm = selectedBpm + BPM_STEP;
+			writeUnlocked(selected.id, unlockedBpm);
+		}
+		if (nextLesson && selectedBpm >= NEXT_LESSON_BPM) unlockLesson(nextLesson.id);
 	}
 
 	// ---- earned progress (localStorage) -----------------------------------
@@ -1105,6 +1108,9 @@
 						Increase BPM → {Math.min(unlockedBpm, selectedBpm + BPM_STEP)}
 					</button>
 				{/if}
+				{#if nextLesson && bpm >= NEXT_LESSON_BPM}
+					<a class="next-lesson" href="{base}/lessons/{nextLesson.id}">Next lesson →</a>
+				{/if}
 				<button class="done" onclick={exitReport}>Done</button>
 			</div>
 		</div>
@@ -1330,8 +1336,8 @@
 	.next-lesson {
 		display: inline-flex;
 		align-items: center;
-		height: var(--ctl-h);
-		padding: 0 1.1rem;
+		height: var(--ctl-h, auto);
+		padding: 0.5em 1.1rem;
 		border-radius: var(--radius-sm);
 		background: var(--surface-2);
 		border: 1px solid var(--border-strong);
