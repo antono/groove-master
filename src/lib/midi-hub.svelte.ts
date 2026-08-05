@@ -21,6 +21,7 @@ type Bluetooth = {
 
 export type MidiInputInfo = { id: string; name: string; manufacturer: string };
 type NoteListener = (note: number, velocity: number) => void;
+type MessageListener = (data: Uint8Array) => void;
 
 export class MidiHub {
   access = $state<MIDIAccess | null>(null);
@@ -31,6 +32,7 @@ export class MidiHub {
 
   #current: MIDIInput | null = null;
   #listeners = new Set<NoteListener>();
+  #messageListeners = new Set<MessageListener>();
 
   constructor() {
     if (typeof navigator !== "undefined") {
@@ -109,9 +111,23 @@ export class MidiHub {
     return () => this.#listeners.delete(fn);
   }
 
+  /**
+   * Subscribe to every message from the listened input, raw. Transport buttons
+   * are not always notes (CCs and single-byte System Real-Time are common), so
+   * capturing them needs the untouched bytes. Returns an unsubscribe fn.
+   */
+  onMessage(fn: MessageListener): () => void {
+    this.#messageListeners.add(fn);
+    return () => this.#messageListeners.delete(fn);
+  }
+
   #onMessage(event: MIDIMessageEvent) {
-    if (!event.data || event.data.length < 3) return;
-    const [status, note, velocity] = event.data;
+    const data = event.data;
+    if (!data || data.length === 0) return;
+    this.#messageListeners.forEach((fn) => fn(data));
+
+    if (data.length < 3) return;
+    const [status, note, velocity] = data;
     // note-on only (0x90 with non-zero velocity)
     if ((status & 0xf0) !== 0x90 || velocity === 0) return;
     this.#listeners.forEach((fn) => fn(note, velocity));

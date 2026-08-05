@@ -25,9 +25,20 @@ drumming is supported.
     gesture). MIDI access is never awaited: the permission prompt can stay pending
     indefinitely and must not hold up playback.
   - `?bpm=<40..240>` overrides the manifest tempo, e.g. `/lessons/1.2?bpm=90`.
-    There is no in-page tempo control; the effective BPM is shown next to Play and
-    in the transport HUD.
+    The effective BPM is shown next to Play and in the transport HUD.
+  - A **tempo slider** (40–240) sits next to Play and is where the run's BPM comes
+    from; it resets to the lesson's own tempo (or `?bpm=`) on every lesson load.
+    It exists only on the resting page: scroll, scheduler and scoring all derive
+    from `bpm`, so changing it mid-run would shift the segment the compositor is
+    already animating. Moving it also stops a running Listen preview.
 - `/settings` — pad grid, device mapping, kit choice. `/onboarding` — setup wizard.
+  - The wizard's last step captures the controller's **Play / Stop buttons**, so a
+    lesson can be started and paused from the hardware. Both are optional and
+    skippable. Buttons are not always notes — a transport section may send a CC or
+    a single-byte System Real-Time (`0xFA`/`0xFC`), so the binding stores whatever
+    the button emitted (`src/lib/transport-control.ts`) and `MidiHub.onMessage()`
+    exposes the raw stream alongside `onNote()`. On `/lessons/[id]`, Start also
+    resumes; Stop pauses, and ends the run on a second press.
 
 ## Drum samples
 
@@ -85,8 +96,9 @@ drumming is supported.
   that script; each entry needs `id`, `name`, `bpm`, `bars`, drum/bass pattern
   builders, a one-line `summary` (catalogue card), a longer `description`, and
   `hints` — the practice tips listed under the schematic.
-- Hints must not tell the student to change tempo: BPM is fixed per lesson and
-  only overridable via `?bpm=`.
+- Hints must not tell the student to change tempo. The manifest BPM is the tempo
+  the lesson is written for; the slider and `?bpm=` are the student's own call,
+  not something the lesson text should direct.
 - **Every lesson counts in**: three side-stick clicks on the last three beats of
   the lead-in bar, with the pattern's first beat left silent for the student. It
   ships as a `count-in` track in each MIDI, written in the lead-in bar the

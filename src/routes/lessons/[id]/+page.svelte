@@ -6,6 +6,7 @@
 	import { parseMidi, COUNT_IN_BEATS, type ParsedMidi, type BackingTrack, type MidiNote } from '$lib/midi';
 	import { DrumPlayer } from '$lib/drums';
 	import { Sampler } from '$lib/sampler';
+	import { asBinding, parseControl, sameControl, type TransportBinding } from '$lib/transport-control';
 	import LessonChart from '$lib/lesson-chart.svelte';
 
 	type Lesson = {
@@ -60,6 +61,8 @@
 	let currentInput: MIDIInput | null = null;
 	let ctrlMap: Map<number, number> = $state(new Map()); // controller note -> GM drum
 	let kit = $state(1);
+	// Play / Stop buttons on the controller, captured by the setup wizard.
+	let transport: TransportBinding = $state({ start: null, stop: null });
 
 	let lessons: Lesson[] = $state([]);
 	let selected: Lesson | null = $state(null);
@@ -82,8 +85,15 @@
 
 	let lessonBpm = $state(60); // tempo the lesson ships with, from the manifest
 
+	// Where the tempo slider sits when the page loads: the lesson's own tempo,
+	// or the ?bpm= override if the link carried one.
+	const baseBpm = $derived(bpmParam ?? lessonBpm);
+	// Slider position, cleared on lesson load so the tempo never leaks between
+	// lessons. null = "wherever baseBpm is".
+	let bpmChoice = $state<number | null>(null);
+
 	// The tempo everything (scroll, scheduler, scoring) runs at.
-	const bpm = $derived(bpmParam ?? lessonBpm);
+	const bpm = $derived(bpmChoice ?? baseBpm);
 
 	let playing = $state(false);
 	let paused = $state(false); // transport frozen mid-lesson; highway stays up
@@ -191,10 +201,12 @@
 
 	function loadDeviceMapping(deviceId: string) {
 		ctrlMap = new Map();
+		transport = { start: null, stop: null };
 		try {
 			const raw = localStorage.getItem(STORAGE_PREFIX + deviceId);
 			if (!raw) return;
 			const cfg = JSON.parse(raw);
+			transport = asBinding(cfg.transport);
 			if (Array.isArray(cfg.notes) && Array.isArray(cfg.soundNotes)) {
 				const m = new Map<number, number>();
 				cfg.notes.forEach((cn: number, i: number) => m.set(cn, cfg.soundNotes[i]));
@@ -218,6 +230,7 @@
 		stop();
 		selected = lesson;
 		lessonBpm = lesson.bpm;
+		bpmChoice = null;
 		report = null;
 		status = 'Loading ' + lesson.name + '…';
 		try {
@@ -281,8 +294,44 @@
 		statuses[best] = abs <= PERFECT_MS ? 'perfect' : abs <= GOOD_MS ? 'good' : 'off';
 	}
 
+	// The controller's own Play / Stop buttons, when the wizard captured them.
+	// Start also doubles as resume, so a single mapped button can drive a whole
+	// run without touching the screen. Stop pauses first and only ends the run on
+	// a second press, matching how hardware transports behave.
+	function handleTransport(which: 'start' | 'stop') {
+		if (which === 'start') {
+			if (!playing) void play();
+			else if (paused) togglePause();
+			return;
+		}
+		if (!playing) return;
+		if (!paused) togglePause();
+		else stop();
+	}
+
+	// Returns true when the message was a transport press and has been consumed.
+	function routeTransport(data: Uint8Array): boolean {
+		if (!transport.start && !transport.stop) return false;
+		const hit = parseControl(data);
+		if (!hit || !hit.pressed) return false;
+		// A pad always plays its drum, even if a stale config also bound it here.
+		if (hit.control.kind === 'note' && ctrlMap.has(hit.control.data1)) return false;
+		if (sameControl(hit.control, transport.start)) {
+			handleTransport('start');
+			return true;
+		}
+		if (sameControl(hit.control, transport.stop)) {
+			handleTransport('stop');
+			return true;
+		}
+		return false;
+	}
+
 	function handleMidi(event: MIDIMessageEvent) {
-		if (!event.data || event.data.length < 3) return;
+		if (!event.data || event.data.length === 0) return;
+		if (routeTransport(event.data)) return;
+
+		if (event.data.length < 3) return;
 		const [statusByte, note, velocity] = event.data;
 		if ((statusByte & 0xf0) !== 0x90 || velocity === 0) return;
 
@@ -418,6 +467,21 @@
 	$effect(() => {
 		if (parsed) updateStrip(); // position the strip whenever a lesson (re)renders
 	});
+
+	// Tempo is chosen before a run, never during one: the scroll, the scheduler and
+	// the scoring window all derive from `bpm`, so moving it mid-flight would shift
+	// the segment the compositor is already animating. The slider lives on the
+	// resting page only, and stopping Listen keeps a preview from being split
+	// across two tempos.
+	function setBpm(value: number) {
+		stopDemo();
+		bpmChoice = Math.min(BPM_MAX, Math.max(BPM_MIN, Math.round(value)));
+	}
+
+	function resetBpm() {
+		stopDemo();
+		bpmChoice = null;
+	}
 
 	async function play() {
 		if (!parsed || playing) return;
@@ -736,12 +800,25 @@
 {#if !inSession}
 	<div class="launch">
 		<button class="start-btn play" onclick={() => play()} disabled={!parsed}>▶ Play</button>
-		<span class="tempo">
-			{bpm} BPM
-			{#if bpmParam != null && bpmParam !== lessonBpm}
+		<div class="tempo-set">
+			<label class="tempo" for="tempo">{bpm} BPM</label>
+			<input
+				id="tempo"
+				class="tempo-range"
+				type="range"
+				min={BPM_MIN}
+				max={BPM_MAX}
+				step="1"
+				value={bpm}
+				aria-label="Tempo in beats per minute"
+				oninput={(e) => setBpm(e.currentTarget.valueAsNumber)}
+			/>
+			{#if bpm !== baseBpm}
+				<button class="tempo-reset" onclick={resetBpm}>reset to {baseBpm}</button>
+			{:else if bpmParam != null && bpmParam !== lessonBpm}
 				<span class="tempo-note">· lesson default {lessonBpm}</span>
 			{/if}
-		</span>
+		</div>
 	</div>
 
 	{#if status}<p class="warn">{status}</p>{/if}
@@ -915,14 +992,47 @@
 		margin-bottom: 0.5rem;
 	}
 
+	/* Tempo picker — only on the resting page, so a run can never change tempo
+	   underneath itself. */
+	.tempo-set {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+
 	.tempo {
+		min-width: 5.5rem;
 		font-family: var(--font-mono);
 		font-size: 0.85rem;
 		color: var(--gold);
 	}
 
+	.tempo-range {
+		width: 11rem;
+		accent-color: var(--gold);
+		cursor: pointer;
+	}
+
 	.tempo-note {
 		color: var(--text-faint);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+	}
+
+	.tempo-reset {
+		padding: 0.2em 0.6em;
+		background: transparent;
+		border: 1px solid var(--border-strong);
+		border-radius: 0.3rem;
+		color: var(--text-muted);
+		font-size: 0.78rem;
+		cursor: pointer;
+	}
+
+	.tempo-reset:hover {
+		border-color: var(--gold);
+		color: var(--gold);
 	}
 
 	.play {

@@ -112,9 +112,22 @@
 		const dev = getCurrentDevice();
 		if (!dev) return;
 		if (!assignedNotes.every((n) => n !== null)) return;
+		// Merge over whatever is stored: this page owns the pad mapping only, and
+		// the wizard writes keys it knows nothing about (grid size, the transport
+		// buttons). Replacing the record wholesale would silently drop them.
+		let existing: Record<string, unknown> = {};
+		try {
+			existing = JSON.parse(localStorage.getItem(STORAGE_PREFIX + dev.id) ?? '{}') ?? {};
+		} catch {}
 		localStorage.setItem(
 			STORAGE_PREFIX + dev.id,
-			JSON.stringify({ notes: assignedNotes, soundNotes, kit: selectedKit, deviceName: dev.name })
+			JSON.stringify({
+				...existing,
+				notes: assignedNotes,
+				soundNotes,
+				kit: selectedKit,
+				deviceName: dev.name
+			})
 		);
 		hasSaved = true;
 		savedHint = '';

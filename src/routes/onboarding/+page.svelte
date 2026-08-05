@@ -6,21 +6,29 @@
 	import { matchPreset, MAX_COLS, MAX_ROWS, type Preset } from '$lib/presets';
 	import { playScaleTone, unlockAudio } from '$lib/scale';
 	import PadGrid from '$lib/pad-grid.svelte';
+	import {
+		controlLabel,
+		parseControl,
+		sameControl,
+		type MidiControl
+	} from '$lib/transport-control';
 
 	// Keep saved config compatible with the Lessons and Settings pages:
-	// localStorage["padrill:<deviceId>"] = { notes, soundNotes, kit, deviceName }.
+	// localStorage["padrill:<deviceId>"] = { notes, soundNotes, kit, deviceName,
+	// transport }.
 	const STORAGE_PREFIX = 'padrill:';
 	// Grid cell -> GM drum note, mirrored from the Settings page. Bottom row =
 	// groove core; smaller grids take the *tail* so kick/snare/hats stay on the
 	// bottom row.
 	const DEFAULT_SOUND = [39, 56, 54, 55, 49, 51, 53, 52, 45, 47, 50, 44, 36, 38, 42, 46];
 
-	type Step = 'connect' | 'device' | 'grid' | 'map' | 'done';
+	type Step = 'connect' | 'device' | 'grid' | 'map' | 'transport' | 'done';
 	const STEPS: { id: Step; label: string }[] = [
 		{ id: 'connect', label: 'Connect' },
 		{ id: 'device', label: 'Device' },
 		{ id: 'grid', label: 'Grid' },
-		{ id: 'map', label: 'Map pads' }
+		{ id: 'map', label: 'Map pads' },
+		{ id: 'transport', label: 'Transport' }
 	];
 
 	const midi = new MidiHub();
@@ -37,9 +45,23 @@
 	let soundOn = $state(true);
 	let saved = $state(false);
 
+	// Transport step: Play / Stop buttons, if the controller has any. Both are
+	// optional — plenty of pad units are just pads.
+	type Slot = 'start' | 'stop';
+	const SLOTS: { id: Slot; label: string; hint: string }[] = [
+		{ id: 'start', label: 'Play / Start', hint: 'Starts a lesson and resumes after a pause' },
+		{ id: 'stop', label: 'Stop / Pause', hint: 'Pauses the run; press again to stop it' }
+	];
+	let startCtrl = $state<MidiControl | null>(null);
+	let stopCtrl = $state<MidiControl | null>(null);
+	let arming = $state<Slot | null>(null);
+	let ctrlHint = $state('');
+
 	const total = $derived(cols * rows);
 	const pct = $derived(total ? Math.round((Math.min(captureIndex, total) / total) * 100) : 0);
-	const stepIndex = $derived(STEPS.findIndex((s) => s.id === (step === 'done' ? 'map' : step)));
+	const stepIndex = $derived(
+		STEPS.findIndex((s) => s.id === (step === 'done' ? 'transport' : step))
+	);
 
 	// note-capture debounce (pads can bounce a note-on twice)
 	let lastNote = -1;
@@ -48,8 +70,10 @@
 
 	onMount(() => {
 		const off = midi.onNote(handleNote);
+		const offRaw = midi.onMessage(handleMessage);
 		return () => {
 			off();
+			offRaw();
 			midi.stop();
 			clearTimeout(hitTimer);
 		};
@@ -69,6 +93,52 @@
 
 		captureIndex++;
 		if (captureIndex >= total) finish();
+	}
+
+	// Transport capture listens to the raw stream, not just note-ons: a Play
+	// button may send a CC or a single-byte MIDI Start instead of a note.
+	function handleMessage(data: Uint8Array) {
+		if (step !== 'transport' || !arming) return;
+		const hit = parseControl(data);
+		if (!hit || !hit.pressed) return; // releases and clock are not presses
+		const { control } = hit;
+
+		// A pad we just mapped is not a transport button — say so instead of
+		// silently binding the kick to Play.
+		if (control.kind === 'note' && captured.includes(control.data1)) {
+			ctrlHint = `That's one of your pads (note ${control.data1}). Press a Play or Stop button.`;
+			return;
+		}
+		const other = arming === 'start' ? stopCtrl : startCtrl;
+		if (sameControl(control, other)) {
+			ctrlHint = 'That button is already taken by the other slot.';
+			return;
+		}
+
+		ctrlHint = '';
+		if (arming === 'start') {
+			startCtrl = control;
+			arming = 'stop'; // roll straight on to the Stop button
+		} else {
+			stopCtrl = control;
+			arming = null;
+			save();
+		}
+	}
+
+	const slotControl = (slot: Slot) => (slot === 'start' ? startCtrl : stopCtrl);
+
+	function armSlot(slot: Slot) {
+		ctrlHint = '';
+		arming = slot;
+	}
+
+	function clearSlot(slot: Slot) {
+		ctrlHint = '';
+		if (slot === 'start') startCtrl = null;
+		else stopCtrl = null;
+		if (arming === slot) arming = null;
+		save();
 	}
 
 	function flashHit(i: number) {
@@ -123,7 +193,19 @@
 		captured = [...captured];
 	}
 
+	// Pads done — on to the transport buttons, already armed for the Play button
+	// so the student can just press it.
 	function finish() {
+		save();
+		ctrlHint = '';
+		step = 'transport';
+		// Guide the first pass; a re-map keeps buttons already captured, so don't
+		// arm over them.
+		arming = startCtrl || stopCtrl ? null : 'start';
+	}
+
+	function finishTransport() {
+		arming = null;
 		save();
 		step = 'done';
 	}
@@ -135,7 +217,15 @@
 		try {
 			localStorage.setItem(
 				STORAGE_PREFIX + deviceId,
-				JSON.stringify({ notes, soundNotes, kit: 1, deviceName, cols, rows })
+				JSON.stringify({
+					notes,
+					soundNotes,
+					kit: 1,
+					deviceName,
+					cols,
+					rows,
+					transport: { start: startCtrl, stop: stopCtrl }
+				})
 			);
 			localStorage.setItem(STORAGE_PREFIX + 'selectedDevice', deviceId);
 			saved = true;
@@ -298,6 +388,68 @@
 					<button onclick={startCapture}>Restart</button>
 				</span>
 			</footer>
+		{:else if step === 'transport'}
+			<header class="card-head">
+				<h2>Transport buttons</h2>
+				<p class="sub">
+					Has your controller got Play and Stop buttons? Press them now and they'll start and
+					pause lessons. If it hasn't, skip — the on-screen buttons work either way.
+				</p>
+			</header>
+			<div class="slots">
+				{#each SLOTS as slot (slot.id)}
+					{@const ctrl = slotControl(slot.id)}
+					<button
+						type="button"
+						class="slot"
+						class:armed={arming === slot.id}
+						class:set={!!ctrl}
+						onclick={() => armSlot(slot.id)}
+					>
+						<span class="slot-text">
+							<span class="slot-label">{slot.label}</span>
+							<span class="slot-hint">{slot.hint}</span>
+						</span>
+						<span class="slot-value">
+							{#if arming === slot.id}
+								<span class="listening">Press it…</span>
+							{:else if ctrl}
+								<span class="tag">{controlLabel(ctrl)}</span>
+							{:else}
+								<span class="slot-empty">Not set</span>
+							{/if}
+						</span>
+					</button>
+				{/each}
+			</div>
+			{#if ctrlHint}
+				<p class="fine center">{ctrlHint}</p>
+			{:else}
+				<p class="fine center">
+					{arming === 'start'
+						? 'Waiting for your Play button…'
+						: arming === 'stop'
+							? 'Now press Stop — or skip to finish with just Play.'
+							: 'Tap a row to re-record that button.'}
+				</p>
+			{/if}
+			<footer class="card-foot">
+				<button class="ghost" onclick={() => (step = 'map')}>← Back</button>
+				<span class="btn-group">
+					{#if startCtrl || stopCtrl}
+						<button
+							onclick={() => {
+								clearSlot('start');
+								clearSlot('stop');
+								armSlot('start');
+							}}>Clear</button
+						>
+					{/if}
+					<button class="primary" onclick={finishTransport}>
+						{startCtrl || stopCtrl ? 'Done →' : 'Skip →'}
+					</button>
+				</span>
+			</footer>
 		{:else if step === 'done'}
 			<header class="card-head done-head">
 				<span class="check" aria-hidden="true">✓</span>
@@ -310,10 +462,23 @@
 				<PadGrid {cols} {rows} {captured} onpreview={previewPad} />
 				<p class="fine center">Tap a pad to hear its tone.</p>
 			</div>
+			{#if startCtrl || stopCtrl}
+				<p class="fine center">
+					Transport:
+					{#if startCtrl}<span class="tag">{controlLabel(startCtrl)}</span> starts{/if}{#if startCtrl && stopCtrl},
+					{/if}{#if stopCtrl}<span class="tag">{controlLabel(stopCtrl)}</span> pauses{/if}.
+				</p>
+			{/if}
 			<footer class="card-foot">
 				<span class="btn-group">
 					<button class="ghost" onclick={() => (step = 'device')}>Switch device</button>
 					<button onclick={startCapture}>Re-map</button>
+					<button
+						onclick={() => {
+							step = 'transport';
+							armSlot('start');
+						}}>Buttons</button
+					>
 				</span>
 				<a class="cta" href="{base}/lessons">Start practicing →</a>
 			</footer>
@@ -691,6 +856,83 @@
 		color: var(--text-muted);
 		user-select: none;
 		cursor: pointer;
+	}
+
+	/* --- transport step --- */
+
+	.slots {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.slot {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		width: 100%;
+		padding: 0.85rem 1.1rem;
+		text-align: left;
+		background: var(--surface-2);
+		border: 1px solid var(--border-strong);
+		border-radius: var(--radius);
+	}
+
+	.slot:hover:not(:disabled) {
+		border-color: var(--gold);
+		background: var(--surface-3);
+	}
+
+	.slot.armed {
+		border-color: var(--gold);
+		box-shadow: 0 0 0 1px var(--gold-dim);
+	}
+
+	.slot.set {
+		border-color: var(--green-dim);
+	}
+
+	.slot-text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		flex: 1;
+	}
+
+	.slot-label {
+		font-weight: 600;
+	}
+
+	.slot-hint {
+		font-size: 0.78rem;
+		color: var(--text-muted);
+	}
+
+	.slot-value {
+		flex-shrink: 0;
+	}
+
+	.slot-empty {
+		color: var(--text-faint);
+		font-size: 0.85rem;
+	}
+
+	.listening {
+		color: var(--gold);
+		font-size: 0.85rem;
+		animation: pulse 1.1s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		50% {
+			opacity: 0.35;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.listening {
+			animation: none;
+		}
 	}
 
 	/* --- done --- */
