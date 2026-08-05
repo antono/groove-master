@@ -154,6 +154,27 @@ def disco_open_hats(bars=4):
     return events, bars * bar_ticks
 
 
+def single_paradiddle(bars=4):
+    """R L R R / L R L L in 8th notes — one full paradiddle per bar.
+
+    The lead hand plays the snare and the other the closed hat, so the two
+    doubles (RR and LL) are audible as a repeated pad rather than felt only in
+    the fingers. Nothing stacks: every 8th note is exactly one hit from one
+    hand, which is the point — the sticking is the whole exercise and a third
+    voice would only give the student somewhere else to put the mistake.
+    """
+    events = []
+    bar_ticks = BEATS_PER_BAR * PPQ
+    eighth = PPQ // 2
+    # The sticking, one entry per 8th note: True = lead hand (snare).
+    sticking = [True, False, True, True, False, True, False, False]
+    for bar in range(bars):
+        base = bar * bar_ticks
+        for i, lead in enumerate(sticking):
+            hit(events, base + i * eighth, SNARE if lead else CLOSED_HH)
+    return events, bars * bar_ticks
+
+
 def octave_bass(bars=4):
     """Disco/house octave-bounce bass over Am - F - C - G (one chord per bar).
 
@@ -332,6 +353,44 @@ LESSONS = [
             "Losing the alternation halfway through a bar means the hat hand is "
             "leading with the wrong finger. Stop, reset on the next bar line, "
             "start the pair from closed.",
+        ],
+    },
+    {
+        "id": "3.1",
+        "name": "3.1 — Single Paradiddle",
+        "bpm": 60,
+        "bars": 4,
+        "drums": single_paradiddle,
+        "bass": ("lately", quarter_bass),
+        "summary": "The first sticking pattern: R L R R, L R L L in 8th notes, "
+        "snare on the lead hand and closed hat on the other.",
+        "description": "Until now each hand owned its own pads and its own "
+        "beats. The paradiddle breaks that: the hands alternate — R L — then "
+        "one of them plays twice in a row — R R — and the whole thing flips on "
+        "the second half of the bar. Snare is the lead hand, closed hat the "
+        "other, so you can hear the two doubles as well as feel them. Nothing "
+        "ever stacks — one hit, one hand, every 8th note — and the bass walks "
+        "in plain quarter notes, so the sticking is the only hard thing here.",
+        "hints": [
+            "Say it before you play it: \"pa-ra-did-dle, pa-ra-did-dle\" — "
+            "four syllables per half bar, one 8th note each.",
+            "Two fingers, two pads, and the hands never swap roles: snare on "
+            "your strong hand, closed hat on the weak one. No two pads ever "
+            "fire together, so if you hear a stack you played an extra note.",
+            "The doubles are the lesson. Beat 2 and \"2-and\" are two snares in "
+            "a row; beat 4 and \"4-and\" are two hats. Everything else "
+            "alternates.",
+            "Drill the two halves separately: a bar of nothing but \"R L R R\", "
+            "then a bar of nothing but \"L R L L\". Join them only once "
+            "neither one needs counting.",
+            "The second double lands on the last two 8ths of the bar, so every "
+            "bar starts on the opposite hand to the one that just played "
+            "twice: two hats, then straight back to the snare on 1.",
+            "A double that arrives as one flam means the second finger is "
+            "chasing the first. Lift it early and drop it on time rather than "
+            "pushing it faster.",
+            "Extra notes usually mean a triple crept in. Stop at the bar line "
+            "and restart the count instead of playing through it.",
         ],
     },
 ]
