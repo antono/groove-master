@@ -35,16 +35,23 @@ export class DrumPlayer {
     await Promise.all([...new Set(notes)].map((n) => this.load(kit, n)));
   }
 
-  private fire(buf: AudioBuffer) {
+  private fire(buf: AudioBuffer, when?: number) {
     const src = this.ctx.createBufferSource();
     src.buffer = buf;
     src.connect(this.ctx.destination);
-    src.start();
+    src.start(when);
   }
 
   play(kit: number, note: number) {
     const cached = this.cache.get(kit + ":" + note);
     if (cached) this.fire(cached);
     else this.load(kit, note).then((b) => b && this.fire(b));
+  }
+
+  // Sample-accurate strike for the lesson demo, scheduled off the audio clock.
+  // Only cached buffers can hit an exact time, so this never falls back to a load.
+  playAt(kit: number, note: number, when: number) {
+    const cached = this.cache.get(kit + ":" + note);
+    if (cached) this.fire(cached, when);
   }
 }

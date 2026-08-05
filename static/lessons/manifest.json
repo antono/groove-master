@@ -1,12 +1,53 @@
 {
   "lessons": [
     {
-      "id": "lesson2",
-      "name": "Lesson 2",
-      "file": "lesson2.mid",
+      "id": "1.1",
+      "name": "1.1 — Kick on Every Beat",
+      "file": "lesson-1.1.mid",
       "bpm": 60,
       "bars": 4,
-      "description": "The four-on-the-floor groove: kick on every beat, snare backbeat on 2 and 4, and closed hi-hats on the off-beats. A simple bass line plays along in the background. Start slow and lock in with the click."
+      "summary": "One pad, straight quarter notes: kick on all four beats.",
+      "description": "Your first groove: nothing but the kick, once on every beat. The bass lands with you on 1 and 3 and pushes off-beat in between, so you have something to lock against without it playing your part for you. Aim for even spacing rather than force — one steady bar is worth four rushed ones.",
+      "hints": [
+        "Press Listen first. Play only once you can hum the pulse back.",
+        "One finger, one pad: keep your strong hand's index on the kick and don't reposition mid-loop.",
+        "Count \"1 2 3 4\" out loud and strike on the number, not after it — saying it late is playing it late.",
+        "Watch the note approach the line instead of reacting to the sound you just made.",
+        "The bass pushes between your hits — that is on purpose. Follow its notes on 1 and 3 and ignore the ones in between.",
+        "Orange notes mean drifting time, not weak hits. Hit Listen again, re-sync with the pulse, then run it once more."
+      ]
+    },
+    {
+      "id": "1.2",
+      "name": "1.2 — Kick & Hi-Hat",
+      "file": "lesson-1.2.mid",
+      "bpm": 60,
+      "bars": 4,
+      "summary": "Two pads at once: hats on all four beats, kick on 1 and 3.",
+      "description": "Now two limbs. The hi-hat keeps every beat while the kick plays only 1 and 3, so beats 1 and 3 are struck by both pads together and beats 2 and 4 by the hat alone. Getting those pairs to land as one sound is the whole exercise.",
+      "hints": [
+        "One pad per hand: hi-hat on your weak hand, kick on your strong hand. Never cross over to cover both.",
+        "Beats 1 and 3 are a single motion — both fingers drop together. Drill just that pair a dozen times before running the loop.",
+        "If the pair sounds like two taps rather than one thud, leave the loop and drill the two fingers together until it's one sound.",
+        "Let the hat hand run like a metronome and drop the kick into it; don't try to steer both hands at once.",
+        "Say \"both — hat — both — hat\" through the bar so beats 2 and 4 never grow an extra kick."
+      ]
+    },
+    {
+      "id": "2.1",
+      "name": "2.1 — Four on the Floor",
+      "file": "lesson-2.1.mid",
+      "bpm": 60,
+      "bars": 4,
+      "summary": "Four-on-the-floor: kick on all four beats, snare on 2 and 4, closed hats on every 8th.",
+      "description": "The four-on-the-floor groove: kick on every beat, snare backbeat on 2 and 4, and closed hi-hats on the off-beats. An octave-bouncing bass line runs underneath — start slow and lock into it.",
+      "hints": [
+        "Three voices, three fingers, fixed positions: hats and snare on one hand, kick on the other.",
+        "The hats run in 8ths — twice the speed of the kick. Keep that hand moving continuously and land the other voices inside it.",
+        "Beats 2 and 4 stack kick + snare + hat. Practise those two beats alone until all three fire as one sound.",
+        "Sing it before you play it: \"boom-tick, bap-tick, boom-tick, bap-tick.\" If you can say it, your hands can find it.",
+        "Missing hats usually means the wrist is tensing up. Shake the hand out and let the fingers bounce instead of pressing."
+      ]
     }
   ]
 }
