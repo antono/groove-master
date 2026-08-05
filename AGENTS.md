@@ -31,7 +31,11 @@ drumming is supported.
     It exists only on the resting page: scroll, scheduler and scoring all derive
     from `bpm`, so changing it mid-run would shift the segment the compositor is
     already animating. Moving it also stops a running Listen preview.
-- `/settings` — pad grid, device mapping, kit choice. `/onboarding` — setup wizard.
+- `/onboarding` — setup wizard. `/debug/settings` — pad grid, device mapping, kit
+  choice.
+  - `/` redirects to `/lessons`. Debug pages (`/debug`, `/debug/settings`,
+    `/debug/levels`) are only linked from the top menu when `localStorage.debug`
+    is set; they stay reachable by URL either way.
   - The wizard's last step captures the controller's **Play / Stop buttons**, so a
     lesson can be started and paused from the hardware. Both are optional and
     skippable. Buttons are not always notes — a transport section may send a CC or

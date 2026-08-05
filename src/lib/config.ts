@@ -1,9 +1,12 @@
 // Saved pad/device configuration in localStorage.
 //
-//   padrill:<deviceId>      { notes, soundNotes, kit, deviceName, cols?, rows? }
+//   padrill:<deviceId>      { notes, soundNotes, kit, deviceName, cols?, rows?,
+//                             transport? }  — transport is { start, stop }, the
+//                             controller's Play/Stop buttons (see
+//                             transport-control.ts); either half may be null.
 //   padrill:selectedDevice  the deviceId last chosen
 //
-// Written by /settings and /onboarding, read by /lessons/[id] and the layout's
+// Written by /onboarding and /debug/settings, read by /lessons/[id] and the layout's
 // background sample warm-up.
 
 export const STORAGE_PREFIX = "padrill:";

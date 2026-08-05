@@ -23,11 +23,22 @@
 		return () => clearTimeout(timer);
 	});
 
-	const links = [
+	// Debug pages are only linked for people who opted in with
+	// `localStorage.debug = 1` in the console; the routes stay reachable by URL.
+	let showDebug = $state(false);
+	onMount(() => {
+		try {
+			showDebug = Boolean(localStorage.getItem('debug'));
+		} catch {
+			// No storage (private mode) — stay hidden.
+		}
+	});
+
+	const links = $derived([
 		{ href: `${base}/lessons`, route: '/lessons', label: 'Lessons' },
-		{ href: `${base}/settings`, route: '/settings', label: 'Settings' },
-		{ href: `${base}/onboarding`, route: '/onboarding', label: 'Setup' }
-	];
+		{ href: `${base}/onboarding`, route: '/onboarding', label: 'Setup' },
+		...(showDebug ? [{ href: `${base}/debug`, route: '/debug', label: 'Debug' }] : [])
+	]);
 
 	// base is relative during SSR ("./…"), so match on the route id instead.
 	const active = (route: string) => page.route.id?.startsWith(route) ?? false;

@@ -1,7 +1,7 @@
 import { redirect } from "@sveltejs/kit";
 import { base } from "$app/paths";
 
-// The main pad grid now lives at /settings.
+// Lessons are the front door; the pad grid lives at /debug/settings.
 export const load = () => {
-  redirect(307, `${base}/settings`);
+  redirect(307, `${base}/lessons`);
 };

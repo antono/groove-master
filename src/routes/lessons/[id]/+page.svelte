@@ -826,7 +826,7 @@
 	{#if audioCtx && !hasMapping}
 		<p class="warn">
 			No pad mapping for this device. Set one up on the
-			<a href="{base}/settings">Settings</a> page so your hits make sound and get scored.
+			<a href="{base}/onboarding">Setup</a> page so your hits make sound and get scored.
 		</p>
 	{/if}
 {/if}
