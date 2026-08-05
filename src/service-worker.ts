@@ -83,6 +83,11 @@ sw.addEventListener("fetch", (event) => {
 
   // The point of all this: one-shots, cached on first use and kept.
   if (isAudio(url.pathname)) {
+    // A query string means "give me the file as it is on disk" — cache-first is
+    // by design immune to `cache: 'reload'`, so re-levelled samples would keep
+    // reading as their old selves on /debug/levels. Left to the network and not
+    // cached, so the busted URLs never pile up.
+    if (url.search) return;
     event.respondWith(cacheFirst(event.request));
     return;
   }

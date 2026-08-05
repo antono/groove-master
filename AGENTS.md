@@ -48,6 +48,14 @@ drumming is supported.
 - Sample levels in this SoundFont are uneven (-33 to -7.5 dBFS across a kit), so
   when choosing a stand-in, match the level of its neighbours on the grid, not
   just the nearest pitch.
+- **Level trims** are baked into the `.oga` files, not applied at playback. The
+  `LEVELS` table (kit → note → dB) in `render-drums.py` is the source of truth;
+  `static/drums/levels.json` records what is already baked in, so `--level`
+  applies only the difference and re-running is a no-op. Audition trims on
+  `/debug/levels` and paste its JSON export into `LEVELS`.
+  - Every change re-encodes, so once a set of trims settles, do a full render to
+    bake them in one pass instead of stacking Vorbis generations.
+  - `--level` refuses a trim that would clip (peak + gain > -0.5 dBFS).
 - The grid uses two mappings: **controller note → cell** (Capture) and
   **cell → GM drum note** (per-cell dropdown). Both are saved per device in
   `localStorage`.
@@ -63,8 +71,10 @@ drumming is supported.
   the worker to control the page first — on a first visit the document loads
   before the worker exists, and fetches made before `clients.claim()` bypass it
   and are downloaded for nothing.
-- Samples live at stable URLs, so a re-render only reaches people when the
-  version-keyed cache is replaced on activate. Verify with
+- Samples live at stable URLs, so a re-render or re-level only reaches people
+  when the version-keyed cache is replaced on activate — cache-first is immune
+  to `cache: 'reload'`. A one-shot fetched with any query string skips the cache
+  entirely; that is how `/debug/levels` measures what is really on disk. Verify with
   `pnpm build && pnpm preview`; in dev `build` is empty so only the runtime
   audio caching is exercised.
 

@@ -24,6 +24,10 @@ Audit the files already in static/drums/ — no SoundFont or fluidsynth needed:
 Substitute any silent ones in place — needs ffmpeg, but still no SoundFont:
   python3 scripts/render-drums.py --repair
 
+Bake the LEVELS trims into the samples (idempotent — only the delta against
+static/drums/levels.json is applied, so re-running changes nothing):
+  python3 scripts/render-drums.py --level
+
 A full render needs `fluidsynth`; substitution needs `ffmpeg`. Both are in
 devenv.nix.
 """
@@ -81,6 +85,25 @@ FALLBACKS = {
     47: [("pitch", 45, 2)],
     68: [("pitch", 67, -4)],      # Lo Agogo <- Hi Agogo, a major third down
 }
+
+# Level trims baked into the rendered samples, in dB, as kit -> note -> gain.
+# The SoundFont's own levels are uneven — a kit spans roughly -33 to -7.5 dBFS —
+# so drums that should sit up in the mix come out too quiet to hear next to a
+# kick or snare. Values come from auditioning on /debug/levels.
+LEVELS = {
+    1: {
+        42: 9,   # Closed HH, -27.7 dBFS as rendered
+        44: 9,   # Pedal HH,  -29.6 dBFS as rendered
+        46: 6,   # Open HH,   -27.9 dBFS as rendered
+        59: 6,   # Ride 2,    -27.7 dBFS as rendered
+    },
+}
+
+# What LEVELS has actually been applied to the files on disk. Kept beside the
+# samples because the gain is baked in: without it a second run would stack
+# another +9 dB on an already-boosted file. Only the difference is ever applied,
+# so re-running is a no-op and lowering a value works as well as raising it.
+APPLIED = os.path.join(OUT, "levels.json")
 
 
 def varint(n):
@@ -241,6 +264,97 @@ def substitute(kit, note, skip=()):
     return None
 
 
+# --- baked level trims ----------------------------------------------------
+
+
+def load_applied():
+    """kit -> note -> dB already baked into the files on disk."""
+    try:
+        with open(APPLIED) as f:
+            raw = json.load(f).get("gainsDb", {})
+    except (OSError, ValueError):
+        return {}
+    return {int(k): {int(n): float(db) for n, db in v.items()} for k, v in raw.items()}
+
+
+def save_applied(applied):
+    def tidy(db):
+        return int(db) if float(db).is_integer() else db
+
+    trimmed = {
+        str(kit): {str(n): tidy(db) for n, db in sorted(notes.items()) if db}
+        for kit, notes in sorted(applied.items())
+        if any(notes.values())
+    }
+    with open(APPLIED, "w") as f:
+        json.dump({"gainsDb": trimmed}, f, indent=2)
+        f.write("\n")
+
+
+def apply_gain(path, db):
+    """Re-encode `path` with `db` of gain."""
+    tmp = path + ".tmp.oga"
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", path, "-af", f"volume={db}dB",
+         "-c:a", "libvorbis", "-q:a", "5", tmp],
+        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+    )
+    os.replace(tmp, path)
+
+
+def peak_dbfs(path):
+    """Peak level of a file, via ffmpeg's volumedetect."""
+    out = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-i", path, "-af", "volumedetect", "-f", "null", "-"],
+        capture_output=True, text=True,
+    ).stderr
+    for line in out.splitlines():
+        if "max_volume:" in line:
+            return float(line.split("max_volume:")[1].strip().split()[0])
+    return None
+
+
+def level(reset=False):
+    """Bake LEVELS into the samples, applying only what isn't applied yet.
+
+    Each change re-encodes the file, so repeatedly tweaking the same drum stacks
+    Vorbis generations. That is inaudible for a hit or two, but once a set of
+    trims has settled it is worth a full render to bake them in one pass from
+    the SoundFont.
+    """
+    if not shutil.which("ffmpeg"):
+        sys.exit("ffmpeg not found on PATH (see devenv.nix)")
+    applied = {} if reset else load_applied()
+    changed = 0
+
+    for kit in range(1, NUM_KITS + 1):
+        for note in NOTES:
+            want = LEVELS.get(kit, {}).get(note, 0)
+            have = applied.get(kit, {}).get(note, 0)
+            delta = round(want - have, 3)
+            if not delta:
+                continue
+
+            path = sample_path(kit, note)
+            before = peak_dbfs(path)
+            if before is not None and before + delta > -0.5:
+                print(f"  kit{kit}/{note}.oga would clip at {before + delta:+.1f} dBFS — skipped")
+                continue
+
+            apply_gain(path, delta)
+            applied.setdefault(kit, {})[note] = want
+            after = peak_dbfs(path)
+            print(
+                f"  kit{kit}/{note}.oga {GM_DRUMS[note]:14s} {delta:+5.1f} dB  "
+                f"{before:+.1f} -> {after:+.1f} dBFS"
+            )
+            changed += 1
+
+    save_applied(applied)
+    print(f"{changed} sample(s) re-levelled; state in {APPLIED}")
+    return 0
+
+
 def repair():
     """Substitute every silent sample on disk. Returns a shell exit code."""
     if not shutil.which("ffmpeg"):
@@ -294,6 +408,10 @@ def main():
     # another kit), so it can't happen inside the loop above.
     still_silent = repair()
 
+    # Third pass: a fresh render carries no trims, so bake them from scratch.
+    print("baking level trims:")
+    level(reset=True)
+
     manifest = {
         "kits": kits,
         "drums": [{"note": n, "name": GM_DRUMS[n]} for n in NOTES],
@@ -313,4 +431,6 @@ if __name__ == "__main__":
         sys.exit(run_audit())
     elif "--repair" in flags:
         sys.exit(repair())
+    elif "--level" in flags:
+        sys.exit(level())
     main()
