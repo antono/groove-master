@@ -29,7 +29,8 @@
 		color,
 		format,
 		height = 190,
-		hint = ''
+		hint = '',
+		onselect
 	}: {
 		points: TrendPoint[];
 		title: string;
@@ -39,6 +40,8 @@
 		format?: (v: number) => string;
 		height?: number;
 		hint?: string;
+		/** Given, the plot becomes clickable and reports the point picked. */
+		onselect?: (point: TrendPoint) => void;
 	} = $props();
 
 	const uid = $props.id();
@@ -122,6 +125,25 @@
 		active = best;
 	}
 
+	function onKey(event: KeyboardEvent) {
+		if (!onselect || !coords.length) return;
+		if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+			const step = event.key === 'ArrowRight' ? 1 : -1;
+			// From cold, an arrow starts at the newest point — the end of a trend is
+			// what the reader is looking at.
+			const from = active ?? (step > 0 ? -1 : coords.length);
+			active = Math.max(0, Math.min(coords.length - 1, from + step));
+			event.preventDefault();
+		} else if (event.key === 'Enter' || event.key === ' ') {
+			if (active != null) {
+				onselect(coords[active]);
+				event.preventDefault();
+			}
+		} else if (event.key === 'Escape') {
+			active = null;
+		}
+	}
+
 	const hovered = $derived(active != null ? coords[active] : null);
 	// Flip the tooltip to the left of the cursor near the right edge so it never
 	// spills out of the card.
@@ -135,6 +157,12 @@
 		{#if hint}<span class="hint">{hint}</span>{/if}
 	</figcaption>
 
+	<!-- The plot itself is a picture; when `onselect` is given, a transparent
+	     button is laid over it to carry the interaction. That keeps the role
+	     static (a real <button>, so focus, Enter and Space come for free) instead
+	     of a div that changes role at runtime, and leaves the size binding on a
+	     plain container. Pointer events bubble from the overlay, so hover still
+	     drives the tooltip. -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="plot"
@@ -207,6 +235,16 @@
 		{:else if width > 0}
 			<p class="empty">No runs in this range yet.</p>
 		{/if}
+
+		{#if onselect && points.length}
+			<button
+				type="button"
+				class="hit"
+				aria-label="Open a day from {title}. Arrow keys move between points, Enter opens the one selected."
+				onclick={() => hovered && onselect(hovered)}
+				onkeydown={onKey}
+			></button>
+		{/if}
 	</div>
 </figure>
 
@@ -246,6 +284,24 @@
 	.plot {
 		position: relative;
 		touch-action: pan-y;
+	}
+
+	/* Transparent interaction layer over the marks. Below the tooltip (z-index 2)
+	   so it never covers it, above the svg so the click always lands. */
+	.hit {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: pointer;
+	}
+
+	.hit:focus-visible {
+		outline: 2px solid var(--gold);
+		outline-offset: 3px;
+		border-radius: var(--radius-sm);
 	}
 
 	svg {

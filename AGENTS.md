@@ -135,6 +135,14 @@ drumming is supported.
   heatmap answers "am I showing up"; four `$lib/trend-chart.svelte` charts (tempo,
   timing error, accuracy, time played) answer "am I improving", sharing one range
   filter so they always describe the same slice.
+  - Clicking a heatmap cell — or a point on any trend — opens the **single-day
+    view**: that day's runs one by one, plus the pads folded across them. Its
+    earlier/later buttons step to the nearest _practised_ day, not the next
+    calendar one, so a holiday is one click rather than fourteen.
+  - Both the heatmap and the selectable charts are **one tab stop with a roving
+    focus**, not one per mark — arrows move, Enter opens, Escape closes. On the
+    charts the interaction lives on a transparent `<button>` laid over the plot,
+    so the role stays static and focus/Enter/Space come from the platform.
   - **One series per chart, deliberately.** The four measures have unrelated
     scales; overlaying them would mean a second y-axis. Add a chart, never an axis.
   - Chart hues come from the `--gold` / `--cyan` / `--green` / `--violet` tokens,

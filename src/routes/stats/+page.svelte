@@ -3,10 +3,11 @@
 	// ($lib/stats) and aggregated per local calendar day: one lesson run is a
 	// record, one day is a point.
 	//
-	// Two views of the same log. The heatmap answers "am I showing up?" — a fixed
-	// 53-week window, so its shape is comparable week to week. The trends answer
-	// "am I getting better?" — three single-series charts over a range the reader
-	// picks, sharing one filter row so they always describe the same slice.
+	// Three views of the same log. The heatmap answers "am I showing up?" — a
+	// fixed 53-week window, so its shape is comparable week to week. The trends
+	// answer "am I getting better?" — four single-series charts over a range the
+	// reader picks, sharing one filter row so they always describe the same slice.
+	// Picking a cell or a point opens the third: one day, run by run.
 
 	import { base } from '$app/paths';
 	import { onMount } from 'svelte';
@@ -211,6 +212,113 @@
 		hoverPos = { x: col * TRACK + TRACK / 2, y: row * TRACK };
 	}
 
+	// ---- single day --------------------------------------------------------
+	//
+	// Picking a cell (or a point on a trend) drills into that one day: the runs
+	// it holds, and which pads carried them. The aggregates above answer "how is
+	// it going"; this answers "what did I actually do on the 14th".
+
+	let selectedDay: string | null = $state(null);
+
+	/** Days with at least one run, ascending — what prev/next step through. */
+	const practisedDays = $derived([...byDay.keys()].sort());
+
+	const dayRuns = $derived(
+		selectedDay ? sessions.filter((s) => s.day === selectedDay).sort((a, b) => a.at - b.at) : []
+	);
+	const daySummary = $derived(selectedDay ? (byDay.get(selectedDay) ?? null) : null);
+	const dayDate = $derived(selectedDay ? new Date(selectedDay + 'T00:00') : null);
+
+	/** Which pads the day went through, folded across its runs. */
+	const dayPads = $derived.by(() => {
+		const pads = new Map<
+			number,
+			{ note: number; name: string; total: number; hits: number; msSum: number; msHits: number }
+		>();
+		for (const s of dayRuns) {
+			for (const l of s.lanes ?? []) {
+				const p = pads.get(l.note) ?? {
+					note: l.note,
+					name: l.name,
+					total: 0,
+					hits: 0,
+					msSum: 0,
+					msHits: 0
+				};
+				p.total += l.total;
+				p.hits += l.hits;
+				// avgMs is already a mean over that lane's hits, so re-weight by hits
+				// instead of averaging the averages — a 2-hit lane must not pull as
+				// hard as a 20-hit one.
+				p.msSum += l.avgMs * l.hits;
+				p.msHits += l.hits;
+				pads.set(l.note, p);
+			}
+		}
+		return [...pads.values()].sort((a, b) => a.note - b.note);
+	});
+
+	// Step to the nearest *practised* day: walking one calendar day at a time
+	// would mean clicking through a fortnight of blanks after a holiday.
+	const prevDay = $derived(
+		selectedDay ? [...practisedDays].reverse().find((d) => d < selectedDay!) : undefined
+	);
+	const nextDay = $derived(selectedDay ? practisedDays.find((d) => d > selectedDay!) : undefined);
+
+	// ---- heatmap keyboard navigation ---------------------------------------
+	//
+	// The grid is one tab stop with a roving focus rather than 371, which is what
+	// makes the day view reachable without a pointer.
+
+	// Type argument rather than a variable annotation: with an inline object type
+	// the latter is dropped, `focusPos` infers as plain `null`, and the truthy
+	// check below narrows it to `never`.
+	let focusPos = $state<{ col: number; row: number } | null>(null);
+	const focusCell = $derived(focusPos ? (calendar[focusPos.col]?.[focusPos.row] ?? null) : null);
+
+	/** Position of today in the grid — where focus lands on first entry. */
+	const todayPos = $derived.by(() => {
+		const key = dayKey(new Date());
+		for (let col = 0; col < calendar.length; col++) {
+			const row = calendar[col].findIndex((c) => c.key === key);
+			if (row >= 0) return { col, row };
+		}
+		return { col: WEEKS - 1, row: 0 };
+	});
+
+	function onGridKey(event: KeyboardEvent) {
+		const pos = focusPos ?? todayPos;
+		let { col, row } = pos;
+		switch (event.key) {
+			case 'ArrowLeft': col--; break;
+			case 'ArrowRight': col++; break;
+			case 'ArrowUp': row--; break;
+			case 'ArrowDown': row++; break;
+			case 'Home': col = 0; row = 0; break;
+			case 'End': ({ col, row } = todayPos); break;
+			case 'Enter':
+			case ' ':
+				if (focusCell && !focusCell.future) {
+					selectedDay = focusCell.key;
+					event.preventDefault();
+				}
+				return;
+			case 'Escape':
+				selectedDay = null;
+				return;
+			default:
+				return;
+		}
+		// Days run down a column and continue at the top of the next, so stepping
+		// off an edge wraps into the neighbouring week rather than sticking.
+		if (row < 0) { row = 6; col--; }
+		if (row > 6) { row = 0; col++; }
+		const target = calendar[col]?.[row];
+		if (!target || target.future) return;
+		event.preventDefault();
+		focusPos = { col, row };
+	}
+
 	// ---- trends ------------------------------------------------------------
 
 	const RANGES = [
@@ -307,6 +415,10 @@
 		minute: '2-digit'
 	});
 
+	// The day panel already names the date in its heading, so its rows carry the
+	// time alone.
+	const clock = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
+
 	let clearing = $state(false);
 
 	async function onClear() {
@@ -392,20 +504,31 @@
 				</div>
 
 				<!-- A week is a column here, so each column is the logical row of seven
-				     days. Table roles, not grid: nothing here is keyboard-operable, and
-				     hover is handled by the one hit layer on the wrapper. -->
+				     days. One tab stop with a roving focus, not 371: arrows move a day,
+				     Enter opens it. Pointer hover and clicks go through the single hit
+				     layer on the wrapper. -->
 				<div
 					class="grid"
-					role="table"
+					role="grid"
+					tabindex="0"
+					aria-label="Practice calendar, {WEEKS} weeks. Arrow keys move by day, Enter opens it."
+					aria-activedescendant={focusCell ? `day-${focusCell.key}` : undefined}
 					onpointermove={onGridMove}
 					onpointerleave={() => (hoverCell = null)}
+					onclick={() => hoverCell && (selectedDay = hoverCell.key)}
+					onkeydown={onGridKey}
+					onfocus={() => (focusPos ??= todayPos)}
 				>
 					{#each calendar as week, w (w)}
 						<div class="week" role="row">
 							{#each week as cell (cell.key)}
 								<div
+									id="day-{cell.key}"
 									class="cell {cell.future ? 'future' : `l${level(cell.runs)}`}"
-									role="cell"
+									class:focused={focusCell?.key === cell.key}
+									class:picked={selectedDay === cell.key}
+									role="gridcell"
+									aria-selected={cell.future ? undefined : selectedDay === cell.key}
 									aria-label={cell.future
 										? undefined
 										: `${longDate.format(cell.date)}: ${cell.runs} runs`}
@@ -445,6 +568,91 @@
 		</footer>
 	</section>
 
+	{#if selectedDay && dayDate}
+		<section class="card day" aria-label="Selected day">
+			<header class="card-head">
+				<h2>{longDate.format(dayDate)}</h2>
+				<div class="day-nav">
+					<button onclick={() => (selectedDay = prevDay ?? selectedDay)} disabled={!prevDay}>
+						‹ earlier
+					</button>
+					<button onclick={() => (selectedDay = nextDay ?? selectedDay)} disabled={!nextDay}>
+						later ›
+					</button>
+					<button class="close" onclick={() => (selectedDay = null)} aria-label="Close day">✕</button>
+				</div>
+			</header>
+
+			{#if daySummary}
+				<p class="day-line">
+					<strong>{runLabel(daySummary)}</strong>
+					· {duration(daySummary.playMs)} played
+					· {Math.round(daySummary.bpmSum / daySummary.runs)} BPM average
+					· {daySummary.hits}/{daySummary.notes} notes
+					{#if daySummary.errRuns}
+						· {Math.round(daySummary.errSum / daySummary.errRuns)} ms average error
+					{/if}
+				</p>
+
+				<div class="table-scroll">
+					<table>
+						<thead>
+							<tr>
+								<th>Time</th>
+								<th>Lesson</th>
+								<th class="num">BPM</th>
+								<th class="num">Played</th>
+								<th class="num">Hit</th>
+								<th class="num">Avg error</th>
+								<th>Grade</th>
+								<th>Controller</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each dayRuns as s (s.id ?? s.at)}
+								<tr>
+									<td class="muted">{clock.format(s.at)}</td>
+									<td>{s.lessonName}</td>
+									<td class="num">{s.bpm}</td>
+									<td class="num">{s.durationMs ? duration(s.durationMs) : '—'}</td>
+									<td class="num">{s.hits}/{s.total}</td>
+									<td class="num">{s.hits ? Math.round(s.avgAbsMs) + ' ms' : '—'}</td>
+									<td><span class="grade">{s.grade}</span></td>
+									<td class="muted">{s.device ?? '—'}</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+
+				{#if dayPads.length}
+					<h3>Pads</h3>
+					<div class="table-scroll pads">
+						<table>
+							<thead>
+								<tr><th>Pad</th><th class="num">Hit</th><th class="num">Avg error</th></tr>
+							</thead>
+							<tbody>
+								{#each dayPads as p (p.note)}
+									<tr>
+										<td>{p.name}</td>
+										<td class="num">{p.hits}/{p.total}</td>
+										<td class="num">{p.msHits ? Math.round(p.msSum / p.msHits) + ' ms' : '—'}</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</div>
+				{/if}
+			{:else}
+				<p class="muted">
+					No practice on this day.
+					{#if prevDay || nextDay}Step to the nearest day you played.{/if}
+				</p>
+			{/if}
+		</section>
+	{/if}
+
 	<section aria-label="Trends">
 		<header class="card-head range-head">
 			<h2>Trends</h2>
@@ -464,6 +672,7 @@
 					hint="per practice day"
 					height={210}
 					points={bpmPoints}
+					onselect={(p) => (selectedDay = dayKey(p.x))}
 				/>
 			</div>
 			<TrendChart
@@ -472,6 +681,7 @@
 				color="var(--cyan)"
 				hint="lower is better"
 				points={msPoints}
+				onselect={(p) => (selectedDay = dayKey(p.x))}
 			/>
 			<TrendChart
 				title="Accuracy"
@@ -479,6 +689,7 @@
 				color="var(--green)"
 				hint="notes hit"
 				points={accPoints}
+				onselect={(p) => (selectedDay = dayKey(p.x))}
 			/>
 			<TrendChart
 				title="Time played"
@@ -486,6 +697,7 @@
 				color="var(--violet)"
 				hint="per practice day"
 				points={timePoints}
+				onselect={(p) => (selectedDay = dayKey(p.x))}
 			/>
 		</div>
 	</section>
@@ -717,6 +929,81 @@
 	}
 	.cell.l4 {
 		background: #55bb88;
+	}
+
+	/* Focus ring and selection sit outside the 11px mark so neither eats into it
+	   nor shifts the grid. */
+	.grid:focus-visible {
+		outline: 2px solid var(--gold);
+		outline-offset: 4px;
+		border-radius: 3px;
+	}
+
+	.grid {
+		cursor: pointer;
+	}
+
+	.cell.focused {
+		box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--text-muted);
+	}
+
+	.cell.picked {
+		box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--gold);
+	}
+
+	/* --- single day --------------------------------------------------------- */
+
+	.day {
+		border-color: var(--border-strong);
+	}
+
+	.day h3 {
+		font-size: 0.85rem;
+		font-weight: 650;
+		color: var(--text-muted);
+		margin: 1.1rem 0 0.15rem;
+	}
+
+	.day-nav {
+		display: flex;
+		gap: 0.25rem;
+	}
+
+	.day-nav button {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		color: var(--text-muted);
+		background: var(--surface-2);
+		border: 1px solid var(--border);
+		padding: 0.3em 0.7em;
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+	}
+
+	.day-nav button:hover:not(:disabled) {
+		color: var(--text);
+		border-color: var(--border-strong);
+	}
+
+	.day-nav button:disabled {
+		opacity: 0.4;
+		cursor: default;
+	}
+
+	/* Three narrow columns do not need the full card width — stretched that far
+	   the pad name and its numbers stop reading as one row. */
+	.pads table {
+		max-width: 32rem;
+	}
+
+	.day-line {
+		margin: 0 0 0.9rem;
+		font-size: 0.88rem;
+		color: var(--text-muted);
+	}
+
+	.day-line strong {
+		color: var(--text);
 	}
 
 	.legend {
