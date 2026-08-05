@@ -347,6 +347,9 @@
 	}
 
 	function handleMidi(event: MIDIMessageEvent) {
+		// A hidden tab is deaf: ignore every message so nothing sounds or scores
+		// while the page is in the background (see handleVisibility).
+		if (typeof document !== 'undefined' && document.hidden) return;
 		if (!event.data || event.data.length === 0) return;
 		if (routeTransport(event.data)) return;
 
@@ -586,6 +589,20 @@
 		startAudioTime = 0;
 		freezeScroll();
 		updateStrip();
+	}
+
+	// Page Visibility: a backgrounded tab must be silent and deaf. Hiding freezes a
+	// running lesson — it only ever resumes on a manual Play/Resume, never on its
+	// own — stops any Listen preview, and suspends the audio graph so nothing plays.
+	// Coming back just re-arms the graph; the transport stays wherever the user left it.
+	function handleVisibility() {
+		if (document.hidden) {
+			stopDemo();
+			if (playing && !paused) togglePause();
+			void audioCtx?.suspend();
+		} else {
+			void audioCtx?.resume();
+		}
 	}
 
 	function finish() {
@@ -839,8 +856,12 @@
 		};
 		measure();
 		window.addEventListener('resize', measure);
+		document.addEventListener('visibilitychange', handleVisibility);
 		void loadCatalogue();
-		return () => window.removeEventListener('resize', measure);
+		return () => {
+			window.removeEventListener('resize', measure);
+			document.removeEventListener('visibilitychange', handleVisibility);
+		};
 	});
 
 	onDestroy(() => {
