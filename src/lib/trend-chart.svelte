@@ -287,8 +287,12 @@
 	}
 
 	/* Transparent interaction layer over the marks. Below the tooltip (z-index 2)
-	   so it never covers it, above the svg so the click always lands. */
-	.hit {
+	   so it never covers it, above the svg so the click always lands.
+	   :hover is spelled out because app.css styles bare buttons, and its
+	   `button:hover:not(:disabled)` fill (0,2,1) outranks a scoped `.hit` (0,2,0)
+	   — without this the overlay turns opaque and hides the chart on hover. */
+	.hit,
+	.hit:hover {
 		position: absolute;
 		inset: 0;
 		z-index: 1;
