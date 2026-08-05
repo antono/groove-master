@@ -16,7 +16,7 @@
 </script>
 
 <svelte:head>
-	<title>Padrill — Debug</title>
+	<title>Groove Master — Debug</title>
 </svelte:head>
 
 <h1>Debug</h1>

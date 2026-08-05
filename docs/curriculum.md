@@ -1,6 +1,6 @@
 # Curriculum design
 
-How padrill's lessons are ordered, why, and where the ladder goes.
+How Groove Master's lessons are ordered, why, and where the ladder goes.
 
 Stages 1 and 2 are built to this design; everything past Stage 3 is still a
 plan. `LESSONS.md` is the lesson-by-lesson index and says what is live,
@@ -142,7 +142,7 @@ The lesson-by-lesson index is [`LESSONS.md`](../LESSONS.md).
 ### Ids must stop being numbers
 
 `1.2` is currently three things at once: identity (`lesson-1.2.mid`, the stats
-key `lesson: "1.2"`, `localStorage["padrill:bpm:1.2"]`), sort order, and display
+key `lesson: "1.2"`, `localStorage["groove-master:bpm:1.2"]`), sort order, and display
 label. A curriculum built on "insert variations between existing lessons" will
 renumber constantly, and every renumber orphans a student's practice history and
 their remembered tempo.

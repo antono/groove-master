@@ -506,7 +506,7 @@
 </script>
 
 <svelte:head>
-	<title>Padrill — Practice stats</title>
+	<title>Groove Master — Practice stats</title>
 </svelte:head>
 
 <h1>Practice</h1>

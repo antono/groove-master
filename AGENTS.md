@@ -1,4 +1,4 @@
-# padrill
+# Groove Master
 
 A browser-based finger drumming trainer. Play along with interactive lessons to
 build finger drumming skills, all in HTML — no native app required. Only finger
@@ -31,7 +31,7 @@ drumming is supported.
     derive from `bpm`, so changing it mid-run would shift the segment the
     compositor is already animating. Moving it also stops a running Listen preview.
   - The slider's position is **remembered per lesson** in
-    `localStorage["padrill:bpm:<lessonId>"]`, so a lesson reopens at the tempo it
+    `localStorage["groove-master:bpm:<lessonId>"]`, so a lesson reopens at the tempo it
     was last practised at. Per lesson, never global — 1.1 at 120 says nothing
     about where 2.2 belongs. Precedence is `?bpm=` → remembered → manifest, and
     "reset" drops the remembered value so the lesson returns to its own tempo.
@@ -145,7 +145,7 @@ drumming is supported.
 
 ## Practice stats
 
-- Every **scored run** is appended to IndexedDB (`padrill` / `sessions`) from
+- Every **scored run** is appended to IndexedDB (`groove-master` / `sessions`) from
   `finish()` on `/lessons/[id]`. Listen previews and abandoned runs are not
   recorded — only a lesson played to the result screen. `$lib/stats.ts` owns the
   schema and is non-throwing by contract: a browser with no IndexedDB still plays

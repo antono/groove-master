@@ -53,7 +53,7 @@
 	<header class="header">
 		<a class="brand" href="{base}/lessons">
 			<span class="brand-mark" aria-hidden="true">▦</span>
-			<span class="brand-name">Padrill</span>
+			<span class="brand-name">Groove Master</span>
 		</a>
 		<nav class="nav">
 			{#each links as link (link.href)}

@@ -14,9 +14,9 @@
 	} from '$lib/transport-control';
 
 	// Keep saved config compatible with the Lessons and Settings pages:
-	// localStorage["padrill:<deviceId>"] = { notes, soundNotes, kit, deviceName,
+	// localStorage["groove-master:<deviceId>"] = { notes, soundNotes, kit, deviceName,
 	// transport }.
-	const STORAGE_PREFIX = 'padrill:';
+	const STORAGE_PREFIX = 'groove-master:';
 	// Grid cell -> GM drum note, mirrored from the Settings page. Bottom row =
 	// groove core; smaller grids take the *tail* so kick/snare/hats stay on the
 	// bottom row.
@@ -241,7 +241,7 @@
 </script>
 
 <svelte:head>
-	<title>Padrill — Set up your pads</title>
+	<title>Groove Master — Set up your pads</title>
 </svelte:head>
 
 <div class="wizard">

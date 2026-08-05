@@ -13,7 +13,7 @@
 
 	import { DRUM_NOTES, drumUrl } from '$lib/drums';
 
-	const STORAGE_KEY = 'padrill:levels';
+	const STORAGE_KEY = 'groove-master:levels';
 	const MIN_DB = -24;
 	const MAX_DB = 24;
 
@@ -278,7 +278,7 @@
 </script>
 
 <svelte:head>
-	<title>Padrill — sample levels</title>
+	<title>Groove Master — sample levels</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 

@@ -1,6 +1,6 @@
 // Practice history, kept in IndexedDB.
 //
-//   padrill / sessions   one record per scored lesson run, keyed by autoIncrement
+//   groove-master / sessions   one record per scored lesson run, keyed by autoIncrement
 //                        id, indexed on `at` (finish time) and `lesson`.
 //
 // The pad configuration lives in localStorage (see config.ts), but a practice log
@@ -12,7 +12,7 @@
 // storage blocked by the user — must still play lessons, it just records nothing,
 // so no call rejects: writes resolve silently and reads resolve empty.
 
-export const DB_NAME = "padrill";
+export const DB_NAME = "groove-master";
 const DB_VERSION = 1;
 const STORE = "sessions";
 

@@ -37,7 +37,7 @@
 	const PERFECT_MS = 25; // exact  -> green, pops
 	const GOOD_MS = 60; // precise -> green
 	// between GOOD_MS and the match window -> off (orange); past the window -> miss (red)
-	const STORAGE_PREFIX = 'padrill:';
+	const STORAGE_PREFIX = 'groove-master:';
 
 	// The audio/scoring clock runs on a coarse setInterval instead of per-frame rAF,
 	// so the main thread never wakes every vsync and the compositor scroll stays
@@ -851,7 +851,7 @@
 </script>
 
 <svelte:head>
-	<title>Padrill — {selected?.name ?? 'Lesson'}</title>
+	<title>Groove Master — {selected?.name ?? 'Lesson'}</title>
 </svelte:head>
 
 <a class="back" href="{base}/lessons">← All lessons</a>

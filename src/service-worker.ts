@@ -17,7 +17,7 @@ import { build, files, version } from "$service-worker";
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
-const CACHE = `padrill-${version}`;
+const CACHE = `groove-master-${version}`;
 
 const isAudio = (pathname: string) => pathname.endsWith(".oga");
 
