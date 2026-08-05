@@ -145,6 +145,26 @@ export async function recordSession(stat: SessionStat): Promise<void> {
   });
 }
 
+// A lesson's id used to be its number ("1.2"), so it changed whenever the
+// curriculum was reordered. Ids are slugs now and never change, but runs
+// recorded before that carry the old number — mapped here on read so a
+// student's history stays attached to the lesson they actually played.
+//
+// Reading only: nothing new is ever written under a legacy id, and the stored
+// `lessonName` already renders correctly, so this only matters for grouping.
+const LEGACY_IDS: Record<string, string> = {
+  "1.1": "kick-quarters",
+  "1.2": "kick-hats-unison",
+  "2.1": "four-on-the-floor",
+  "2.2": "disco-open-hats",
+  "3.1": "paradiddle-single",
+};
+
+/** The current slug for a lesson id, which for anything recent is itself. */
+export function canonicalLesson(id: string): string {
+  return LEGACY_IDS[id] ?? id;
+}
+
 /** Every recorded run, oldest first (the `at` index supplies the ordering). */
 export async function allSessions(): Promise<SessionStat[]> {
   const db = await openDb();
@@ -157,7 +177,10 @@ export async function allSessions(): Promise<SessionStat[]> {
       return resolve([]);
     }
     const req = tx.objectStore(STORE).index("at").getAll();
-    req.onsuccess = () => resolve((req.result as SessionStat[]) ?? []);
+    req.onsuccess = () => {
+      const rows = (req.result as SessionStat[]) ?? [];
+      resolve(rows.map((r) => ({ ...r, lesson: canonicalLesson(r.lesson) })));
+    };
     req.onerror = () => resolve([]);
     tx.onabort = () => resolve([]);
   });

@@ -100,11 +100,39 @@ drumming is supported.
 
 ## Lessons
 
-- `python3 scripts/make-lessons.py` writes the lesson MIDIs (`lesson-<id>.mid`)
-  and `static/lessons/manifest.json`. The curriculum is the `LESSONS` table in
-  that script; each entry needs `id`, `name`, `bpm`, `bars`, drum/bass pattern
-  builders, a one-line `summary` (catalogue card), a longer `description`, and
-  `hints` — the practice tips listed under the schematic.
+- The curriculum is **stage → module → lesson**, and a module is always exactly
+  three lessons: `plain` (the technique alone), `core` (its normal musical
+  form), `stretch` (its hardest useful variation). `LESSONS.md` is the
+  lesson-by-lesson index; `docs/curriculum.md` is why the order is what it is.
+- A lesson's **id is its slug** (`kick-quarters`) and never changes. The
+  displayed `2.4` is `number`, rendered from position, so inserting a lesson
+  renumbers the catalogue without orphaning a student's practice history or a
+  remembered tempo. Old numeric ids map to slugs via `LEGACY_IDS` in
+  `$lib/stats.ts`, applied on read.
+- `python3 scripts/make-lessons.py` writes the MIDIs and
+  `static/lessons/manifest.json`. It is only a driver: the curriculum lives in
+  `scripts/lessons/`, one module per stage (`stage01_pulse.py`, …), each
+  exporting a `STAGE` built from `lessons/schema.py`. Shared code sits in
+  `midi.py` (bytes), `grids.py` (patterns as beat offsets) and `bass.py`.
+  Patterns and their prose live side by side in the stage file.
+- MIDIs go to `static/lessons/stage-NN-<stage>/<slug>.mid` — **filenames carry
+  the slug only, never a number**. Order lives in the manifest and nowhere else.
+  The driver rebuilds the tree on every run, so a renamed lesson cannot leave a
+  stale file behind.
+- A designed-but-unwritten slot is a `planned()` entry: it holds its number and
+  renders greyed out in the catalogue, so the road ahead is visible and filling
+  it in later shifts nothing.
+- Each written lesson needs `slug`, `name`, `tier`, `bpm`, `bars`, drum/bass
+  pattern builders, a one-line `summary` (catalogue card), a longer
+  `description`, and `hints` — the practice tips listed under the schematic.
+- Every stage ends in a `checkpoint()`: one bar of each pattern from that stage.
+  Practising one pattern until it is smooth retains poorly; interleaving
+  competing patterns retains far better, so the checkpoint is where a stage is
+  actually passed.
+- **The backing bass is a scaffold and must fade.** `bass.py` orders them by how
+  much they help — `QUARTER` doubles the pulse, `OCTAVE` bounces, `SYNCOPATED`
+  pushes against the student. A module opens on `QUARTER` and a stage ends on
+  something that no longer helps.
 - Hints must not tell the student to change tempo. The manifest BPM is the tempo
   the lesson is written for; the slider and `?bpm=` are the student's own call,
   not something the lesson text should direct.

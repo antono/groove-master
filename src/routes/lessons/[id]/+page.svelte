@@ -10,8 +10,12 @@
 	import { dayKey, recordSession } from '$lib/stats';
 	import LessonChart from '$lib/lesson-chart.svelte';
 
+	// `id` is the lesson's slug and never changes; `number` ("2.4") is rendered
+	// from its position in the curriculum, so inserting a lesson renumbers the
+	// catalogue without orphaning practice history or a remembered tempo.
 	type Lesson = {
 		id: string;
+		number: string;
 		name: string;
 		file: string;
 		bpm: number;
@@ -851,7 +855,9 @@
 </svelte:head>
 
 <a class="back" href="{base}/lessons">← All lessons</a>
-<h1>{selected?.name ?? 'Lesson'}</h1>
+<h1>
+	{#if selected}<span class="number">{selected.number}</span>{/if}{selected?.name ?? 'Lesson'}
+</h1>
 
 {#if selected?.description && !inSession}
 	<p class="description">{selected.description}</p>
@@ -1023,6 +1029,15 @@
 
 	h1 {
 		margin-top: 0.25rem;
+	}
+
+	/* The number is position, the name is identity — so it reads as a label
+	   beside the title rather than part of it. */
+	h1 .number {
+		margin-right: 0.6rem;
+		font-family: var(--font-mono);
+		font-size: 0.75em;
+		color: var(--text-muted);
 	}
 
 	/* Pattern reference while the transport is at rest — same chart the catalogue shows. */

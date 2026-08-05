@@ -1,30 +1,670 @@
 {
+  "stages": [
+    {
+      "slug": "pulse",
+      "number": 1,
+      "title": "Pulse",
+      "goal": "A steady internal clock and a strike that lands where you meant it. One voice at a time — nothing ever stacks, so a note that is late can only be your timing.",
+      "modules": [
+        {
+          "slug": "the-strike",
+          "title": "The strike",
+          "subtitle": "one hand, quarter notes",
+          "lessons": [
+            {
+              "id": "kick-quarters",
+              "number": "1.1",
+              "name": "Kick on Every Beat",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "hats-quarters",
+              "number": "1.2",
+              "name": "Hi-Hat on Every Beat",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "quarters-hand-swap",
+              "number": "1.3",
+              "name": "Quarters, Hands Swapping",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "two-hands",
+          "title": "Two hands",
+          "subtitle": "alternation",
+          "lessons": [
+            {
+              "id": "alternating-quarters",
+              "number": "1.4",
+              "name": "Alternating Quarters",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "alternating-8ths",
+              "number": "1.5",
+              "name": "Alternating 8ths",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "alternating-8ths-swap",
+              "number": "1.6",
+              "name": "Alternating 8ths, Lead Swapping",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "one-hand-faster",
+          "title": "One hand, faster",
+          "subtitle": "density",
+          "lessons": [
+            {
+              "id": "eighths-strong-hand",
+              "number": "1.7",
+              "name": "8ths, Strong Hand",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "eighths-weak-hand",
+              "number": "1.8",
+              "name": "8ths, Weak Hand",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "eighths-through-rests",
+              "number": "1.9",
+              "name": "8ths Through a Rest",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "id": "checkpoint-1",
+        "number": "1.◆",
+        "name": "Checkpoint — Pulse",
+        "tier": "checkpoint",
+        "planned": false
+      }
+    },
+    {
+      "slug": "backbeat",
+      "number": 2,
+      "title": "The Backbeat",
+      "goal": "Two and three voices, including the first pads that have to fire as one sound. Fingers stay where they are — every difficulty here is coordination, not travel.",
+      "modules": [
+        {
+          "slug": "trading",
+          "title": "Trading",
+          "subtitle": "two voices, never together",
+          "lessons": [
+            {
+              "id": "backbeat-plain",
+              "number": "2.1",
+              "name": "The Backbeat",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "kick-snare-8ths",
+              "number": "2.2",
+              "name": "Kick & Snare in 8ths",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "trading-three-voices",
+              "number": "2.3",
+              "name": "Three Voices, One at a Time",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "stacking",
+          "title": "Stacking",
+          "subtitle": "voices as one sound",
+          "lessons": [
+            {
+              "id": "kick-hats-unison",
+              "number": "2.4",
+              "name": "Kick & Hi-Hat",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "rock-beat-quarter-hats",
+              "number": "2.5",
+              "name": "Rock Beat, Quarter Hats",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "stack-every-beat",
+              "number": "2.6",
+              "name": "Triple Stack",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "the-rock-beat",
+          "title": "The rock beat",
+          "subtitle": "the groove",
+          "lessons": [
+            {
+              "id": "rock-beat-8th-hats",
+              "number": "2.7",
+              "name": "Rock Beat, 8th Hats",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "four-on-the-floor",
+              "number": "2.8",
+              "name": "Four on the Floor",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "disco-open-hats",
+              "number": "2.9",
+              "name": "Disco Open Hats",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "id": "checkpoint-2",
+        "number": "2.◆",
+        "name": "Checkpoint — The Backbeat",
+        "tier": "checkpoint",
+        "planned": false
+      }
+    },
+    {
+      "slug": "subdivision",
+      "number": 3,
+      "title": "Subdivision & the Grid",
+      "goal": "The 16th grid and the triplet grid, and a note placed anywhere on either.",
+      "modules": [
+        {
+          "slug": "sixteenths",
+          "title": "Sixteenths",
+          "subtitle": "twice as fine",
+          "lessons": [
+            {
+              "id": "hats-16ths-split",
+              "number": "3.1",
+              "name": "16ths, Split Hands",
+              "tier": "plain",
+              "planned": true
+            },
+            {
+              "id": "rock-16th-hats",
+              "number": "3.2",
+              "name": "Rock Beat, 16th Hats",
+              "tier": "core",
+              "planned": true
+            },
+            {
+              "id": "kick-16th-grid",
+              "number": "3.3",
+              "name": "Kick on the \"e\" and the \"a\"",
+              "tier": "stretch",
+              "planned": true
+            }
+          ]
+        },
+        {
+          "slug": "triplets",
+          "title": "Triplets",
+          "subtitle": "three where there were two",
+          "lessons": [
+            {
+              "id": "triplets-8th",
+              "number": "3.4",
+              "name": "8th-Note Triplets",
+              "tier": "plain",
+              "planned": true
+            },
+            {
+              "id": "triplet-groove",
+              "number": "3.5",
+              "name": "Triplet Groove",
+              "tier": "core",
+              "planned": true
+            },
+            {
+              "id": "triplets-broken",
+              "number": "3.6",
+              "name": "Broken Triplets",
+              "tier": "stretch",
+              "planned": true
+            }
+          ]
+        },
+        {
+          "slug": "feel",
+          "title": "Feel",
+          "subtitle": "straight and swung",
+          "lessons": [
+            {
+              "id": "shuffle-hats",
+              "number": "3.7",
+              "name": "Shuffle Hats",
+              "tier": "plain",
+              "planned": true
+            },
+            {
+              "id": "shuffle-groove",
+              "number": "3.8",
+              "name": "The Shuffle",
+              "tier": "core",
+              "planned": true
+            },
+            {
+              "id": "half-time-shuffle",
+              "number": "3.9",
+              "name": "Half-Time Shuffle",
+              "tier": "stretch",
+              "planned": true
+            }
+          ]
+        }
+      ],
+      "closing": null
+    },
+    {
+      "slug": "sticking",
+      "number": 4,
+      "title": "Sticking",
+      "goal": "Rudiments, then rudiments inside a groove. Which hand plays a note starts to matter as much as when.",
+      "modules": [
+        {
+          "slug": "strokes",
+          "title": "Strokes",
+          "subtitle": "singles and doubles",
+          "lessons": [
+            {
+              "id": "singles-16ths",
+              "number": "4.1",
+              "name": "Single Strokes in 16ths",
+              "tier": "plain",
+              "planned": true
+            },
+            {
+              "id": "doubles-8ths",
+              "number": "4.2",
+              "name": "Double Strokes",
+              "tier": "core",
+              "planned": true
+            },
+            {
+              "id": "doubles-16ths",
+              "number": "4.3",
+              "name": "Double Strokes in 16ths",
+              "tier": "stretch",
+              "planned": true
+            }
+          ]
+        },
+        {
+          "slug": "the-paradiddle",
+          "title": "The paradiddle",
+          "subtitle": "alternate, then double",
+          "lessons": [
+            {
+              "id": "paradiddle-single",
+              "number": "4.4",
+              "name": "Single Paradiddle",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "paradiddle-groove",
+              "number": "4.5",
+              "name": "Paradiddle Groove",
+              "tier": "core",
+              "planned": true
+            },
+            {
+              "id": "paradiddle-inversions",
+              "number": "4.6",
+              "name": "The Four Inversions",
+              "tier": "stretch",
+              "planned": true
+            }
+          ]
+        },
+        {
+          "slug": "bigger-diddles",
+          "title": "Bigger diddles",
+          "subtitle": "longer patterns, same idea",
+          "lessons": [
+            {
+              "id": "paradiddle-double",
+              "number": "4.7",
+              "name": "Double Paradiddle",
+              "tier": "plain",
+              "planned": true
+            },
+            {
+              "id": "paradiddle-diddle",
+              "number": "4.8",
+              "name": "Paradiddle-diddle",
+              "tier": "core",
+              "planned": true
+            },
+            {
+              "id": "six-stroke-roll",
+              "number": "4.9",
+              "name": "Six Stroke Roll",
+              "tier": "stretch",
+              "planned": true
+            }
+          ]
+        }
+      ],
+      "closing": null
+    }
+  ],
   "lessons": [
     {
-      "id": "1.1",
-      "name": "1.1 — Kick on Every Beat",
-      "file": "lesson-1.1.mid",
+      "id": "kick-quarters",
+      "number": "1.1",
+      "name": "Kick on Every Beat",
+      "file": "stage-01-pulse/kick-quarters.mid",
+      "stage": "pulse",
+      "module": "the-strike",
+      "tier": "plain",
       "bpm": 60,
       "bars": 4,
+      "prereq": [],
       "summary": "One pad, straight quarter notes: kick on all four beats.",
-      "description": "Your first groove: nothing but the kick, once on every beat. The bass lands with you on 1 and 3 and pushes off-beat in between, so you have something to lock against without it playing your part for you. Aim for even spacing rather than force — one steady bar is worth four rushed ones.",
+      "description": "Your first groove: nothing but the kick, once on every beat. The bass plays the same four beats underneath, so the pulse is never in doubt — all you have to do is land on it. Aim for even spacing rather than force; one steady bar is worth four rushed ones.",
       "hints": [
         "Press Listen first. Play only once you can hum the pulse back.",
         "One finger, one pad: keep your strong hand's index on the kick and don't reposition mid-loop.",
         "Count \"1 2 3 4\" out loud and strike on the number, not after it — saying it late is playing it late.",
+        "Hit, don't press. The finger drops onto the pad and comes off; it does not push it down like a button.",
         "Watch the note approach the line instead of reacting to the sound you just made.",
-        "The bass pushes between your hits — that is on purpose. Follow its notes on 1 and 3 and ignore the ones in between.",
         "Orange notes mean drifting time, not weak hits. Hit Listen again, re-sync with the pulse, then run it once more."
       ]
     },
     {
-      "id": "1.2",
-      "name": "1.2 — Kick & Hi-Hat",
-      "file": "lesson-1.2.mid",
+      "id": "hats-quarters",
+      "number": "1.2",
+      "name": "Hi-Hat on Every Beat",
+      "file": "stage-01-pulse/hats-quarters.mid",
+      "stage": "pulse",
+      "module": "the-strike",
+      "tier": "core",
       "bpm": 60,
       "bars": 4,
+      "prereq": ["kick-quarters"],
+      "summary": "The same four beats, played by the weak hand on the hi-hat.",
+      "description": "Identical rhythm, other hand. From here on the weak hand owns the hi-hats and the strong hand owns the kick and snare, and every later lesson assumes it — so this is where the weak hand learns to keep time on its own, before it has anything else to think about.",
+      "hints": [
+        "Weak hand only. If the strong hand twitches along, sit on it.",
+        "The weak hand will feel late for the first few bars. It is not weaker at timing, only less rehearsed.",
+        "Same wrist drop as the kick — the hat is quieter because of the sample, not because you hit it more softly.",
+        "Run 1.1 and this back to back and listen for the difference in evenness. That gap is the thing you are closing."
+      ]
+    },
+    {
+      "id": "quarters-hand-swap",
+      "number": "1.3",
+      "name": "Quarters, Hands Swapping",
+      "file": "stage-01-pulse/quarters-hand-swap.mid",
+      "stage": "pulse",
+      "module": "the-strike",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["hats-quarters"],
+      "summary": "Quarter notes that change hands at every bar line — kick, hat, kick, hat.",
+      "description": "The rhythm never changes; the hand does. A bar of kick, a bar of hi-hat, and around again. Nothing is faster than 1.1 — the difficulty is entirely in the hand-over, which is where most people drop a beat or double one.",
+      "hints": [
+        "The hand-over happens on the bar line, and the new hand plays beat 1. Get that one note right and the rest of the bar follows.",
+        "Lift the finishing hand early rather than pulling it away at the last moment — a rushed exit drags the entry with it.",
+        "The incoming hand should already be resting over its pad a beat before it plays. Do not travel and strike in the same motion.",
+        "An extra note on beat 1 means both hands played it. Count the bars out loud — \"kick two three four, hat two three four\" — until the swap is automatic."
+      ]
+    },
+    {
+      "id": "alternating-quarters",
+      "number": "1.4",
+      "name": "Alternating Quarters",
+      "file": "stage-01-pulse/alternating-quarters.mid",
+      "stage": "pulse",
+      "module": "two-hands",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["quarters-hand-swap"],
+      "summary": "Snare, hat, snare, hat — the hands trade, one beat each.",
+      "description": "Both hands in the same bar for the first time, but never at the same moment: strong hand on 1 and 3, weak hand on 2 and 4. Nothing stacks, so if you hear two pads together you played an extra note.",
+      "hints": [
+        "Strong hand takes the snare, weak hand the hi-hat, and they never swap. Fixed pads, fixed fingers.",
+        "Let the hands take turns rather than steering each one. Think of a single motion passing back and forth.",
+        "The weak hand's beats are the ones that drift. If 2 and 4 sound late, they are.",
+        "Say the pads out loud as you play — \"snare, hat, snare, hat\" — so a swapped hand is audible before it is visible."
+      ]
+    },
+    {
+      "id": "alternating-8ths",
+      "number": "1.5",
+      "name": "Alternating 8ths",
+      "file": "stage-01-pulse/alternating-8ths.mid",
+      "stage": "pulse",
+      "module": "two-hands",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["alternating-quarters"],
+      "summary": "The single stroke roll: snare on the numbers, hat on the \"and\"s.",
+      "description": "The same trade, twice as often. This is the single stroke roll — the first rudiment, and the one everything in Stage 4 is built on. The bass still plays quarter notes, so the numbers are always underneath you and only the \"and\"s are yours alone.",
+      "hints": [
+        "Two hands sharing 8ths is easier than one hand playing them. Let the alternation do the work rather than hurrying.",
+        "Your strong hand always lands on a number, your weak hand always on an \"and\". If that ever inverts, stop at the bar line and restart.",
+        "Count \"1 and 2 and 3 and 4 and\" out loud and put the snare on the numbers.",
+        "Evenness beats speed: the gap between snare and hat should be the same as the gap between hat and snare.",
+        "If the hat notes bunch up against the snare, the weak hand is chasing. Lift it earlier, don't push it faster."
+      ]
+    },
+    {
+      "id": "alternating-8ths-swap",
+      "number": "1.6",
+      "name": "Alternating 8ths, Lead Swapping",
+      "file": "stage-01-pulse/alternating-8ths-swap.mid",
+      "stage": "pulse",
+      "module": "two-hands",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["alternating-8ths"],
+      "summary": "The same 8ths, but the lead hand flips at every bar line.",
+      "description": "Odd bars start on the snare, even bars on the hat. Not one note changes — only which hand owns the down-beat — so the whole exercise is knowing where you are. The bass stops helping here too: it pushes off-beat, and holding your own against it is the point.",
+      "hints": [
+        "The swap is on the bar line, so two of the same pad land in a row across it. That doubled sound is correct — it is how you know the flip happened.",
+        "Keep the alternation running through the swap. Do not stop and restart the hands.",
+        "Feel the bar, not the beat. Count bars out loud — \"one two three four, two two three four\" — and the flip stops needing a decision.",
+        "The bass pushes between your notes on purpose. Follow its beats 1 and 3 and ignore the rest.",
+        "Losing the lead halfway through means you flipped mid-bar. Reset on the next bar line rather than playing through it."
+      ]
+    },
+    {
+      "id": "eighths-strong-hand",
+      "number": "1.7",
+      "name": "8ths, Strong Hand",
+      "file": "stage-01-pulse/eighths-strong-hand.mid",
+      "stage": "pulse",
+      "module": "one-hand-faster",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["alternating-8ths"],
+      "summary": "Eight 8th notes a bar on the snare, one hand, no help.",
+      "description": "The same eight notes as the alternating lesson, but one hand plays all of them. Two hands sharing 8ths is easy; one hand keeping them even is not, and this is where the hi-hat lines in every groove from Stage 2 onward come from.",
+      "hints": [
+        "Bounce, don't push. The finger falls and rebounds; it does not press eight separate times.",
+        "Missing notes usually means the wrist has tensed up. Shake the hand out and start again rather than gripping harder.",
+        "The second half of the bar is where evenness goes. Listen to beats 3 and 4, not 1 and 2.",
+        "The bass plays the four numbers. Every second note of yours should land exactly on one of them."
+      ]
+    },
+    {
+      "id": "eighths-weak-hand",
+      "number": "1.8",
+      "name": "8ths, Weak Hand",
+      "file": "stage-01-pulse/eighths-weak-hand.mid",
+      "stage": "pulse",
+      "module": "one-hand-faster",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["eighths-strong-hand"],
+      "summary": "The same eight notes on the weak hand's hi-hat.",
+      "description": "This is the hi-hat line of a rock groove with everything else stripped away, and it lives on the weak hand for the rest of the curriculum. Getting it even now means Stage 2 is only about the other hand.",
+      "hints": [
+        "Weak hand alone. The strong hand stays off the pads entirely.",
+        "Let the hand run like a metronome — it should feel like one continuous motion, not eight decisions.",
+        "If it wobbles, it will wobble under a groove too. Fix it here, where nothing else is in the way.",
+        "Play it once with your eyes on the highway and once with your eyes closed. The second one tells you whether you are keeping time or reading it."
+      ]
+    },
+    {
+      "id": "eighths-through-rests",
+      "number": "1.9",
+      "name": "8ths Through a Rest",
+      "file": "stage-01-pulse/eighths-through-rests.mid",
+      "stage": "pulse",
+      "module": "one-hand-faster",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["eighths-weak-hand"],
+      "summary": "8th-note hi-hats with beat 3 removed — the grid has to survive a hole in it.",
+      "description": "Six notes where there were eight: beat 3 and its \"and\" are silent. Nothing is faster and nothing is new, but the pattern stops carrying you through the middle of the bar and your own clock has to. With the bass pushing off-beat as well, there is nothing left to lean on — which is the exercise.",
+      "hints": [
+        "Keep the hand moving through the rest. Play the silence in the air above the pad rather than stopping.",
+        "Count out loud the whole way through, especially where nothing sounds: \"3 and\" is still two beats of time.",
+        "The note after the hole — the \"and\" of 4 — is the one that tells you whether you kept the grid. Listen for it.",
+        "Coming back early means you shortened the rest. Coming back late means you waited for a cue that never arrives.",
+        "If it falls apart, run 1.8 once to reset the feel, then come straight back."
+      ]
+    },
+    {
+      "id": "checkpoint-1",
+      "number": "1.◆",
+      "name": "Checkpoint — Pulse",
+      "file": "stage-01-pulse/checkpoint-1.mid",
+      "stage": "pulse",
+      "module": null,
+      "tier": "checkpoint",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": [],
+      "summary": "One bar each of the stage: quarters, alternating 8ths, one-hand 8ths, and 8ths through a rest.",
+      "description": "Four bars, four different patterns, no repeats. Practising one pattern until it is smooth feels productive and holds up badly; switching between patterns feels worse and holds up far better. This is where the stage is actually passed — if you can play it clean, Stage 2 is yours.",
+      "hints": [
+        "Read one bar ahead. The pattern changes at every bar line, so the note you are playing is never the one you should be looking at.",
+        "The hands change job three times: strong, both, weak, weak. Know which hand starts each bar before you press Play.",
+        "Do not slow down for the hard bar. An even loop with one shaky bar beats four bars of different tempos.",
+        "Losing a bar is normal the first few runs. Come back in at the next bar line rather than chasing what you missed."
+      ]
+    },
+    {
+      "id": "backbeat-plain",
+      "number": "2.1",
+      "name": "The Backbeat",
+      "file": "stage-02-backbeat/backbeat-plain.mid",
+      "stage": "backbeat",
+      "module": "trading",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["alternating-quarters"],
+      "summary": "Kick on 1 and 3, snare on 2 and 4 — the shape under most songs you know.",
+      "description": "Two voices and no hi-hat: the skeleton of nearly every rock and pop groove ever recorded. Nothing sounds at the same time as anything else, so this is Stage 1's alternation with the pads renamed — but 2 and 4 are now the loud ones, and that is what makes it a groove instead of an exercise.",
+      "hints": [
+        "Both pads on the strong hand: kick under the index, snare under the middle. The weak hand rests this lesson.",
+        "Lean on 2 and 4. The backbeat should be the loudest thing in the bar — that is where the song is.",
+        "Nothing stacks. If you hear kick and snare together, you played an extra note.",
+        "Say \"boom bap boom bap\" through the bar. If you can say it, your hand can find it."
+      ]
+    },
+    {
+      "id": "kick-snare-8ths",
+      "number": "2.2",
+      "name": "Kick & Snare in 8ths",
+      "file": "stage-02-backbeat/kick-snare-8ths.mid",
+      "stage": "backbeat",
+      "module": "trading",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["backbeat-plain", "alternating-8ths"],
+      "summary": "The same trade at 8th speed: kick on the numbers, snare on the \"and\"s.",
+      "description": "Both pads on one hand now, twice as often, with the snare landing entirely between the beats. The bass keeps the four numbers going, so every kick has something under it and every snare has nothing — which is the whole difficulty.",
+      "hints": [
+        "Kick and snare are both on the strong hand. Two fingers, fixed, alternating.",
+        "The snares are off-beat. Count \"1 and 2 and\" out loud and put the snare on every \"and\".",
+        "A snare that drifts toward the next kick means you are hearing it as a lead-in rather than a note of its own.",
+        "Play the kicks alone for a bar first, then drop the snares into the gaps."
+      ]
+    },
+    {
+      "id": "trading-three-voices",
+      "number": "2.3",
+      "name": "Three Voices, One at a Time",
+      "file": "stage-02-backbeat/trading-three-voices.mid",
+      "stage": "backbeat",
+      "module": "trading",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["kick-snare-8ths"],
+      "summary": "Kick, snare and hat rotating through the 8ths — three voices, never two at once.",
+      "description": "Three pads in a bar and nothing ever stacks: the voices take turns, one 8th note each, and the cycle of three against eight 8ths means each bar starts on a different voice. This is the difference between \"three voices\" and \"three at once\" — and the second one is the next module.",
+      "hints": [
+        "Three pads, two hands: kick and snare on the strong hand, hat on the weak one. The hands are not taking even turns and they are not supposed to.",
+        "Three voices across eight 8ths does not divide evenly, so the bar never repeats itself. Read ahead rather than predicting.",
+        "Each bar begins on a different voice. Do not assume the kick starts it.",
+        "One note at a time, always. Any stack is an extra note.",
+        "If it collapses, play the rotation out loud first — \"kick snare hat, kick snare hat\" — with no pads at all."
+      ]
+    },
+    {
+      "id": "kick-hats-unison",
+      "number": "2.4",
+      "name": "Kick & Hi-Hat",
+      "file": "stage-02-backbeat/kick-hats-unison.mid",
+      "stage": "backbeat",
+      "module": "stacking",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["hats-quarters", "kick-quarters"],
       "summary": "Two pads at once: hats on all four beats, kick on 1 and 3.",
-      "description": "Now two limbs. The hi-hat keeps every beat while the kick plays only 1 and 3, so beats 1 and 3 are struck by both pads together and beats 2 and 4 by the hat alone. Getting those pairs to land as one sound is the whole exercise.",
+      "description": "The first time two pads have to sound together. The hi-hat keeps every beat while the kick plays only 1 and 3, so beats 1 and 3 are struck by both hands at once and beats 2 and 4 by the hat alone. Getting those pairs to land as one sound is the whole exercise.",
       "hints": [
         "One pad per hand: hi-hat on your weak hand, kick on your strong hand. Never cross over to cover both.",
         "Beats 1 and 3 are a single motion — both fingers drop together. Drill just that pair a dozen times before running the loop.",
@@ -34,15 +674,81 @@
       ]
     },
     {
-      "id": "2.1",
-      "name": "2.1 — Four on the Floor",
-      "file": "lesson-2.1.mid",
+      "id": "rock-beat-quarter-hats",
+      "number": "2.5",
+      "name": "Rock Beat, Quarter Hats",
+      "file": "stage-02-backbeat/rock-beat-quarter-hats.mid",
+      "stage": "backbeat",
+      "module": "stacking",
+      "tier": "core",
       "bpm": 60,
       "bars": 4,
-      "summary": "Four-on-the-floor: kick on all four beats, snare on 2 and 4, closed hats on every 8th.",
-      "description": "The four-on-the-floor groove: kick on every beat, snare backbeat on 2 and 4, and closed hi-hats on the off-beats. An octave-bouncing bass line runs underneath — start slow and lock into it.",
+      "prereq": ["kick-hats-unison", "backbeat-plain"],
+      "summary": "Hat on all four, kick on 1 and 3, snare on 2 and 4 — something stacks on every beat.",
+      "description": "The backbeat and the hat line at once, and now there is no beat where only one thing sounds: hat plus kick on 1 and 3, hat plus snare on 2 and 4. Everything is still on the numbers — nothing here is fast — so all the work is in making two pads land as one, four times a bar.",
       "hints": [
-        "Three voices, three fingers, fixed positions: hats and snare on one hand, kick on the other.",
+        "Three pads: hat on the weak hand, kick and snare on the strong hand. Nothing moves for the whole lesson.",
+        "The pattern is two pairs alternating. Drill \"hat+kick\" until it's one sound, then \"hat+snare\", then join them.",
+        "The hat is the constant. Start it first and let the other hand fall in, rather than leading with the kick.",
+        "A flammed pair — two taps where there should be one — is the strong hand arriving late. Drop both fingers from the same height at the same time."
+      ]
+    },
+    {
+      "id": "stack-every-beat",
+      "number": "2.6",
+      "name": "Triple Stack",
+      "file": "stage-02-backbeat/stack-every-beat.mid",
+      "stage": "backbeat",
+      "module": "stacking",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["rock-beat-quarter-hats"],
+      "summary": "Kick and hat on all four beats, snare on 2 and 4 — three pads together, twice a bar.",
+      "description": "The kick fills in 2 and 4, so beats 2 and 4 now stack three pads: hat, kick and snare, all in one motion. Still nothing but quarter notes — the density is vertical, not horizontal, and that is a different kind of hard.",
+      "hints": [
+        "Beats 2 and 4 are three fingers dropping together. Practise those two beats alone, out of time, until all three fire as one.",
+        "Two fingers of the strong hand move together on 2 and 4. Keep them at the same height between hits so they arrive at the same time.",
+        "1 and 3 are the easy pair from the last lesson. Do not let them get quieter to make room for the hard ones.",
+        "If a triple sounds like a roll, you are dropping the fingers in sequence. Slow the whole loop until they land flat together."
+      ]
+    },
+    {
+      "id": "rock-beat-8th-hats",
+      "number": "2.7",
+      "name": "Rock Beat, 8th Hats",
+      "file": "stage-02-backbeat/rock-beat-8th-hats.mid",
+      "stage": "backbeat",
+      "module": "the-rock-beat",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["rock-beat-quarter-hats", "eighths-weak-hand"],
+      "summary": "The basic rock beat: 8th hats, kick on 1 and 3, snare on 2 and 4.",
+      "description": "The groove behind more records than any other. Only one thing changed from the quarter-hat version: the hat hand now runs in 8ths, twice the speed of everything else. You already played that hat line on its own in Stage 1 — this is where it gets a groove underneath it.",
+      "hints": [
+        "Three voices, three fingers, fixed positions: hat on the weak hand, kick and snare on the strong.",
+        "Keep the hat hand running continuously and land the other voices inside it. Do not start it and stop it.",
+        "Every second hat note stacks with a kick or a snare. The \"and\"s are the only notes the hat plays alone.",
+        "Sing it before you play it: \"boom-tick, bap-tick, boom-tick, bap-tick.\"",
+        "Missing hats usually means the wrist is tensing up. Shake the hand out and let the fingers bounce instead of pressing."
+      ]
+    },
+    {
+      "id": "four-on-the-floor",
+      "number": "2.8",
+      "name": "Four on the Floor",
+      "file": "stage-02-backbeat/four-on-the-floor.mid",
+      "stage": "backbeat",
+      "module": "the-rock-beat",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["rock-beat-8th-hats", "stack-every-beat"],
+      "summary": "Four-on-the-floor: kick on all four beats, snare on 2 and 4, closed hats on every 8th.",
+      "description": "The house and disco engine: kick on every beat, snare backbeat on 2 and 4, closed hi-hats through the 8ths. Two lessons met here — the triple stack from the last module and the 8th-note hat line from this one — and an octave-bouncing bass runs underneath.",
+      "hints": [
+        "Three voices, three fingers, fixed positions: hat on one hand, kick and snare on the other.",
         "The hats run in 8ths — twice the speed of the kick. Keep that hand moving continuously and land the other voices inside it.",
         "Beats 2 and 4 stack kick + snare + hat. Practise those two beats alone until all three fire as one sound.",
         "Sing it before you play it: \"boom-tick, bap-tick, boom-tick, bap-tick.\" If you can say it, your hands can find it.",
@@ -50,28 +756,58 @@
       ]
     },
     {
-      "id": "2.2",
-      "name": "2.2 — Disco Open Hats",
-      "file": "lesson-2.2.mid",
+      "id": "disco-open-hats",
+      "number": "2.9",
+      "name": "Disco Open Hats",
+      "file": "stage-02-backbeat/disco-open-hats.mid",
+      "stage": "backbeat",
+      "module": "the-rock-beat",
+      "tier": "stretch",
       "bpm": 60,
       "bars": 4,
+      "prereq": ["four-on-the-floor"],
       "summary": "Four-on-the-floor with the off-beats opened up: closed hat on the beats, open hat on every \"and\".",
-      "description": "Lesson 2.1's groove, one pad wider. Kick still lands on every beat and the snare still answers on 2 and 4, but the 8th-note hat line now splits in two: closed hat on the numbers, open hat on every \"and\". The same octave-bouncing bass runs underneath, so only your part got harder — the hat hand has to move between two pads instead of repeating one.",
+      "description": "The same groove, one pad wider. Kick still lands on every beat and the snare still answers on 2 and 4, but the 8th-note hat line now splits in two: closed hat on the numbers, open hat on every \"and\". The first lesson where a hand has to travel — only your part got harder, the backing is unchanged.",
       "hints": [
         "Four voices now. Give the two hats neighbouring pads on your weak hand — index closed, middle open — with snare and kick on the strong hand.",
         "Drill the hat hand alone first: \"closed-open-closed-open\" for a full bar, no kick, no snare. Only add the other hand once that alternation runs without looking.",
         "The open hat is a swing door, not a stab — let it ring into the next closed hit instead of clipping it short.",
         "Every open hat sits alone between two stacks — it is the only moment nothing else fires. Use it to breathe and reset the hand.",
-        "Say \"boom-tss, bap-tss\" and keep the \"tss\" louder than in 2.1 — if the open hats disappear, you are landing on the closed pad twice.",
+        "Say \"boom-tss, bap-tss\" and keep the \"tss\" louder than in Four on the Floor — if the open hats disappear, you are landing on the closed pad twice.",
         "Losing the alternation halfway through a bar means the hat hand is leading with the wrong finger. Stop, reset on the next bar line, start the pair from closed."
       ]
     },
     {
-      "id": "3.1",
-      "name": "3.1 — Single Paradiddle",
-      "file": "lesson-3.1.mid",
+      "id": "checkpoint-2",
+      "number": "2.◆",
+      "name": "Checkpoint — The Backbeat",
+      "file": "stage-02-backbeat/checkpoint-2.mid",
+      "stage": "backbeat",
+      "module": null,
+      "tier": "checkpoint",
       "bpm": 60,
       "bars": 4,
+      "prereq": [],
+      "summary": "One bar each: the bare backbeat, the quarter-hat groove, four on the floor, and disco open hats.",
+      "description": "Four bars, four grooves, no repeats — from two voices to four, and from a bar where nothing stacks to a bar where the hat hand travels. Switching between grooves is harder than any one of them and it is what makes them stick. Play this clean and the whole stage is yours.",
+      "hints": [
+        "The voice count climbs every bar: two, three, three, four. Know what is coming before it arrives.",
+        "The hat hand has the most to do: silent, quarters, 8ths, then two pads. Let it lead each change.",
+        "Bar 4 is the only one where a hand moves. Have the fingers over both hat pads by the end of bar 3.",
+        "Do not slow down for the last bar. An even loop with one shaky bar beats four bars of different tempos."
+      ]
+    },
+    {
+      "id": "paradiddle-single",
+      "number": "4.4",
+      "name": "Single Paradiddle",
+      "file": "stage-04-sticking/paradiddle-single.mid",
+      "stage": "sticking",
+      "module": "the-paradiddle",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["alternating-8ths-swap"],
       "summary": "The first sticking pattern: R L R R, L R L L in 8th notes, snare on the lead hand and closed hat on the other.",
       "description": "Until now each hand owned its own pads and its own beats. The paradiddle breaks that: the hands alternate — R L — then one of them plays twice in a row — R R — and the whole thing flips on the second half of the bar. Snare is the lead hand, closed hat the other, so you can hear the two doubles as well as feel them. Nothing ever stacks — one hit, one hand, every 8th note — and the bass walks in plain quarter notes, so the sticking is the only hard thing here.",
       "hints": [
