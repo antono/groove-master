@@ -65,19 +65,6 @@
 	<main class="main">
 		{@render children()}
 	</main>
-
-	<footer class="footer">
-		<a
-			class="badge"
-			href="https://www.wtfpl.net/about/"
-			target="_blank"
-			rel="license noopener noreferrer"
-			title="Do What The Fuck You Want To Public License, Version 2"
-		>
-			<span class="badge-label">license</span>
-			<span class="badge-value">WTFPL</span>
-		</a>
-	</footer>
 </div>
 
 <style>
@@ -155,44 +142,5 @@
 
 	.main {
 		flex: 1;
-	}
-
-	.footer {
-		margin-top: auto;
-		padding: 2rem 0 1.5rem;
-		display: flex;
-		justify-content: center;
-	}
-
-	.badge {
-		display: inline-flex;
-		font-family: var(--font-mono);
-		font-size: 0.7rem;
-		line-height: 1;
-		border-radius: 0.25rem;
-		overflow: hidden;
-		text-decoration: none;
-		opacity: 0.75;
-		transition: opacity 120ms ease;
-	}
-
-	.badge:hover {
-		opacity: 1;
-	}
-
-	.badge-label,
-	.badge-value {
-		padding: 0.4em 0.6em;
-	}
-
-	.badge-label {
-		background: #555;
-		color: #fff;
-	}
-
-	.badge-value {
-		background: #4c1;
-		color: #fff;
-		font-weight: bold;
 	}
 </style>
