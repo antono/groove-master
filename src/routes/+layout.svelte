@@ -36,6 +36,7 @@
 
 	const links = $derived([
 		{ href: `${base}/lessons`, route: '/lessons', label: 'Lessons' },
+		{ href: `${base}/stats`, route: '/stats', label: 'Stats' },
 		{ href: `${base}/onboarding`, route: '/onboarding', label: 'Setup' },
 		...(showDebug ? [{ href: `${base}/debug`, route: '/debug', label: 'Debug' }] : [])
 	]);

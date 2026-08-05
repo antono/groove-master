@@ -5,9 +5,15 @@
 //                             controller's Play/Stop buttons (see
 //                             transport-control.ts); either half may be null.
 //   padrill:selectedDevice  the deviceId last chosen
+//   padrill:bpm:<lessonId>  tempo that lesson was last practised at, per lesson
 //
 // Written by /onboarding and /debug/settings, read by /lessons/[id] and the layout's
-// background sample warm-up.
+// background sample warm-up. The per-lesson tempo is both written and read by
+// /lessons/[id] alone.
+//
+// Practice history is not here — it lives in IndexedDB (see stats.ts), which is
+// what an append-only log with per-run detail wants. localStorage keeps only the
+// small settings that have to be readable synchronously during render.
 
 export const STORAGE_PREFIX = "padrill:";
 

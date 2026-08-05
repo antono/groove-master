@@ -7,6 +7,7 @@
 	import { DrumPlayer } from '$lib/drums';
 	import { Sampler } from '$lib/sampler';
 	import { asBinding, parseControl, sameControl, type TransportBinding } from '$lib/transport-control';
+	import { dayKey, recordSession } from '$lib/stats';
 	import LessonChart from '$lib/lesson-chart.svelte';
 
 	type Lesson = {
@@ -60,6 +61,9 @@
 	let selectedId: string | null = $state(null);
 	let currentInput: MIDIInput | null = null;
 	let ctrlMap: Map<number, number> = $state(new Map()); // controller note -> GM drum
+	// Name stored with the device mapping, kept so a finished run can be filed
+	// against a controller even when the port has since gone away.
+	let savedDeviceName: string | null = $state(null);
 	let kit = $state(1);
 	// Play / Stop buttons on the controller, captured by the setup wizard.
 	let transport: TransportBinding = $state({ start: null, stop: null });
@@ -85,15 +89,22 @@
 
 	let lessonBpm = $state(60); // tempo the lesson ships with, from the manifest
 
-	// Where the tempo slider sits when the page loads: the lesson's own tempo,
-	// or the ?bpm= override if the link carried one.
-	const baseBpm = $derived(bpmParam ?? lessonBpm);
-	// Slider position, cleared on lesson load so the tempo never leaks between
-	// lessons. null = "wherever baseBpm is".
+	// What "reset" goes back to: the lesson's own tempo, or the ?bpm= override if
+	// the link carried one.
+	const defaultBpm = $derived(bpmParam ?? lessonBpm);
+
+	// The tempo this lesson was last practised at, restored on load. Saved per
+	// lesson, never globally: 1.1 at 120 says nothing about where 2.2 should sit,
+	// and a tempo that leaked across lessons would drop the student into a speed
+	// they never chose for the pattern in front of them.
+	let savedBpm = $state<number | null>(null);
+
+	// Slider position for this visit. null = "wherever the saved/default tempo is".
 	let bpmChoice = $state<number | null>(null);
 
-	// The tempo everything (scroll, scheduler, scoring) runs at.
-	const bpm = $derived(bpmChoice ?? baseBpm);
+	// The tempo everything (scroll, scheduler, scoring) runs at. An explicit
+	// ?bpm= outranks the remembered one — the link is the more deliberate signal.
+	const bpm = $derived(bpmChoice ?? bpmParam ?? savedBpm ?? lessonBpm);
 
 	let playing = $state(false);
 	let paused = $state(false); // transport frozen mid-lesson; highway stays up
@@ -202,10 +213,12 @@
 	function loadDeviceMapping(deviceId: string) {
 		ctrlMap = new Map();
 		transport = { start: null, stop: null };
+		savedDeviceName = null;
 		try {
 			const raw = localStorage.getItem(STORAGE_PREFIX + deviceId);
 			if (!raw) return;
 			const cfg = JSON.parse(raw);
+			if (typeof cfg.deviceName === 'string') savedDeviceName = cfg.deviceName;
 			transport = asBinding(cfg.transport);
 			if (Array.isArray(cfg.notes) && Array.isArray(cfg.soundNotes)) {
 				const m = new Map<number, number>();
@@ -231,6 +244,7 @@
 		selected = lesson;
 		lessonBpm = lesson.bpm;
 		bpmChoice = null;
+		savedBpm = readSavedBpm(lesson.id);
 		report = null;
 		status = 'Loading ' + lesson.name + '…';
 		try {
@@ -476,11 +490,47 @@
 	function setBpm(value: number) {
 		stopDemo();
 		bpmChoice = Math.min(BPM_MAX, Math.max(BPM_MIN, Math.round(value)));
+		writeSavedBpm(bpmChoice);
 	}
 
 	function resetBpm() {
 		stopDemo();
 		bpmChoice = null;
+		savedBpm = null;
+		writeSavedBpm(null);
+	}
+
+	// ---- remembered tempo -------------------------------------------------
+	//
+	// localStorage, not the stats database: this is a one-number preference read
+	// synchronously while the lesson page is building itself, and IndexedDB would
+	// hand it back a frame or two later — after the slider had already painted at
+	// the wrong tempo.
+
+	const bpmKey = (lessonId: string) => STORAGE_PREFIX + 'bpm:' + lessonId;
+
+	function readSavedBpm(lessonId: string): number | null {
+		try {
+			const raw = localStorage.getItem(bpmKey(lessonId));
+			if (raw == null) return null;
+			const n = Number(raw);
+			// Junk or an out-of-range leftover falls back to the lesson's own tempo
+			// rather than pinning the slider somewhere it cannot represent.
+			if (!Number.isFinite(n) || n < BPM_MIN || n > BPM_MAX) return null;
+			return Math.round(n);
+		} catch {
+			return null; // no storage (private mode) — the lesson tempo still works
+		}
+	}
+
+	function writeSavedBpm(value: number | null) {
+		if (!selected) return;
+		try {
+			if (value == null) localStorage.removeItem(bpmKey(selected.id));
+			else localStorage.setItem(bpmKey(selected.id), String(value));
+		} catch {
+			// Storage full or blocked — the tempo just will not be remembered.
+		}
 	}
 
 	async function play() {
@@ -543,9 +593,51 @@
 				}
 			});
 		}
-		report = buildReport();
+		// Build once and keep the plain object: `report` is $state, so reading it
+		// back yields a proxy, and structuredClone (what IndexedDB writes through)
+		// throws on those.
+		const built = buildReport();
+		report = built;
+		void logSession(built);
 		beatPos = parsed ? parsed.lengthBeats : 0;
 		updateStrip();
+	}
+
+	// File the finished run in the practice history behind /stats. Fire-and-forget
+	// and non-throwing by contract (see $lib/stats): the result screen is already
+	// on screen and must not wait on, or be broken by, a storage failure.
+	async function logSession(r: Report) {
+		if (!selected) return;
+		const at = Date.now();
+		await recordSession({
+			at,
+			day: dayKey(at),
+			lesson: selected.id,
+			lessonName: selected.name,
+			bpm,
+			device: inputs.find((i) => i.id === selectedId)?.name ?? savedDeviceName,
+			deviceId: selectedId,
+			total: r.total,
+			hits: r.hits,
+			perfect: r.perfect,
+			good: r.good,
+			off: r.off,
+			miss: r.miss,
+			extra: r.extra,
+			accuracy: r.accuracy,
+			avgAbsMs: r.avgAbsMs,
+			early: r.early,
+			late: r.late,
+			durationMs: ((parsed?.lengthBeats ?? 0) + COUNT_IN) * (60000 / bpm),
+			grade: r.grade,
+			lanes: r.lanes.map((l) => ({
+				note: l.note,
+				name: l.name,
+				total: l.total,
+				hits: l.hits,
+				avgMs: l.avgMs
+			}))
+		});
 	}
 
 	// ---- listen (in-place preview) --------------------------------------
@@ -813,8 +905,8 @@
 				aria-label="Tempo in beats per minute"
 				oninput={(e) => setBpm(e.currentTarget.valueAsNumber)}
 			/>
-			{#if bpm !== baseBpm}
-				<button class="tempo-reset" onclick={resetBpm}>reset to {baseBpm}</button>
+			{#if bpm !== defaultBpm}
+				<button class="tempo-reset" onclick={resetBpm}>reset to {defaultBpm}</button>
 			{:else if bpmParam != null && bpmParam !== lessonBpm}
 				<span class="tempo-note">· lesson default {lessonBpm}</span>
 			{/if}

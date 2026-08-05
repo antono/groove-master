@@ -27,10 +27,15 @@ drumming is supported.
   - `?bpm=<40..240>` overrides the manifest tempo, e.g. `/lessons/1.2?bpm=90`.
     The effective BPM is shown next to Play and in the transport HUD.
   - A **tempo slider** (40–240) sits next to Play and is where the run's BPM comes
-    from; it resets to the lesson's own tempo (or `?bpm=`) on every lesson load.
-    It exists only on the resting page: scroll, scheduler and scoring all derive
-    from `bpm`, so changing it mid-run would shift the segment the compositor is
-    already animating. Moving it also stops a running Listen preview.
+    from. It exists only on the resting page: scroll, scheduler and scoring all
+    derive from `bpm`, so changing it mid-run would shift the segment the
+    compositor is already animating. Moving it also stops a running Listen preview.
+  - The slider's position is **remembered per lesson** in
+    `localStorage["padrill:bpm:<lessonId>"]`, so a lesson reopens at the tempo it
+    was last practised at. Per lesson, never global — 1.1 at 120 says nothing
+    about where 2.2 belongs. Precedence is `?bpm=` → remembered → manifest, and
+    "reset" drops the remembered value so the lesson returns to its own tempo.
+- `/stats` — practice history (see **Practice stats** below).
 - `/onboarding` — setup wizard. `/debug/settings` — pad grid, device mapping, kit
   choice.
   - `/` redirects to `/lessons`. Debug pages (`/debug`, `/debug/settings`,
@@ -109,6 +114,33 @@ drumming is supported.
   highway already had; `parseMidi` shifts it to beats -3, -2, -1 and keeps it out
   of the lanes, the chart and the scoring. `build_lesson` adds it to every
   lesson, so new entries get it for free. Play counts in; Listen skips it.
+
+## Practice stats
+
+- Every **scored run** is appended to IndexedDB (`padrill` / `sessions`) from
+  `finish()` on `/lessons/[id]`. Listen previews and abandoned runs are not
+  recorded — only a lesson played to the result screen. `$lib/stats.ts` owns the
+  schema and is non-throwing by contract: a browser with no IndexedDB still plays
+  lessons, it just records nothing.
+- A record carries the lesson, the **BPM actually played**, the **controller**
+  (live Web MIDI port name + id, `null` when nothing was connected), the note
+  counts (perfect/good/off/miss/extra), the ms stats (`avgAbsMs`, early/late),
+  `durationMs`, and the per-pad breakdown.
+  - `durationMs` is derived from the run's length in beats at its BPM, not from
+    the wall clock, so a pause mid-lesson is not banked as practice time.
+  - `day` (local `YYYY-MM-DD`) is stored rather than derived on read: the heatmap
+    buckets by the day the student experienced, and a run finished at 00:30 local
+    is the previous day in UTC.
+- `/stats` reads the log and aggregates **per local day**. A GitHub-style 53-week
+  heatmap answers "am I showing up"; four `$lib/trend-chart.svelte` charts (tempo,
+  timing error, accuracy, time played) answer "am I improving", sharing one range
+  filter so they always describe the same slice.
+  - **One series per chart, deliberately.** The four measures have unrelated
+    scales; overlaying them would mean a second y-axis. Add a chart, never an axis.
+  - Chart hues come from the `--gold` / `--cyan` / `--green` / `--violet` tokens,
+    validated for CVD separation and contrast against `--surface`. The heatmap
+    ramp is one hue in four steps; its empty cell is a ringed "no data" swatch,
+    not a fifth step.
 
 ## Bass samples (backing track)
 

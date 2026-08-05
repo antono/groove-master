@@ -29,6 +29,8 @@
   --green-dim: rgba(85, 187, 136, 0.35);
   --cyan: #66ccff;
   --cyan-dim: rgba(102, 204, 255, 0.35);
+  --violet: #a78bfa;
+  --violet-dim: rgba(167, 139, 250, 0.35);
   --red: #e07070;
 
   /* neumorphic pad shadows (paired light/dark so pads read as raised) */
