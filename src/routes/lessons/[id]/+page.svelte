@@ -9,6 +9,7 @@
 	import { asBinding, parseControl, sameControl, type TransportBinding } from '$lib/transport-control';
 	import { dayKey, recordSession } from '$lib/stats';
 	import LessonChart from '$lib/lesson-chart.svelte';
+	import { laneColor } from '$lib/drum-colors';
 
 	// `id` is the lesson's slug and never changes; `number` ("2.4") is rendered
 	// from its position in the curriculum, so inserting a lesson renumbers the
@@ -963,7 +964,9 @@
 							class="note {statuses[i]}"
 							style="left: {n.beat * PX_PER_BEAT}px; top: {laneRow(n.note) * laneH +
 								laneH / 2 -
-								NOTE / 2}px"
+								NOTE / 2}px; {statuses[i] === 'pending'
+								? `background: ${laneColor(n.note, laneRow(n.note))}`
+								: ''}"
 						></div>
 					{/each}
 				</div>
@@ -1292,8 +1295,9 @@
 		height: 26px;
 		margin-left: -13px;
 		border-radius: 0.3rem;
-		background: #6cf;
-		box-shadow: 0 0 4px rgba(100, 200, 255, 0.4);
+		/* Pending notes get their drum-family colour inline (see markup); this is the
+		   fallback if that is ever absent. Status classes below recolour a scored note. */
+		background: var(--cyan);
 		transition: background 0.1s ease;
 		contain: layout paint;
 	}

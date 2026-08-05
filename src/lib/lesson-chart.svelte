@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
 	import type { MidiNote } from '$lib/midi';
+	import { laneColor } from '$lib/drum-colors';
 
 	let {
 		notes,
@@ -79,19 +80,11 @@
 		)
 	);
 
-	// Hue by drum family, so a kick is the same colour in every lesson's chart.
-	// Anything outside the common GM percussion falls back to cycling the accents.
-	const hues = ['var(--cyan)', 'var(--gold)', 'var(--green)'];
-	const familyHue = new Map([
-		[35, hues[2]], // acoustic bass drum
-		[36, hues[2]], // kick
-		[38, hues[1]], // snare
-		[40, hues[1]], // electric snare
-		[42, hues[0]], // closed hi-hat
-		[44, hues[0]], // pedal hi-hat
-		[46, hues[0]] // open hi-hat
-	]);
-	const laneColor = (note: number) => familyHue.get(note) ?? hues[row(note) % hues.length];
+	// How long, in beats, a note stays "popped" after the playhead reaches it. Beat
+	// units so the flash tracks the tempo — brief at speed, longer when slow.
+	const POP_BEATS = 0.2;
+	const isPlaying = (beat: number) =>
+		playhead != null && beat <= playhead && playhead < beat + POP_BEATS;
 </script>
 
 <svg class="chart" viewBox="0 0 {w} {h}" role="img" aria-label="Pattern chart">
@@ -127,12 +120,14 @@
 		{#if row(n.note) >= 0}
 			<rect
 				class="note"
+				class:playing={isPlaying(n.beat)}
 				x={x(n.beat) - noteW / 2}
 				y={rowY(n.note) + (ROW_H - NOTE_H) / 2}
 				width={noteW}
 				height={NOTE_H}
 				rx={Math.min(3, noteW / 3)}
-				fill={laneColor(n.note)}
+				style="color: {laneColor(n.note, row(n.note))}"
+				fill="currentColor"
 			/>
 		{/if}
 	{/each}
@@ -186,6 +181,20 @@
 
 	.note {
 		opacity: 0.9;
+		transform-box: fill-box;
+		transform-origin: center;
+		transition:
+			transform 0.12s ease,
+			opacity 0.12s ease,
+			filter 0.12s ease;
+	}
+
+	/* Pops as the playhead reaches it during Listen — brighter, bigger, and glowing
+	   in its own family hue. */
+	.note.playing {
+		opacity: 1;
+		transform: scale(1.5);
+		filter: brightness(1.25) drop-shadow(0 0 3px currentColor);
 	}
 
 	.playhead {
