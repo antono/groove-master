@@ -1042,7 +1042,6 @@
 
 	/* Pattern reference while the transport is at rest — same chart the catalogue shows. */
 	.chart-frame {
-		max-width: 900px;
 		margin: 0 0 1rem;
 		padding: 0.55rem 0.7rem;
 		background: var(--bg);
@@ -1075,7 +1074,6 @@
 	}
 
 	.hints {
-		max-width: 640px;
 		margin: 0 0 1.25rem;
 		padding-left: 1.1rem;
 		color: var(--text-muted);
@@ -1151,7 +1149,6 @@
 	}
 
 	.description {
-		max-width: 640px;
 		margin: 0 0 1rem;
 		color: #aab;
 		font-size: 0.92rem;
