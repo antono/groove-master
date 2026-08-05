@@ -104,21 +104,25 @@
 		return { current: alive ? run : 0, best };
 	}
 
+	// Scoped to the current range so the tiles, the charts and the tables always
+	// describe the same slice. The streak is the exception: it is a property of
+	// the whole history, and a "3 day streak" inside a one-day window is nonsense.
 	const totals = $derived.by(() => {
-		const notes = sessions.reduce((a, s) => a + s.total, 0);
-		const hits = sessions.reduce((a, s) => a + s.hits, 0);
-		const scored = sessions.filter((s) => s.hits > 0);
+		const list = inRange;
+		const notes = list.reduce((a, s) => a + s.total, 0);
+		const hits = list.reduce((a, s) => a + s.hits, 0);
+		const scored = list.filter((s) => s.hits > 0);
 		const { current, best } = streaks(byDay);
 		return {
-			runs: sessions.length,
-			days: byDay.size,
+			runs: list.length,
+			days: new Set(list.map((s) => s.day)).size,
 			notes,
 			hits,
 			accuracy: notes ? hits / notes : 0,
-			avgBpm: sessions.length ? sessions.reduce((a, s) => a + s.bpm, 0) / sessions.length : 0,
-			bestBpm: sessions.reduce((a, s) => Math.max(a, s.bpm), 0),
+			avgBpm: list.length ? list.reduce((a, s) => a + s.bpm, 0) / list.length : 0,
+			bestBpm: list.reduce((a, s) => Math.max(a, s.bpm), 0),
 			avgMs: scored.length ? scored.reduce((a, s) => a + s.avgAbsMs, 0) / scored.length : 0,
-			playMs: sessions.reduce((a, s) => a + (s.durationMs ?? 0), 0),
+			playMs: list.reduce((a, s) => a + (s.durationMs ?? 0), 0),
 			streak: current,
 			bestStreak: best
 		};
@@ -299,12 +303,13 @@
 			case 'Enter':
 			case ' ':
 				if (focusCell && !focusCell.future) {
-					selectedDay = focusCell.key;
+					pickDay(focusCell.key);
 					event.preventDefault();
 				}
 				return;
 			case 'Escape':
-				selectedDay = null;
+				// Leave day mode, but keep the day selected so the ring stays put.
+				if (range === 'day') range = 90;
 				return;
 			default:
 				return;
@@ -321,15 +326,36 @@
 
 	// ---- trends ------------------------------------------------------------
 
-	const RANGES = [
-		{ label: '30d', days: 30 },
-		{ label: '90d', days: 90 },
-		{ label: '1y', days: 365 },
-		{ label: 'All', days: 0 }
-	];
-	let range = $state(90);
+	// A trailing window in days (0 = everything), or the single selected day.
+	type Range = number | 'day';
 
+	const RANGES = [
+		{ label: '30d', value: 30 },
+		{ label: '90d', value: 90 },
+		{ label: '1y', value: 365 },
+		{ label: 'All', value: 0 }
+	];
+	let range = $state<Range>(90);
+
+	// 'day' with nothing selected would scope everything to nothing, so the mode
+	// only counts as on once a day is actually picked.
+	const dayMode = $derived(range === 'day' && !!selectedDay);
+
+	/** Picking a day anywhere on the page scopes the page to it. */
+	function pickDay(key: string) {
+		selectedDay = key;
+		range = 'day';
+	}
+
+	function stepDay(dir: 1 | -1) {
+		const to = dir > 0 ? nextDay : prevDay;
+		if (to) selectedDay = to;
+	}
+
+	// The one slice every card below reads from. The heatmap is deliberately not
+	// scoped by it: it is how you get to a day, so blanking it would strand you.
 	const inRange = $derived.by(() => {
+		if (range === 'day') return selectedDay ? sessions.filter((s) => s.day === selectedDay) : [];
 		if (!range) return sessions;
 		const cutoff = Date.now() - range * 86400000;
 		return sessions.filter((s) => s.at >= cutoff);
@@ -347,45 +373,85 @@
 		return `${d.runs} ${d.runs === 1 ? 'run' : 'runs'}`;
 	}
 
+	// A single day aggregated per day is one point, which is not a trend. So in
+	// day mode the x axis becomes the runs of that day — same charts, finer grain.
+	const perLabel = $derived(dayMode ? 'per run' : 'per practice day');
+
 	const bpmPoints: TrendPoint[] = $derived(
-		trendDays.map((d) => ({
-			x: d.at,
-			y: d.bpmSum / d.runs,
-			label: pointFmt.format(d.at),
-			detail: `${runLabel(d)} · ${d.notes} notes`
-		}))
+		dayMode
+			? dayRuns.map((s) => ({
+					x: s.at,
+					y: s.bpm,
+					label: clock.format(s.at),
+					detail: s.lessonName
+				}))
+			: trendDays.map((d) => ({
+					x: d.at,
+					y: d.bpmSum / d.runs,
+					label: pointFmt.format(d.at),
+					detail: `${runLabel(d)} · ${d.notes} notes`
+				}))
 	);
 
 	const msPoints: TrendPoint[] = $derived(
-		trendDays
-			.filter((d) => d.errRuns > 0)
-			.map((d) => ({
-				x: d.at,
-				y: d.errSum / d.errRuns,
-				label: pointFmt.format(d.at),
-				detail: runLabel(d)
-			}))
+		dayMode
+			? dayRuns
+					.filter((s) => s.hits > 0)
+					.map((s) => ({
+						x: s.at,
+						y: s.avgAbsMs,
+						label: clock.format(s.at),
+						detail: `${s.lessonName} · ${s.early} early / ${s.late} late`
+					}))
+			: trendDays
+					.filter((d) => d.errRuns > 0)
+					.map((d) => ({
+						x: d.at,
+						y: d.errSum / d.errRuns,
+						label: pointFmt.format(d.at),
+						detail: runLabel(d)
+					}))
 	);
 
 	const timePoints: TrendPoint[] = $derived(
-		trendDays.map((d) => ({
-			x: d.at,
-			y: d.playMs / 60000,
-			label: pointFmt.format(d.at),
-			detail: `${runLabel(d)} · ${duration(d.playMs)}`
-		}))
+		dayMode
+			? dayRuns.map((s) => ({
+					x: s.at,
+					y: (s.durationMs ?? 0) / 60000,
+					label: clock.format(s.at),
+					detail: `${s.lessonName} · ${duration(s.durationMs ?? 0)}`
+				}))
+			: trendDays.map((d) => ({
+					x: d.at,
+					y: d.playMs / 60000,
+					label: pointFmt.format(d.at),
+					detail: `${runLabel(d)} · ${duration(d.playMs)}`
+				}))
 	);
 
 	const accPoints: TrendPoint[] = $derived(
-		trendDays
-			.filter((d) => d.notes > 0)
-			.map((d) => ({
-				x: d.at,
-				y: (d.hits / d.notes) * 100,
-				label: pointFmt.format(d.at),
-				detail: `${d.hits}/${d.notes} notes`
-			}))
+		dayMode
+			? dayRuns
+					.filter((s) => s.total > 0)
+					.map((s) => ({
+						x: s.at,
+						y: s.accuracy * 100,
+						label: clock.format(s.at),
+						detail: `${s.hits}/${s.total} notes · ${s.lessonName}`
+					}))
+			: trendDays
+					.filter((d) => d.notes > 0)
+					.map((d) => ({
+						x: d.at,
+						y: (d.hits / d.notes) * 100,
+						label: pointFmt.format(d.at),
+						detail: `${d.hits}/${d.notes} notes`
+					}))
 	);
+
+	// In day mode a point is a run, not a day — there is nothing further to drill
+	// into, so the charts stop being selectable.
+	const onPoint = $derived(dayMode ? undefined : (p: TrendPoint) => pickDay(dayKey(p.x)));
 
 	// ---- controllers & recent runs -----------------------------------------
 
@@ -406,7 +472,7 @@
 		return [...seen.values()].sort((a, b) => b.runs - a.runs);
 	});
 
-	const recent = $derived([...sessions].sort((a, b) => b.at - a.at).slice(0, 25));
+	const recent = $derived([...inRange].sort((a, b) => b.at - a.at).slice(0, 25));
 
 	const stamp = new Intl.DateTimeFormat(undefined, {
 		month: 'short',
@@ -418,6 +484,13 @@
 	// The day panel already names the date in its heading, so its rows carry the
 	// time alone.
 	const clock = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
+
+	// Short enough to sit in the filter row without wrapping it.
+	const chipDate = new Intl.DateTimeFormat(undefined, {
+		weekday: 'short',
+		month: 'short',
+		day: 'numeric'
+	});
 
 	let clearing = $state(false);
 
@@ -450,7 +523,30 @@
 		<a class="cta" href="{base}/lessons">Browse lessons</a>
 	</div>
 {:else}
-	<section class="tiles" aria-label="All-time totals">
+	<!-- One filter row above everything it scopes: tiles, trends, controllers and
+	     the run table all read the same slice. The heatmap below is the exception
+	     and says so — it is the navigator, not a scoped view. -->
+	<div class="scope" role="group" aria-label="Range">
+		<div class="ranges">
+			{#if dayMode && dayDate}
+				<div class="day-chip">
+					<button onclick={() => stepDay(-1)} disabled={!prevDay} aria-label="Earlier day">‹</button>
+					<span>{chipDate.format(dayDate)}</span>
+					<button onclick={() => stepDay(1)} disabled={!nextDay} aria-label="Later day">›</button>
+				</div>
+			{:else}
+				<button
+					onclick={() => pickDay(practisedDays.at(-1) ?? dayKey(new Date()))}
+					disabled={!practisedDays.length}>Day</button
+				>
+			{/if}
+			{#each RANGES as r (r.label)}
+				<button class:on={range === r.value} onclick={() => (range = r.value)}>{r.label}</button>
+			{/each}
+		</div>
+	</div>
+
+	<section class="tiles" aria-label="Totals for the selected range">
 		<div class="tile">
 			<span class="tile-value">{totals.runs}</span>
 			<span class="tile-label">runs</span>
@@ -464,7 +560,7 @@
 		<div class="tile">
 			<span class="tile-value">{totals.streak}</span>
 			<span class="tile-label">day streak</span>
-			<span class="tile-sub">best {totals.bestStreak}</span>
+			<span class="tile-sub">all time · best {totals.bestStreak}</span>
 		</div>
 		<div class="tile">
 			<span class="tile-value">{Math.round(totals.avgBpm)}</span>
@@ -486,7 +582,7 @@
 	<section class="card" aria-label="Practice history">
 		<header class="card-head">
 			<h2>Practice history</h2>
-			<span class="muted small">last {WEEKS} weeks</span>
+			<span class="muted small">last {WEEKS} weeks · pick a day</span>
 		</header>
 
 		<div class="heatmap-scroll">
@@ -515,7 +611,7 @@
 					aria-activedescendant={focusCell ? `day-${focusCell.key}` : undefined}
 					onpointermove={onGridMove}
 					onpointerleave={() => (hoverCell = null)}
-					onclick={() => hoverCell && (selectedDay = hoverCell.key)}
+					onclick={() => hoverCell && pickDay(hoverCell.key)}
 					onkeydown={onGridKey}
 					onfocus={() => (focusPos ??= todayPos)}
 				>
@@ -526,9 +622,9 @@
 									id="day-{cell.key}"
 									class="cell {cell.future ? 'future' : `l${level(cell.runs)}`}"
 									class:focused={focusCell?.key === cell.key}
-									class:picked={selectedDay === cell.key}
+									class:picked={dayMode && selectedDay === cell.key}
 									role="gridcell"
-									aria-selected={cell.future ? undefined : selectedDay === cell.key}
+									aria-selected={cell.future ? undefined : dayMode && selectedDay === cell.key}
 									aria-label={cell.future
 										? undefined
 										: `${longDate.format(cell.date)}: ${cell.runs} runs`}
@@ -568,19 +664,11 @@
 		</footer>
 	</section>
 
-	{#if selectedDay && dayDate}
+	{#if dayMode && dayDate}
 		<section class="card day" aria-label="Selected day">
 			<header class="card-head">
 				<h2>{longDate.format(dayDate)}</h2>
-				<div class="day-nav">
-					<button onclick={() => (selectedDay = prevDay ?? selectedDay)} disabled={!prevDay}>
-						‹ earlier
-					</button>
-					<button onclick={() => (selectedDay = nextDay ?? selectedDay)} disabled={!nextDay}>
-						later ›
-					</button>
-					<button class="close" onclick={() => (selectedDay = null)} aria-label="Close day">✕</button>
-				</div>
+				<span class="muted small">this day only</span>
 			</header>
 
 			{#if daySummary}
@@ -656,11 +744,7 @@
 	<section aria-label="Trends">
 		<header class="card-head range-head">
 			<h2>Trends</h2>
-			<div class="ranges" role="group" aria-label="Time range">
-				{#each RANGES as r (r.label)}
-					<button class:on={range === r.days} onclick={() => (range = r.days)}>{r.label}</button>
-				{/each}
-			</div>
+			<span class="muted small">{perLabel}</span>
 		</header>
 
 		<div class="charts">
@@ -669,10 +753,10 @@
 					title="Average tempo"
 					unit="BPM"
 					color="var(--gold)"
-					hint="per practice day"
 					height={210}
 					points={bpmPoints}
-					onselect={(p) => (selectedDay = dayKey(p.x))}
+					xFormat={dayMode ? (t) => clock.format(t) : undefined}
+					onselect={onPoint}
 				/>
 			</div>
 			<TrendChart
@@ -681,7 +765,8 @@
 				color="var(--cyan)"
 				hint="lower is better"
 				points={msPoints}
-				onselect={(p) => (selectedDay = dayKey(p.x))}
+				xFormat={dayMode ? (t) => clock.format(t) : undefined}
+				onselect={onPoint}
 			/>
 			<TrendChart
 				title="Accuracy"
@@ -689,15 +774,16 @@
 				color="var(--green)"
 				hint="notes hit"
 				points={accPoints}
-				onselect={(p) => (selectedDay = dayKey(p.x))}
+				xFormat={dayMode ? (t) => clock.format(t) : undefined}
+				onselect={onPoint}
 			/>
 			<TrendChart
 				title="Time played"
 				unit="min"
 				color="var(--violet)"
-				hint="per practice day"
 				points={timePoints}
-				onselect={(p) => (selectedDay = dayKey(p.x))}
+				xFormat={dayMode ? (t) => clock.format(t) : undefined}
+				onselect={onPoint}
 			/>
 		</div>
 	</section>
@@ -714,6 +800,7 @@
 		</ul>
 	</section>
 
+	{#if !dayMode}
 	<section class="card" aria-label="Recent runs">
 		<header class="card-head">
 			<h2>Recent runs</h2>
@@ -753,6 +840,7 @@
 			<button class="danger" onclick={onClear} disabled={clearing}>Clear history</button>
 		</footer>
 	</section>
+	{/if}
 {/if}
 
 <style>
@@ -943,7 +1031,10 @@
 		cursor: pointer;
 	}
 
-	.cell.focused {
+	/* Only while the grid is being driven from the keyboard — after a click the
+	   roving position is still tracked, but a second ring next to the picked day
+	   is just noise. */
+	.grid:focus-visible .cell.focused {
 		box-shadow: 0 0 0 1px var(--bg), 0 0 0 2px var(--text-muted);
 	}
 
@@ -962,32 +1053,6 @@
 		font-weight: 650;
 		color: var(--text-muted);
 		margin: 1.1rem 0 0.15rem;
-	}
-
-	.day-nav {
-		display: flex;
-		gap: 0.25rem;
-	}
-
-	.day-nav button {
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		color: var(--text-muted);
-		background: var(--surface-2);
-		border: 1px solid var(--border);
-		padding: 0.3em 0.7em;
-		border-radius: var(--radius-sm);
-		cursor: pointer;
-	}
-
-	.day-nav button:hover:not(:disabled) {
-		color: var(--text);
-		border-color: var(--border-strong);
-	}
-
-	.day-nav button:disabled {
-		opacity: 0.4;
-		cursor: default;
 	}
 
 	/* Three narrow columns do not need the full card width — stretched that far
@@ -1055,9 +1120,58 @@
 		margin-bottom: 0.75rem;
 	}
 
+	.scope {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 1rem;
+	}
+
 	.ranges {
 		display: flex;
 		gap: 0.2rem;
+	}
+
+	/* The selected day reads as one control with the range chips, not as a label
+	   floating beside them. */
+	.day-chip {
+		display: flex;
+		align-items: stretch;
+		margin-right: 0.35rem;
+		border: 1px solid var(--gold-dim);
+		border-radius: var(--radius-sm);
+		background: var(--surface-2);
+		overflow: hidden;
+	}
+
+	.day-chip span {
+		display: flex;
+		align-items: center;
+		padding: 0 0.5em;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		color: var(--gold);
+		white-space: nowrap;
+	}
+
+	.day-chip button,
+	.day-chip button:hover {
+		border: 0;
+		border-radius: 0;
+		background: none;
+		color: var(--text-muted);
+		font-size: 0.8rem;
+		line-height: 1;
+		padding: 0.3em 0.55em;
+	}
+
+	.day-chip button:hover:not(:disabled) {
+		color: var(--text);
+		background: var(--surface-3);
+	}
+
+	.day-chip button:disabled {
+		opacity: 0.35;
+		cursor: default;
 	}
 
 	.ranges button {

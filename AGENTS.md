@@ -135,10 +135,20 @@ drumming is supported.
   heatmap answers "am I showing up"; four `$lib/trend-chart.svelte` charts (tempo,
   timing error, accuracy, time played) answer "am I improving", sharing one range
   filter so they always describe the same slice.
-  - Clicking a heatmap cell — or a point on any trend — opens the **single-day
-    view**: that day's runs one by one, plus the pads folded across them. Its
-    earlier/later buttons step to the nearest _practised_ day, not the next
-    calendar one, so a holiday is one click rather than fourteen.
+  - The range control is **one row above everything it scopes** — tiles, trends,
+    controllers and the run table all read the same slice. The heatmap is the
+    deliberate exception: it is how you reach a day, so scoping it would strand
+    you. The day streak is the other, being a property of the whole history.
+  - Alongside `30d/90d/1y/All` sits **Day**. Clicking a heatmap cell — or a point
+    on any trend — scopes the whole page to that day in place; nothing navigates.
+    The chip then carries the date with ‹ › arrows that step to the nearest
+    _practised_ day, not the next calendar one, so a holiday is one click rather
+    than fourteen.
+  - In day mode the trends re-grain: a day aggregated per day is one point, so
+    the x axis becomes that day's **runs** and its labels become clock times.
+    Points stop being selectable — a run has nothing further to drill into — and
+    the **single-day panel** (that day's runs one by one, plus the pads folded
+    across them) stands in for the recent-runs table.
   - Both the heatmap and the selectable charts are **one tab stop with a roving
     focus**, not one per mark — arrows move, Enter opens, Escape closes. On the
     charts the interaction lives on a transparent `<button>` laid over the plot,

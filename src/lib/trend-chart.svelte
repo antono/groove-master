@@ -28,6 +28,7 @@
 		unit,
 		color,
 		format,
+		xFormat,
 		height = 190,
 		hint = '',
 		onselect
@@ -38,6 +39,8 @@
 		color: string;
 		/** Overrides the step-derived default (see `fmt`). */
 		format?: (v: number) => string;
+		/** Axis-end labels. Defaults to a date; a day's worth of runs wants a time. */
+		xFormat?: (t: number) => string;
 		height?: number;
 		hint?: string;
 		/** Given, the plot becomes clickable and reports the point picked. */
@@ -109,6 +112,7 @@
 	const path = $derived(coords.map((c, i) => `${i ? 'L' : 'M'}${c.cx} ${c.cy}`).join(' '));
 
 	const dateFmt = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+	const xFmt = $derived(xFormat ?? ((t: number) => dateFmt.format(t)));
 
 	// Hover: nearest point on the x axis, so the whole plot height is a hit target
 	// rather than the dot itself.
@@ -213,10 +217,10 @@
 						stroke-width="2" />
 				{/if}
 
-				<text class="axis" x={PAD.left} y={height - 6}>{dateFmt.format(xMin)}</text>
+				<text class="axis" x={PAD.left} y={height - 6}>{xFmt(xMin)}</text>
 				{#if xMax !== xMin}
 					<text class="axis" x={width - PAD.right} y={height - 6} text-anchor="end">
-						{dateFmt.format(xMax)}
+						{xFmt(xMax)}
 					</text>
 				{/if}
 			</svg>
