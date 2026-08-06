@@ -35,6 +35,7 @@
 	});
 
 	const links = $derived([
+		{ href: `${base}/`, route: '/', label: 'About', exact: true },
 		{ href: `${base}/lessons`, route: '/lessons', label: 'Lessons' },
 		{ href: `${base}/stats`, route: '/stats', label: 'Stats' },
 		{ href: `${base}/onboarding`, route: '/onboarding', label: 'Setup' },
@@ -42,7 +43,10 @@
 	]);
 
 	// base is relative during SSR ("./…"), so match on the route id instead.
-	const active = (route: string) => page.route.id?.startsWith(route) ?? false;
+	// The About link points at "/", which would prefix-match everything, so it
+	// only lights up on an exact match.
+	const active = (link: { route: string; exact?: boolean }) =>
+		link.exact ? page.route.id === link.route : (page.route.id?.startsWith(link.route) ?? false);
 </script>
 
 <svelte:head>
@@ -51,13 +55,13 @@
 
 <div class="app">
 	<header class="header">
-		<a class="brand" href="{base}/lessons">
+		<a class="brand" href="{base}/">
 			<span class="brand-mark" aria-hidden="true">▦</span>
 			<span class="brand-name">Groove Academy</span>
 		</a>
 		<nav class="nav">
 			{#each links as link (link.href)}
-				<a href={link.href} class:active={active(link.route)}>{link.label}</a>
+				<a href={link.href} class:active={active(link)}>{link.label}</a>
 			{/each}
 		</nav>
 	</header>
