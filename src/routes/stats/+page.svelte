@@ -664,6 +664,65 @@
 		</footer>
 	</section>
 
+	<section aria-label="Trends">
+		<header class="card-head range-head">
+			<h2>Trends</h2>
+			<span class="muted small">{perLabel}</span>
+		</header>
+
+		<div class="charts">
+			<div class="wide">
+				<TrendChart
+					title="Average tempo"
+					unit="BPM"
+					color="var(--gold)"
+					height={210}
+					points={bpmPoints}
+					xFormat={dayMode ? (t) => clock.format(t) : undefined}
+					onselect={onPoint}
+				/>
+			</div>
+			<TrendChart
+				title="Timing error"
+				unit="ms"
+				color="var(--cyan)"
+				hint="lower is better"
+				points={msPoints}
+				xFormat={dayMode ? (t) => clock.format(t) : undefined}
+				onselect={onPoint}
+			/>
+			<TrendChart
+				title="Accuracy"
+				unit="%"
+				color="var(--green)"
+				hint="notes hit"
+				points={accPoints}
+				xFormat={dayMode ? (t) => clock.format(t) : undefined}
+				onselect={onPoint}
+			/>
+			<TrendChart
+				title="Time played"
+				unit="min"
+				color="var(--violet)"
+				points={timePoints}
+				xFormat={dayMode ? (t) => clock.format(t) : undefined}
+				onselect={onPoint}
+			/>
+		</div>
+	</section>
+
+	<section class="card" aria-label="Controllers">
+		<header class="card-head"><h2>Controllers</h2></header>
+		<ul class="controllers">
+			{#each controllers as c (c.key)}
+				<li>
+					<span class="ctrl-name">{c.name}</span>
+					<span class="muted small">{c.runs} {c.runs === 1 ? 'run' : 'runs'}</span>
+				</li>
+			{/each}
+		</ul>
+	</section>
+
 	{#if dayMode && dayDate}
 		<section class="card day" aria-label="Selected day">
 			<header class="card-head">
@@ -740,65 +799,6 @@
 			{/if}
 		</section>
 	{/if}
-
-	<section aria-label="Trends">
-		<header class="card-head range-head">
-			<h2>Trends</h2>
-			<span class="muted small">{perLabel}</span>
-		</header>
-
-		<div class="charts">
-			<div class="wide">
-				<TrendChart
-					title="Average tempo"
-					unit="BPM"
-					color="var(--gold)"
-					height={210}
-					points={bpmPoints}
-					xFormat={dayMode ? (t) => clock.format(t) : undefined}
-					onselect={onPoint}
-				/>
-			</div>
-			<TrendChart
-				title="Timing error"
-				unit="ms"
-				color="var(--cyan)"
-				hint="lower is better"
-				points={msPoints}
-				xFormat={dayMode ? (t) => clock.format(t) : undefined}
-				onselect={onPoint}
-			/>
-			<TrendChart
-				title="Accuracy"
-				unit="%"
-				color="var(--green)"
-				hint="notes hit"
-				points={accPoints}
-				xFormat={dayMode ? (t) => clock.format(t) : undefined}
-				onselect={onPoint}
-			/>
-			<TrendChart
-				title="Time played"
-				unit="min"
-				color="var(--violet)"
-				points={timePoints}
-				xFormat={dayMode ? (t) => clock.format(t) : undefined}
-				onselect={onPoint}
-			/>
-		</div>
-	</section>
-
-	<section class="card" aria-label="Controllers">
-		<header class="card-head"><h2>Controllers</h2></header>
-		<ul class="controllers">
-			{#each controllers as c (c.key)}
-				<li>
-					<span class="ctrl-name">{c.name}</span>
-					<span class="muted small">{c.runs} {c.runs === 1 ? 'run' : 'runs'}</span>
-				</li>
-			{/each}
-		</ul>
-	</section>
 
 	{#if !dayMode}
 	<section class="card" aria-label="Recent runs">
