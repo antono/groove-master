@@ -210,12 +210,20 @@
 			drumNames = new Map(drums.map((d: { note: number; name: string }) => [d.note, d.name]));
 		} catch {
 			status = 'Could not load manifests — run make-lessons.py & render-drums.py';
-			return;
 		}
-		const wanted = lessons.find((l) => l.id === page.params.id);
-		if (wanted) await selectLesson(wanted);
-		else status = `No lesson "${page.params.id}" in the manifest`;
 	}
+
+	// Follow the route: this component is reused across /lessons/[id], so navigating
+	// to the next lesson never remounts it. Selecting off `page.params.id` here — not
+	// once in loadCatalogue — means the "Next lesson" link actually loads the lesson
+	// rather than leaving the old one on screen until a full reload.
+	$effect(() => {
+		const id = page.params.id;
+		if (!lessons.length || selected?.id === id) return;
+		const wanted = lessons.find((l) => l.id === id);
+		if (wanted) void selectLesson(wanted);
+		else status = `No lesson "${id}" in the manifest`;
+	});
 
 	// Audio needs a user gesture, so the samplers and MIDI come up on the first
 	// click of Play or Listen. MIDI is deliberately NOT awaited: requestMIDIAccess
