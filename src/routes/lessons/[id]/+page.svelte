@@ -378,9 +378,17 @@
 		flash(gm);
 		// Sample the beat straight from the audio clock at the moment of the hit, so
 		// timing accuracy doesn't depend on the coarse scheduler cadence.
+		//
+		// Hits are scored from one match window BEFORE beat 0, not from beat 0 itself:
+		// the first target sits on the down-beat, so its early half-window reaches back
+		// into the count-in. Cutting the scan off at 0 made an entry a hair early — the
+		// normal way a player anticipates a count-in — vanish entirely, and the
+		// down-beat then reddened as a miss it was never given the chance to match.
+		// Anything earlier than that is still ignored, so warming up on the clicks
+		// costs nothing.
 		if (playing && !paused) {
 			const hitBeat = currentBeat();
-			if (hitBeat >= -0.001) registerHit(gm, hitBeat);
+			if (hitBeat >= -MATCH_WINDOW_BEATS) registerHit(gm, hitBeat);
 		}
 	}
 
