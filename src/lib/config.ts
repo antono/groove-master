@@ -5,7 +5,9 @@
 //                             controller's Play/Stop buttons (see
 //                             transport-control.ts); either half may be null.
 //   groove-master:selectedDevice  the deviceId last chosen
-//   groove-master:bpm:<lessonId>  tempo that lesson was last practised at, per lesson
+//   groove-master:maxbpm:<lessonId>  highest BPM the student may select there
+//   groove-master:tier:<lessonId>    the rung last chosen on that lesson
+//   groove-master:lessons-unlocked   ids of the lessons opened so far
 //
 // Written by /onboarding and /debug/settings, read by /lessons/[id] and the layout's
 // background sample warm-up. The per-lesson tempo is both written and read by

@@ -135,6 +135,13 @@
 		ladderEl.scrollLeft = el.offsetLeft - (ladderEl.clientWidth - el.offsetWidth) / 2;
 	});
 
+	// A locked Next lesson still shows — a curriculum you cannot see the shape of is
+	// not a curriculum — so it has to say what would open it, and how close you are.
+	const nextLessonHint = $derived(
+		`Finish this lesson at ${NEXT_LESSON_BPM} BPM to unlock it. ` +
+			`Your ceiling here is ${unlockedBpm} BPM.`
+	);
+
 	// The lesson before this one. Unlike the next one it carries no condition: going
 	// back is revision, and a student who is here has already been there.
 	const prevLesson = $derived.by(() => {
@@ -282,7 +289,7 @@
 		// The manifest's BPM is the ladder's base; a stored unlock can only sit above
 		// it, and the chosen rung is clamped into the unlocked range.
 		baseBpm = lesson.bpm;
-		unlockedBpm = Math.max(baseBpm, readUnlocked(lesson.id) ?? baseBpm);
+		unlockedBpm = Math.max(baseBpm, readMaxBpm(lesson.id) ?? baseBpm);
 		selectedBpm = Math.min(unlockedBpm, Math.max(baseBpm, readSelected(lesson.id) ?? unlockedBpm));
 		report = null;
 		status = 'Loading ' + lesson.name + '…';
@@ -560,7 +567,7 @@
 		if (!selected) return;
 		if (r.total > 0 && r.miss === 0 && selectedBpm === unlockedBpm) {
 			unlockedBpm = selectedBpm + BPM_STEP;
-			writeUnlocked(selected.id, unlockedBpm);
+			writeMaxBpm(selected.id, unlockedBpm);
 		}
 		if (nextLesson && selectedBpm >= NEXT_LESSON_BPM) unlockLesson(nextLesson.id);
 	}
@@ -571,7 +578,13 @@
 	// page builds itself, and IndexedDB would hand them back a frame or two later —
 	// after the ladder had already painted with everything locked.
 
-	const unlockedKey = (lessonId: string) => STORAGE_PREFIX + 'unlocked:' + lessonId;
+	// The ceiling: the fastest rung this student is allowed to select for a given
+	// lesson. Stored per lesson, because a tempo earned on 1.1 says nothing about
+	// what is playable on 2.9 — every lesson has its own ladder and its own top.
+	const maxBpmKey = (lessonId: string) => STORAGE_PREFIX + 'maxbpm:' + lessonId;
+	// What that key used to be called. Read as a fallback and rewritten under the
+	// new name, so nobody's earned ceiling resets on the way past.
+	const legacyMaxBpmKey = (lessonId: string) => STORAGE_PREFIX + 'unlocked:' + lessonId;
 	const selectedKey = (lessonId: string) => STORAGE_PREFIX + 'tier:' + lessonId;
 	const LESSONS_KEY = STORAGE_PREFIX + 'lessons-unlocked';
 
@@ -588,12 +601,21 @@
 		}
 	}
 
-	const readUnlocked = (lessonId: string) => readRung(unlockedKey(lessonId));
+	/** The highest BPM this lesson may be played at, or null if none is stored. */
+	function readMaxBpm(lessonId: string): number | null {
+		const current = readRung(maxBpmKey(lessonId));
+		if (current != null) return current;
+		const legacy = readRung(legacyMaxBpmKey(lessonId));
+		if (legacy != null) writeMaxBpm(lessonId, legacy); // migrate on first read
+		return legacy;
+	}
+
 	const readSelected = (lessonId: string) => readRung(selectedKey(lessonId));
 
-	function writeUnlocked(lessonId: string, value: number) {
+	function writeMaxBpm(lessonId: string, value: number) {
 		try {
-			localStorage.setItem(unlockedKey(lessonId), String(value));
+			localStorage.setItem(maxBpmKey(lessonId), String(value));
+			localStorage.removeItem(legacyMaxBpmKey(lessonId));
 		} catch {
 			// Storage full or blocked — progress just will not be remembered.
 		}
@@ -1054,11 +1076,18 @@
 		</div>
 
 		<div class="launch-nav to-next">
-			{#if nextUnlocked && nextLesson}
-				<a class="lesson-nav next" href="{base}/lessons/{nextLesson.id}">
-					<span class="nav-label">Next lesson</span>
-					<span aria-hidden="true">→</span>
-				</a>
+			{#if nextLesson}
+				{#if nextUnlocked}
+					<a class="lesson-nav next" href="{base}/lessons/{nextLesson.id}">
+						<span class="nav-label">Next lesson</span>
+						<span aria-hidden="true">→</span>
+					</a>
+				{:else}
+					<button class="lesson-nav next locked" disabled title={nextLessonHint}>
+						<span class="nav-label">Next lesson</span>
+						<span class="lock" aria-hidden="true">🔒</span>
+					</button>
+				{/if}
 			{/if}
 		</div>
 	</div>
@@ -1158,11 +1187,16 @@
 						Increase BPM → {Math.min(unlockedBpm, selectedBpm + BPM_STEP)}
 					</button>
 				{/if}
-				{#if nextLesson && bpm >= NEXT_LESSON_BPM}
+				{#if nextLesson && nextUnlocked}
 					<a class="lesson-nav next" href="{base}/lessons/{nextLesson.id}">
 						<span class="nav-label">Next lesson</span>
 						<span aria-hidden="true">→</span>
 					</a>
+				{:else if nextLesson}
+					<button class="lesson-nav next locked" disabled title={nextLessonHint}>
+						<span class="nav-label">Next lesson</span>
+						<span class="lock" aria-hidden="true">🔒</span>
+					</button>
 				{/if}
 				<button class="done" onclick={exitReport}>Done</button>
 			</div>
@@ -1490,6 +1524,26 @@
 	.lesson-nav:hover {
 		border-color: var(--gold);
 		color: var(--gold);
+	}
+
+	/* A button, not a link, because there is nowhere to go yet. Same footprint as
+	   the earned version so the row does not reflow when it opens. */
+	.lesson-nav.locked {
+		font-family: inherit;
+		color: var(--text-faint);
+		background: var(--surface);
+		border-style: dashed;
+		cursor: not-allowed;
+	}
+
+	.lesson-nav.locked:hover {
+		border-color: var(--border-strong);
+		color: var(--text-faint);
+	}
+
+	.lesson-nav .lock {
+		font-size: 0.85em;
+		opacity: 0.75;
 	}
 
 	/* Below the smallest phones the label would wrap the arrow onto its own line;
