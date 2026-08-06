@@ -8,7 +8,7 @@ Hand convention, set here and kept for the rest of the curriculum:
 **strong hand plays kick and snare, weak hand plays the hi-hats.**
 """
 
-from .bass import OCTAVE, QUARTER, SYNCOPATED
+from .bass import OCTAVE, QUARTER, SYNCOPATED, WALKING
 from .grids import BEATS, EIGHTHS, cycle_bars, per_bar, voices
 from .midi import CLOSED_HH, KICK, SNARE
 from .schema import checkpoint, lesson, module, stage
@@ -202,14 +202,17 @@ STAGE = stage(
                     name="Alternating Quarters",
                     tier="plain",
                     drums=alternating_quarters,
-                    bass=QUARTER,
+                    bass=WALKING,
                     prereq=["quarters-hand-swap"],
                     summary="Snare, hat, snare, hat — the hands trade, one beat each.",
                     description=(
                         "Both hands in the same bar for the first time, but never "
                         "at the same moment: strong hand on 1 and 3, weak hand on 2 "
                         "and 4. Nothing stacks, so if you hear two pads together "
-                        "you played an extra note."
+                        "you played an extra note. Underneath, a walking bass "
+                        "marks all four beats without playing the same note twice "
+                        "— every bit as much of an anchor as a repeated root, and "
+                        "a great deal more worth listening to four times over."
                     ),
                     hints=[
                         "Strong hand takes the snare, weak hand the hi-hat, and "
@@ -218,6 +221,9 @@ STAGE = stage(
                         "Think of a single motion passing back and forth.",
                         "The weak hand's beats are the ones that drift. If 2 and 4 "
                         "sound late, they are.",
+                        "The bass walks a new note under every beat and steps a "
+                        "semitone into the next bar. Land with it and you will "
+                        "hear the four bars turn over as one phrase.",
                         "Say the pads out loud as you play — \"snare, hat, snare, "
                         'hat" — so a swapped hand is audible before it is visible.',
                     ],

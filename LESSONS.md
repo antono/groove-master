@@ -64,7 +64,7 @@ snare, weak hand plays the hi-hats.**
 
 | #   | slug                    | tier    | status | pattern                                 | bass       |
 | --- | ----------------------- | ------- | ------ | --------------------------------------- | ---------- |
-| 1.4 | `alternating-quarters`  | plain   | live   | snare / hat / snare / hat, one per beat | quarter    |
+| 1.4 | `alternating-quarters`  | plain   | live   | snare / hat / snare / hat, one per beat | walking    |
 | 1.5 | `alternating-8ths`      | core    | live   | the single stroke roll in 8ths          | quarter    |
 | 1.6 | `alternating-8ths-swap` | stretch | live   | the same, lead hand flips every bar     | syncopated |
 
@@ -363,6 +363,55 @@ floor, not its ceiling — depth comes from the ladder, never from piling on mor
 notes. `stretch` lessons are hard by _pattern_; belts are hard by _tempo_. Keep
 the two apart or neither means anything.
 
+## Bass lines
+
+The backing bass is the lesson's scaffold, and for a long time every line was
+some arrangement of the same root note hammered on the beat. That is not what
+made them dull. **Support and interest are different axes**: a line can mark
+all four beats as reliably as a metronome and still move, and the early lessons
+were paying the price of holding a pulse without collecting anything for it.
+
+Four types, ordered by how much they hold the student up:
+
+| line      | rhythm                              | support | character                        |
+| --------- | ----------------------------------- | ------- | -------------------------------- |
+| `walking` | a note on every beat, none repeated | highest | jazz/blues motion, pulls forward |
+| `riff`    | a motif with rests in it            | medium  | memorable, has an identity       |
+| `pedal`   | one long root, then a scramble      | medium  | stillness against motion         |
+| `dub`     | the down-beat left empty            | lowest  | attitude, resists the student    |
+
+**1 · Walking** — _implemented, live on 1.4._ Four quarter notes over Am - F -
+C - G: root on the down-beat, two chord tones, then a **chromatic leading note
+on beat 4** that resolves a semitone into the next bar's root. Marks every beat
+exactly as `quarter` did, but never plays the same pitch twice and turns the
+four bars into one phrase that closes rather than stops. This is the drop-in
+replacement for `quarter` anywhere maximum support is wanted, and it should
+probably take over most of Stage 1 and 2.
+
+**2 · Riff** — a two-bar motif with holes in it, repeated. Something like root
+on 1, a jump to the 5th on the "and" of 2, silence across 3, a walk-up on 4.
+The rests are the point: the student's own notes get heard in the gaps, and a
+repeated shape is something you can remember and play against rather than
+merely follow. Medium support — beats 1 and 4 are marked, 3 is not.
+
+**3 · Pedal & answer** — a whole-note root under the first half of the bar,
+then a burst of 8th- or 16th-note melody in the second half. The contrast does
+the work: two beats of complete stillness make the answer feel like an event,
+and the student gets a wide-open space to sit in followed by a very clear cue
+that the bar is turning over. Good under lessons where the drums are dense,
+since it takes up the room the pattern leaves.
+
+**4 · Dub drop** — beat 1 is **empty**, and the line enters on the "and" of 1
+or on beat 3, sparse and syncopated with long decays. Lowest support of the
+four: nothing marks the down-beat, so the student has to be the one who knows
+where it is. This is the natural end-of-stage line, replacing `syncopated` —
+same job, considerably more attitude.
+
+Existing lines stay for now: `quarter` (root on every beat), `octave` (root and
+octave bouncing through the 8ths), `syncopated` (pushes off-beat). As the four
+above land, `quarter` and `syncopated` should retire — `walking` and `dub` do
+the same pedagogical jobs and neither one is boring.
+
 ## Checkpoints
 
 Every stage ends with a `◆` checkpoint: four bars, each a different pattern
@@ -468,8 +517,10 @@ old key is not migrated: it is one slider drag to set again.
   two modules.
 - **plain must be boring.** If the plain lesson has anything in it besides the
   technique, a student who fails it learns nothing from failing.
-- **The scaffold fades.** Early in a stage the bass doubles the pulse; late in a
-  stage it pushes against it. Support that never fades is not support.
+- **The scaffold fades.** Early in a stage the bass marks every beat; late in a
+  stage it stops. Support that never fades is not support — but see
+  [Bass lines](#bass-lines): fading the support is not a reason to make the
+  line dull, and a line that marks the pulse can still move.
 - **Hints never mention tempo.** The written BPM is the lesson's; the slider is
   the student's.
 - **Every lesson counts in** — three side-stick clicks, added automatically by
