@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Groove Academy">
+  <title>Groove Academy — Classic</title>
+  <!-- Faithful outline version: ring + crossed drumsticks + G / A -->
+  <g fill="none" stroke="#111111" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <!-- ring -->
+    <circle cx="256" cy="256" r="150"/>
+
+    <!-- drumstick, defined pointing up; tip (bead) at top, butt at bottom -->
+    <!-- Stick 1: tip upper-right / butt lower-left -->
+    <g transform="translate(256 256) rotate(34)" fill="#ffffff">
+      <path d="M -6 138 L 6 138 L 3 -122 L -3 -122 Z"/>
+      <circle cx="0" cy="-130" r="8"/>
+    </g>
+    <!-- Stick 2: tip upper-left / butt lower-right -->
+    <g transform="translate(256 256) rotate(-34)" fill="#ffffff">
+      <path d="M -6 138 L 6 138 L 3 -122 L -3 -122 Z"/>
+      <circle cx="0" cy="-130" r="8"/>
+    </g>
+  </g>
+
+  <!-- Letters -->
+  <g fill="#111111" font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="86" text-anchor="middle">
+    <text x="150" y="286">G</text>
+    <text x="362" y="286">A</text>
+  </g>
+</svg>

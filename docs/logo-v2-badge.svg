@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Groove Academy">
+  <title>Groove Academy — Solid Badge</title>
+  <!-- Solid disc with white knockout: sticks and letters punched out of the circle -->
+  <defs>
+    <mask id="knockout">
+      <!-- white = visible disc -->
+      <circle cx="256" cy="256" r="168" fill="#ffffff"/>
+      <!-- black = punched holes -->
+      <g fill="#000000">
+        <g transform="translate(256 256) rotate(34)">
+          <path d="M -7 150 L 7 150 L 3.5 -134 L -3.5 -134 Z"/>
+          <circle cx="0" cy="-142" r="9"/>
+        </g>
+        <g transform="translate(256 256) rotate(-34)">
+          <path d="M -7 150 L 7 150 L 3.5 -134 L -3.5 -134 Z"/>
+          <circle cx="0" cy="-142" r="9"/>
+        </g>
+      </g>
+      <!-- letters punched out -->
+      <g fill="#000000" font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="92" text-anchor="middle">
+        <text x="146" y="288">G</text>
+        <text x="366" y="288">A</text>
+      </g>
+    </mask>
+  </defs>
+
+  <circle cx="256" cy="256" r="168" fill="#111111" mask="url(#knockout)"/>
+  <!-- thin inner keyline for the badge feel -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#ffffff" stroke-width="4" opacity="0.9" mask="url(#knockout)"/>
+</svg>

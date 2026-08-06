@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 560" width="512" height="560" role="img" aria-label="Groove Academy">
+  <title>Groove Academy — Modern Wordmark</title>
+  <!-- Double ring emblem with solid sticks + wordmark lockup -->
+  <g transform="translate(0 -8)">
+    <!-- double ring -->
+    <circle cx="256" cy="248" r="152" fill="none" stroke="#111111" stroke-width="6"/>
+    <circle cx="256" cy="248" r="138" fill="none" stroke="#111111" stroke-width="2.5"/>
+
+    <!-- solid drumsticks (filled) -->
+    <g fill="#111111">
+      <g transform="translate(256 248) rotate(34)">
+        <path d="M -7 130 L 7 130 L 3.5 -120 L -3.5 -120 Z"/>
+        <circle cx="0" cy="-128" r="9"/>
+      </g>
+      <g transform="translate(256 248) rotate(-34)">
+        <path d="M -7 130 L 7 130 L 3.5 -120 L -3.5 -120 Z"/>
+        <circle cx="0" cy="-128" r="9"/>
+      </g>
+    </g>
+
+    <!-- letters -->
+    <g fill="#111111" font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="84" text-anchor="middle">
+      <text x="150" y="278">G</text>
+      <text x="362" y="278">A</text>
+    </g>
+  </g>
+
+  <!-- wordmark -->
+  <g fill="#111111" font-family="'Helvetica Neue', Arial, sans-serif" text-anchor="middle">
+    <text x="256" y="512" font-weight="800" font-size="46" letter-spacing="4">GROOVE</text>
+    <text x="256" y="548" font-weight="500" font-size="26" letter-spacing="12">ACADEMY</text>
+  </g>
+</svg>
