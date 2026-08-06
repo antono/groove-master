@@ -993,7 +993,7 @@
 </script>
 
 <svelte:head>
-	<title>Groove Master — {selected?.name ?? 'Lesson'}</title>
+	<title>Groove Academy — {selected?.name ?? 'Lesson'}</title>
 </svelte:head>
 
 <a class="back" href="{base}/lessons">← All lessons</a>

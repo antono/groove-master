@@ -1,6 +1,6 @@
 # Curriculum design
 
-How Groove Master's lessons are ordered, why, and where the ladder goes.
+How Groove Academy's lessons are ordered, why, and where the ladder goes.
 
 Stages 1 and 2 are built to this design; everything past Stage 3 is still a
 plan. `LESSONS.md` is the lesson-by-lesson index and says what is live,

@@ -16,7 +16,7 @@
 </script>
 
 <svelte:head>
-	<title>Groove Master — Debug</title>
+	<title>Groove Academy — Debug</title>
 </svelte:head>
 
 <h1>Debug</h1>

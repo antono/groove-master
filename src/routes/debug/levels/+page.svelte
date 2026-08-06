@@ -278,7 +278,7 @@
 </script>
 
 <svelte:head>
-	<title>Groove Master — sample levels</title>
+	<title>Groove Academy — sample levels</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 

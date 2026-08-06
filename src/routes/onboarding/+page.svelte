@@ -241,7 +241,7 @@
 </script>
 
 <svelte:head>
-	<title>Groove Master — Set up your pads</title>
+	<title>Groove Academy — Set up your pads</title>
 </svelte:head>
 
 <div class="wizard">

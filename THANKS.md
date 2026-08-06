@@ -1,6 +1,6 @@
 # Thanks & Attributions
 
-Groove Master ships pre-rendered audio one-shots extracted from the SoundFonts below.
+Groove Academy ships pre-rendered audio one-shots extracted from the SoundFonts below.
 This file credits each source, what was taken, its license, and the authors.
 (Regenerate the samples with the scripts in `scripts/`.)
 

@@ -1,4 +1,4 @@
-# Groove Master
+# Groove Academy
 
 A browser-based finger drumming trainer. Play along with interactive lessons to
 build finger drumming skills, all in HTML — no native app required. Only finger

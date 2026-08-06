@@ -126,7 +126,7 @@
 {/snippet}
 
 <svelte:head>
-	<title>Groove Master — Lessons</title>
+	<title>Groove Academy — Lessons</title>
 </svelte:head>
 
 <h1>Lessons</h1>
