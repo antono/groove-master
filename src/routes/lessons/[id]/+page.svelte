@@ -124,6 +124,25 @@
 	});
 	const nextUnlocked = $derived(!!nextLesson && unlockedLessons.has(nextLesson.id));
 
+	// On a narrow screen the ladder scrolls, and a student who has climbed a few
+	// rungs would otherwise open the lesson with the selected one off to the right
+	// — the one thing the control exists to show. Centre it whenever it moves.
+	let ladderEl: HTMLDivElement | null = $state(null);
+	$effect(() => {
+		selectedBpm; // re-run on every change of rung
+		const el = ladderEl?.querySelector<HTMLElement>('.rung.selected');
+		if (!el || !ladderEl || ladderEl.scrollWidth <= ladderEl.clientWidth) return;
+		ladderEl.scrollLeft = el.offsetLeft - (ladderEl.clientWidth - el.offsetWidth) / 2;
+	});
+
+	// The lesson before this one. Unlike the next one it carries no condition: going
+	// back is revision, and a student who is here has already been there.
+	const prevLesson = $derived.by(() => {
+		if (!selected) return null;
+		const i = lessons.findIndex((l) => l.id === selected!.id);
+		return i > 0 ? lessons[i - 1] : null;
+	});
+
 	let playing = $state(false);
 	let paused = $state(false); // transport frozen mid-lesson; highway stays up
 	let status = $state('');
@@ -990,37 +1009,58 @@
 	 a lesson has already been run: brief, chart, hints, Play. -->
 {#if !inSession}
 	<div class="launch">
-		<button class="start-btn play" onclick={() => play()} disabled={!parsed}>▶ Play</button>
-
-		<div class="ladder" role="group" aria-label="Tempo (beats per minute)">
-			<span class="rung label">BPM</span>
-			{#each tiers as tier (tier)}
-				<button
-					class="rung"
-					class:selected={tier === selectedBpm}
-					class:locked={isLocked(tier)}
-					class:glow={tier === unlockedBpm && canIncrease}
-					onclick={() => selectTier(tier)}
-					disabled={isLocked(tier)}
-					aria-pressed={tier === selectedBpm}
-					title={isLocked(tier) ? `Play ${tier - BPM_STEP} cleanly to unlock` : `${tier} BPM`}
-				>
-					{#if tier === unlockedBpm && canIncrease}
-						<span class="increase-hint">Increase BPM</span>
-					{/if}
-					{#if isLocked(tier)}
-						<span class="lock" aria-hidden="true">🔒</span>
-					{:else}
-						{tier}
-					{/if}
-				</button>
-			{/each}
-			<span class="rung ellipsis" aria-hidden="true">…</span>
+		<div class="launch-nav to-prev">
+			{#if prevLesson}
+				<a class="lesson-nav" href="{base}/lessons/{prevLesson.id}">
+					<span aria-hidden="true">←</span>
+					<span class="nav-label">Previous lesson</span>
+				</a>
+			{/if}
 		</div>
 
-		{#if nextUnlocked && nextLesson}
-			<a class="next-lesson" href="{base}/lessons/{nextLesson.id}">Next lesson →</a>
-		{/if}
+		<div class="launch-controls">
+			<button class="start-btn play" onclick={() => play()} disabled={!parsed}>▶ Play</button>
+
+			<div
+				class="ladder"
+				bind:this={ladderEl}
+				role="group"
+				aria-label="Tempo (beats per minute)"
+			>
+				<span class="rung label">BPM</span>
+				{#each tiers as tier (tier)}
+					<button
+						class="rung"
+						class:selected={tier === selectedBpm}
+						class:locked={isLocked(tier)}
+						class:glow={tier === unlockedBpm && canIncrease}
+						onclick={() => selectTier(tier)}
+						disabled={isLocked(tier)}
+						aria-pressed={tier === selectedBpm}
+						title={isLocked(tier) ? `Play ${tier - BPM_STEP} cleanly to unlock` : `${tier} BPM`}
+					>
+						{#if tier === unlockedBpm && canIncrease}
+							<span class="increase-hint">Increase BPM</span>
+						{/if}
+						{#if isLocked(tier)}
+							<span class="lock" aria-hidden="true">🔒</span>
+						{:else}
+							{tier}
+						{/if}
+					</button>
+				{/each}
+				<span class="rung ellipsis" aria-hidden="true">…</span>
+			</div>
+		</div>
+
+		<div class="launch-nav to-next">
+			{#if nextUnlocked && nextLesson}
+				<a class="lesson-nav next" href="{base}/lessons/{nextLesson.id}">
+					<span class="nav-label">Next lesson</span>
+					<span aria-hidden="true">→</span>
+				</a>
+			{/if}
+		</div>
 	</div>
 
 	{#if status}<p class="warn">{status}</p>{/if}
@@ -1119,7 +1159,10 @@
 					</button>
 				{/if}
 				{#if nextLesson && bpm >= NEXT_LESSON_BPM}
-					<a class="next-lesson" href="{base}/lessons/{nextLesson.id}">Next lesson →</a>
+					<a class="lesson-nav next" href="{base}/lessons/{nextLesson.id}">
+						<span class="nav-label">Next lesson</span>
+						<span aria-hidden="true">→</span>
+					</a>
 				{/if}
 				<button class="done" onclick={exitReport}>Done</button>
 			</div>
@@ -1203,15 +1246,91 @@
 		color: var(--gold);
 	}
 
-	/* Play, the tempo ladder and Next lesson share one row and one height, so the
-	   rungs read as squares sitting flush beside the buttons. */
+	/* Play, the tempo ladder and the two lesson links share one row and one height,
+	   so the rungs read as squares sitting flush beside the buttons.
+
+	   Three zones across the full width: step back, the controls, step forward. The
+	   outer columns are equal fractions and are rendered even when empty, so the
+	   controls stay centred on the first lesson (no Previous) and on an un-earned
+	   one (no Next) rather than sliding as you move through the curriculum. */
 	.launch {
 		--ctl-h: 3.1rem;
+		display: grid;
+		/* The outer columns never shrink below their own label (min-content on a
+		   nowrap link is its full width), and the middle one is allowed to go to
+		   zero — so a ladder long enough to fill the row scrolls inside itself
+		   instead of crushing "Previous lesson" down to its arrow. An absent link
+		   has a min-content of 0, which is what keeps the controls centred on the
+		   first lesson. */
+		grid-template-columns:
+			minmax(min-content, 1fr)
+			minmax(0, auto)
+			minmax(min-content, 1fr);
+		align-items: center;
+		gap: 0.75rem;
+		margin: 2rem 0 0.5rem;
+	}
+
+	.launch-nav {
+		display: flex;
+		min-width: 0;
+	}
+
+	.launch-nav.to-prev {
+		justify-content: flex-start;
+	}
+
+	.launch-nav.to-next {
+		justify-content: flex-end;
+	}
+
+	.launch-controls {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		flex-wrap: wrap;
-		margin: 2rem 0 0.5rem;
+		min-width: 0;
+	}
+
+	/* Narrow: one column. Play and the ladder stack full width, and the two lesson
+	   links share the row beneath — the pair reads as "where am I" once, instead of
+	   pushing the ladder off the screen to sit beside it. */
+	@media (max-width: 46rem) {
+		.launch {
+			grid-template-columns: 1fr 1fr;
+			grid-template-areas:
+				"controls controls"
+				"to-prev to-next";
+		}
+
+		.launch-controls {
+			grid-area: controls;
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.launch-nav.to-prev {
+			grid-area: to-prev;
+		}
+
+		.launch-nav.to-next {
+			grid-area: to-next;
+		}
+
+		.launch-controls .start-btn {
+			width: 100%;
+		}
+
+		.launch-nav .lesson-nav {
+			flex: 1;
+			justify-content: center;
+		}
+
+		/* Full width under a full-width Play button, so the rungs share the row
+		   instead of huddling at the left with dead space beside them. They only
+		   grow — min-width still floors them, and past that the ladder scrolls. */
+		.launch-controls .rung {
+			flex: 1 0 auto;
+		}
 	}
 
 	/* Tempo picker — only on the resting page, so a run can never change tempo
@@ -1226,6 +1345,12 @@
 		height: var(--ctl-h);
 		border: 1px solid var(--border-strong);
 		border-radius: var(--radius-sm);
+		/* A rung is added per unlock, so the ladder eventually outgrows any row.
+		   It scrolls inside its own box rather than widening the page or squeezing
+		   what sits beside it. */
+		min-width: 0;
+		overflow-x: auto;
+		scrollbar-width: thin;
 	}
 
 	.rung {
@@ -1343,9 +1468,13 @@
 		border-top-color: var(--gold);
 	}
 
-	.next-lesson {
+	/* Both curriculum links — Previous beside the controls, Next there and in the
+	   result report. One style, so stepping back and stepping on look like the same
+	   kind of move. */
+	.lesson-nav {
 		display: inline-flex;
 		align-items: center;
+		gap: 0.45rem;
 		height: var(--ctl-h, auto);
 		padding: 0.5em 1.1rem;
 		border-radius: var(--radius-sm);
@@ -1355,11 +1484,21 @@
 		font-size: 0.95rem;
 		text-decoration: none;
 		white-space: nowrap;
+		min-width: 0;
 	}
 
-	.next-lesson:hover {
+	.lesson-nav:hover {
 		border-color: var(--gold);
 		color: var(--gold);
+	}
+
+	/* Below the smallest phones the label would wrap the arrow onto its own line;
+	   the arrow alone still says which way it goes. */
+	@media (max-width: 24rem) {
+		.launch-nav .nav-label {
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
 	}
 
 	.play {

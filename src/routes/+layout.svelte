@@ -116,6 +116,22 @@
 	.nav {
 		display: flex;
 		gap: 0.35rem;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+	}
+
+	/* On a narrow phone the brand and three links do not fit on one line, and the
+	   header was pushing the whole page into a sideways scroll rather than giving
+	   way. Let the header wrap and the links tighten instead. */
+	@media (max-width: 26rem) {
+		.header {
+			flex-wrap: wrap;
+			gap: 0.5rem;
+		}
+
+		.nav a {
+			padding: 0.35em 0.5em;
+		}
 	}
 
 	.nav a {
