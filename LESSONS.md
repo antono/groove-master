@@ -366,51 +366,61 @@ the two apart or neither means anything.
 ## Bass lines
 
 The backing bass is the lesson's scaffold, and for a long time every line was
-some arrangement of the same root note hammered on the beat. That is not what
-made them dull. **Support and interest are different axes**: a line can mark
-all four beats as reliably as a metronome and still move, and the early lessons
-were paying the price of holding a pulse without collecting anything for it.
+some arrangement of one root note hammered on the beat. Two separate things
+were wrong with that.
 
-Four types, ordered by how much they hold the student up:
+**A bass note struck at the same instant as a drum is not a bass note.** Same
+attack, and the kit wins — the line is inaudible as a voice of its own no
+matter how good the notes are. Every live lesson puts drums on all four beats
+and most of them on all eight 8ths, so a bass on the beats is masked _by
+construction_, everywhere. This is the bigger of the two problems and it still
+applies to `quarter`, `octave` and `syncopated`.
 
-| line      | rhythm                              | support | character                        |
-| --------- | ----------------------------------- | ------- | -------------------------------- |
-| `walking` | a note on every beat, none repeated | highest | jazz/blues motion, pulls forward |
-| `riff`    | a motif with rests in it            | medium  | memorable, has an identity       |
-| `pedal`   | one long root, then a scramble      | medium  | stillness against motion         |
-| `dub`     | the down-beat left empty            | lowest  | attitude, resists the student    |
+**Support and interest are different axes.** A line can mark the pulse as
+reliably as a metronome and still move; what made the early lessons dull was
+the repeated pitch, not the placement.
 
-**1 · Walking** — _implemented, live on 1.4._ Four quarter notes over Am - F -
-C - G: root on the down-beat, two chord tones, then a **chromatic leading note
-on beat 4** that resolves a semitone into the next bar's root. Marks every beat
-exactly as `quarter` did, but never plays the same pitch twice and turns the
-four bars into one phrase that closes rather than stops. This is the drop-in
-replacement for `quarter` anywhere maximum support is wanted, and it should
-probably take over most of Stage 1 and 2.
+So a line is judged on both: where it sits relative to the drums, and whether
+it goes anywhere.
 
-**2 · Riff** — a two-bar motif with holes in it, repeated. Something like root
-on 1, a jump to the 5th on the "and" of 2, silence across 3, a walk-up on 4.
-The rests are the point: the student's own notes get heard in the gaps, and a
-repeated shape is something you can remember and play against rather than
-merely follow. Medium support — beats 1 and 4 are marked, 3 is not.
+| line      | sits                                 | support | character                        |
+| --------- | ------------------------------------ | ------- | -------------------------------- |
+| `walking` | anchor on 1, then all four off-beats | highest | jazz/blues motion, pulls forward |
+| `riff`    | a motif with rests in it             | medium  | memorable, has an identity       |
+| `pedal`   | one long root, then a scramble       | medium  | stillness against motion         |
+| `dub`     | the down-beat left empty             | lowest  | attitude, resists the student    |
 
-**3 · Pedal & answer** — a whole-note root under the first half of the bar,
-then a burst of 8th- or 16th-note melody in the second half. The contrast does
-the work: two beats of complete stillness make the answer feel like an event,
-and the student gets a wide-open space to sit in followed by a very clear cue
-that the bar is turning over. Good under lessons where the drums are dense,
-since it takes up the room the pattern leaves.
+**1 · Walking** — _implemented, live on 1.4._ Over Am - F - C - G. The root
+anchors beat 1 with the snare and everything else lands on the off-beats, so a
+bass note sounds in **every hole the drums leave** — 16 of its 20 notes are the
+only thing playing at that moment. Pitches never repeat inside a bar, and the
+last off-beat is a chromatic leading note resolving a semitone into the next
+bar's root, so the four bars turn over as a phrase rather than stopping: G#
+pulls up to A and the loop closes without a seam.
+
+**2 · Riff** — a two-bar motif with holes in it, repeated. Root on 1, a jump to
+the 5th on the "and" of 2, silence across 3, a walk-up on 4. The rests are the
+point: a repeated shape is something you can remember and play _against_ rather
+than merely follow. Medium support — 1 and 4 are marked, 3 is not.
+
+**3 · Pedal & answer** — a long root under the first half of the bar, then a
+burst of 16th-note melody in the second half. The contrast does the work: two
+beats of stillness make the answer an event. Best under the dense lessons,
+where the 16th answer is the only line that can find a gap at all.
 
 **4 · Dub drop** — beat 1 is **empty**, and the line enters on the "and" of 1
-or on beat 3, sparse and syncopated with long decays. Lowest support of the
-four: nothing marks the down-beat, so the student has to be the one who knows
-where it is. This is the natural end-of-stage line, replacing `syncopated` —
-same job, considerably more attitude.
+or on beat 3, sparse and syncopated with long decays. Nothing marks the
+down-beat, so the student has to be the one who knows where it is. The natural
+end-of-stage line, replacing `syncopated`.
 
-Existing lines stay for now: `quarter` (root on every beat), `octave` (root and
-octave bouncing through the 8ths), `syncopated` (pushes off-beat). As the four
-above land, `quarter` and `syncopated` should retire — `walking` and `dub` do
-the same pedagogical jobs and neither one is boring.
+`quarter`, `octave` and `syncopated` are still in use and all three are masked
+by the drums above them. They should retire as the four above land — `walking`
+and `dub` already do their pedagogical jobs, audibly.
+
+> **Rule for a new line: check it against the lesson's drum pattern, not just
+> its position in the stage.** Under 8th-note drums the only free slots are
+> 16ths. A line written without looking at what is on top of it will not be
+> heard.
 
 ## Checkpoints
 

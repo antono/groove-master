@@ -27,32 +27,39 @@ PROGRAM_CHANGE = (0, -1, bytes([0xC0, 0]))  # ignored by our sampler, kept for p
 
 
 def walking_bass(bars=4):
-    """A walking line over Am - F - C - G: four quarter notes, none repeated.
+    """A walking line over Am - F - C - G that walks **in the drums' gaps**.
 
-    The same scaffolding as `quarter_bass` — a note on every beat, the root on
-    every down-beat — but the line moves instead of hammering one pitch. Each
-    bar takes the root, two chord tones, and then a **chromatic leading note on
-    beat 4** that resolves a semitone into the next bar's root, so the bar line
-    is the strongest moment in the loop rather than the place the ear gives up.
+    A bass note struck at the same instant as a drum is not a bass note, it is
+    part of the drum: same attack, and the kit wins. Every lesson's drums land
+    on the beats, so a line that also lands on the beats is inaudible as a
+    separate voice no matter how good it is — which is what was wrong with the
+    quarter-note version of this, and with `quarter_bass` before it.
 
-    That last note is what makes the four bars a phrase: G# pulls to A and the
-    loop comes round without a seam.
+    So the root anchors beat 1, with the snare, and everything else lives on
+    the off-beats: a note sounds in each of the four holes the drums leave.
+    Beat 1 keeps the pulse nailed down; the rest is the only voice in the room.
+
+    Pitches still never repeat inside a bar, and the last off-beat is a
+    **chromatic leading note** resolving a semitone into the next bar's root,
+    so the four bars turn over as a phrase — G# pulls up to A and the loop
+    closes without a seam.
     """
     events = [PROGRAM_CHANGE]
-    # (root, then the rest of the bar) — beat 4 leads by a semitone into the
-    # next bar's root, which is why the last bar climbs to G# for the loop back.
+    # Beat 1 anchors; 0.5, 1.5, 2.5 and 3.5 sit in the gaps between drum hits.
+    positions = [0, 0.5, 1.5, 2.5, 3.5]
     figures = [
-        [33, 40, 45, 42],  # Am : A1  E2  A2  F#2 -> down a semitone into F
-        [41, 36, 33, 35],  # F  : F2  C2  A1  B1  -> up   a semitone into C
-        [36, 43, 40, 42],  # C  : C2  G2  E2  F#2 -> up   a semitone into G
-        [43, 38, 35, 32],  # G  : G2  D2  B1  G#1 -> up   a semitone into A
+        [33, 36, 40, 45, 42],  # Am : A1 C2 E2 A2 F#2 -> down a semitone into F
+        [41, 36, 33, 38, 35],  # F  : F2 C2 A1 D2 B1  -> up   a semitone into C
+        [36, 40, 43, 48, 42],  # C  : C2 E2 G2 C3 F#2 -> up   a semitone into G
+        [43, 38, 35, 31, 32],  # G  : G2 D2 B1 G1 G#1 -> up   a semitone into A
     ]
     for bar in range(bars):
         base = bar * BAR_TICKS
-        for beat, note in enumerate(figures[bar % len(figures)]):
-            # A shade under a full beat: walking lines breathe between notes
-            # rather than smearing into each other.
-            bass_note(events, base + beat * PPQ, note, dur=400)
+        for pos, note in zip(positions, figures[bar % len(figures)]):
+            # The anchor rings under the first half of the bar; the off-beats are
+            # short enough to speak between two drum hits and get out of the way.
+            dur = 380 if pos == 0 else 210
+            bass_note(events, base + round(pos * PPQ), note, dur=dur)
     return events, bars * BAR_TICKS
 
 
