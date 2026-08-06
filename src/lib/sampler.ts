@@ -47,10 +47,20 @@ export class Sampler {
     await Promise.all([...new Set(notes)].map((n) => this.load(family, id, n)));
   }
 
-  private fire(buf: AudioBuffer, when?: number) {
+  // `gain` is a linear multiplier, 1 = the sample as rendered. Backing tracks
+  // carry MIDI velocity so a bass line can ghost a note instead of playing
+  // every note at the same weight, which is most of what separates a bass line
+  // from a MIDI file. A node is only inserted when it would do something.
+  private fire(buf: AudioBuffer, when?: number, gain = 1) {
     const src = this.ctx.createBufferSource();
     src.buffer = buf;
-    src.connect(this.ctx.destination);
+    if (gain === 1) {
+      src.connect(this.ctx.destination);
+    } else {
+      const g = this.ctx.createGain();
+      g.gain.value = gain;
+      src.connect(g).connect(this.ctx.destination);
+    }
     src.start(when);
   }
 
@@ -60,8 +70,8 @@ export class Sampler {
     else this.load(family, id, note).then((b) => b && this.fire(b));
   }
 
-  playAt(family: string, id: string, note: number, when: number) {
+  playAt(family: string, id: string, note: number, when: number, gain = 1) {
     const cached = this.cache.get(`${family}/${id}/${note}`);
-    if (cached) this.fire(cached, when);
+    if (cached) this.fire(cached, when, gain);
   }
 }

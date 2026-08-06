@@ -35,3 +35,7 @@ vite.config.ts.timestamp-*
 
 # Audio assets (large binaries)
 /soundfonts
+
+# Python bytecode from scripts/lessons
+__pycache__/
+*.pyc

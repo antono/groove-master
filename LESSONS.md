@@ -64,7 +64,7 @@ snare, weak hand plays the hi-hats.**
 
 | #   | slug                    | tier    | status | pattern                                 | bass       |
 | --- | ----------------------- | ------- | ------ | --------------------------------------- | ---------- |
-| 1.4 | `alternating-quarters`  | plain   | live   | snare / hat / snare / hat, one per beat | walking    |
+| 1.4 | `alternating-quarters`  | plain   | live   | snare / hat / snare / hat, one per beat | riff       |
 | 1.5 | `alternating-8ths`      | core    | live   | the single stroke roll in 8ths          | quarter    |
 | 1.6 | `alternating-8ths-swap` | stretch | live   | the same, lead hand flips every bar     | syncopated |
 
@@ -366,61 +366,57 @@ the two apart or neither means anything.
 ## Bass lines
 
 The backing bass is the lesson's scaffold, and for a long time every line was
-some arrangement of one root note hammered on the beat. Two separate things
-were wrong with that.
+some arrangement of one root note hammered on the beat. Three separate things
+were wrong, and they are independent.
 
-**A bass note struck at the same instant as a drum is not a bass note.** Same
-attack, and the kit wins — the line is inaudible as a voice of its own no
-matter how good the notes are. Every live lesson puts drums on all four beats
-and most of them on all eight 8ths, so a bass on the beats is masked _by
-construction_, everywhere. This is the bigger of the two problems and it still
-applies to `quarter`, `octave` and `syncopated`.
+**Placement.** A bass note struck at the same instant as a drum is not heard as
+bass at all — same attack, and the kit wins. Every lesson puts drums on every
+beat and most on every 8th, so a line on the beats is masked _by construction_.
+This is what `quarter`, `octave` and `syncopated` all are.
 
-**Support and interest are different axes.** A line can mark the pulse as
-reliably as a metronome and still move; what made the early lessons dull was
-the repeated pitch, not the placement.
+**Motion.** A line that repeats one pitch is dull however it is placed.
 
-So a line is judged on both: where it sits relative to the drums, and whether
-it goes anywhere.
+**Dynamics.** Flat velocity is the loudest tell that a line came out of a text
+editor. Velocity now survives the whole path — `parseMidi` keeps it on backing
+notes and the sampler applies it as gain — so a ghost note is a ghost.
 
-| line      | sits                                 | support | character                        |
-| --------- | ------------------------------------ | ------- | -------------------------------- |
-| `walking` | anchor on 1, then all four off-beats | highest | jazz/blues motion, pulls forward |
-| `riff`    | a motif with rests in it             | medium  | memorable, has an identity       |
-| `pedal`   | one long root, then a scramble       | medium  | stillness against motion         |
-| `dub`     | the down-beat left empty             | lowest  | attitude, resists the student    |
+A corollary worth stating: **a walking bass is the wrong tool for this app.**
+Walking means a note on every beat, and there is nowhere on the beat for it to
+be heard. It was tried and replaced.
 
-**1 · Walking** — _implemented, live on 1.4._ Over Am - F - C - G. The root
-anchors beat 1 with the snare and everything else lands on the off-beats, so a
-bass note sounds in **every hole the drums leave** — 16 of its 20 notes are the
-only thing playing at that moment. Pitches never repeat inside a bar, and the
-last off-beat is a chromatic leading note resolving a semitone into the next
-bar's root, so the four bars turn over as a phrase rather than stopping: G#
-pulls up to A and the loop closes without a seam.
+| line    | sits                                  | support | character                     |
+| ------- | ------------------------------------- | ------- | ----------------------------- |
+| `riff`  | anchor on 1, then off-beats and 16ths | highest | a hook you can play against   |
+| `pedal` | one long root, then a scramble        | medium  | stillness against motion      |
+| `dub`   | the down-beat left empty              | lowest  | attitude, resists the student |
 
-**2 · Riff** — a two-bar motif with holes in it, repeated. Root on 1, a jump to
-the 5th on the "and" of 2, silence across 3, a walk-up on 4. The rests are the
-point: a repeated shape is something you can remember and play _against_ rather
-than merely follow. Medium support — 1 and 4 are marked, 3 is not.
+**1 · Riff** — _implemented, live on 1.4._ Four bars over Am - F - C - G, and a
+phrase rather than a bar played four times: the hook states itself in bar 1,
+answers in bar 2, opens a hole in bar 3 where nothing plays across beat 3, and
+drives home in bar 4 on a 16th-note turnaround. 19 of its 23 notes are the only
+thing sounding at that moment; the other four are the roots anchoring beat 1
+with the snare. The push before beat 2 is a ghost at velocity 55 against
+accents at 100. Each bar ends a semitone from the next root, so the loop closes
+rather than stops — G# pulls up to A and bar 4 runs straight back into bar 1.
 
-**3 · Pedal & answer** — a long root under the first half of the bar, then a
-burst of 16th-note melody in the second half. The contrast does the work: two
-beats of stillness make the answer an event. Best under the dense lessons,
-where the 16th answer is the only line that can find a gap at all.
+**2 · Pedal & answer** — a long root under the first half of the bar, then a
+burst of 16th-note melody in the second. The contrast does the work: two beats
+of stillness make the answer an event. Best under the dense lessons, where a
+16th answer is the only line that can find a gap at all.
 
-**4 · Dub drop** — beat 1 is **empty**, and the line enters on the "and" of 1
+**3 · Dub drop** — beat 1 is **empty**, and the line enters on the "and" of 1
 or on beat 3, sparse and syncopated with long decays. Nothing marks the
 down-beat, so the student has to be the one who knows where it is. The natural
 end-of-stage line, replacing `syncopated`.
 
-`quarter`, `octave` and `syncopated` are still in use and all three are masked
-by the drums above them. They should retire as the four above land — `walking`
-and `dub` already do their pedagogical jobs, audibly.
+`quarter`, `octave` and `syncopated` are still in use on every other lesson and
+all three are masked by the drums above them. They should retire as the lines
+above land.
 
-> **Rule for a new line: check it against the lesson's drum pattern, not just
-> its position in the stage.** Under 8th-note drums the only free slots are
-> 16ths. A line written without looking at what is on top of it will not be
-> heard.
+> **Rule for a new line: write it against the lesson's drum pattern, not just
+> against its position in the stage.** Under 8th-note drums the only free slots
+> are 16ths. A line written without looking at what is on top of it will not be
+> heard, however good it is.
 
 ## Checkpoints
 

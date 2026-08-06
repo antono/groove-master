@@ -58,9 +58,15 @@ def hit(events, tick, note):
     events.append((tick + 60, 0, bytes([0x89, note, 0])))
 
 
-def bass_note(events, tick, note, dur=200):
-    """A bass note on channel 1."""
-    events.append((tick, 1, bytes([0x90, note, 95])))
+def bass_note(events, tick, note, dur=200, vel=95):
+    """A bass note on channel 1. `vel` is played as loudness by the sampler.
+
+    Velocity is what makes a ghost note a ghost rather than another downbeat,
+    and it survives the whole path: parseMidi keeps it on backing notes and the
+    sampler applies it as gain. Keep it at or below 100 — the samples are baked
+    close to full scale, so anything louder risks clipping.
+    """
+    events.append((tick, 1, bytes([0x90, note, vel])))
     events.append((tick + dur, 0, bytes([0x80, note, 0])))
 
 

@@ -8,7 +8,7 @@ Hand convention, set here and kept for the rest of the curriculum:
 **strong hand plays kick and snare, weak hand plays the hi-hats.**
 """
 
-from .bass import OCTAVE, QUARTER, SYNCOPATED, WALKING
+from .bass import OCTAVE, QUARTER, RIFF, SYNCOPATED
 from .grids import BEATS, EIGHTHS, cycle_bars, per_bar, voices
 from .midi import CLOSED_HH, KICK, SNARE
 from .schema import checkpoint, lesson, module, stage
@@ -202,17 +202,18 @@ STAGE = stage(
                     name="Alternating Quarters",
                     tier="plain",
                     drums=alternating_quarters,
-                    bass=WALKING,
+                    bass=RIFF,
                     prereq=["quarters-hand-swap"],
                     summary="Snare, hat, snare, hat — the hands trade, one beat each.",
                     description=(
                         "Both hands in the same bar for the first time, but never "
                         "at the same moment: strong hand on 1 and 3, weak hand on 2 "
                         "and 4. Nothing stacks, so if you hear two pads together "
-                        "you played an extra note. Underneath, a walking bass "
-                        "marks all four beats without playing the same note twice "
-                        "— every bit as much of an anchor as a repeated root, and "
-                        "a great deal more worth listening to four times over."
+                        "you played an extra note. Underneath runs a bass "
+                        "riff that keeps out of your way — the root lands with "
+                        "you on beat 1 and everything after it falls in the gaps "
+                        "between your hits, so the two parts interlock instead of "
+                        "one burying the other."
                     ),
                     hints=[
                         "Strong hand takes the snare, weak hand the hi-hat, and "
@@ -221,9 +222,13 @@ STAGE = stage(
                         "Think of a single motion passing back and forth.",
                         "The weak hand's beats are the ones that drift. If 2 and 4 "
                         "sound late, they are.",
-                        "The bass walks a new note under every beat and steps a "
-                        "semitone into the next bar. Land with it and you will "
-                        "hear the four bars turn over as one phrase.",
+                        "The bass answers you: your hits are on the beats, its "
+                        "notes are between them. Listen for the two interlocking "
+                        "rather than trying to play along with it.",
+                        "Bar 3 leaves a hole where the bass drops out across beat "
+                        "3, and bar 4 runs home in 16ths. Both are cues — if you "
+                        "know which bar you are in by ear, you are listening "
+                        "properly.",
                         "Say the pads out loud as you play — \"snare, hat, snare, "
                         'hat" — so a swapped hand is audible before it is visible.',
                     ],

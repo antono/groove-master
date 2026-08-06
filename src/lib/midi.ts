@@ -14,7 +14,10 @@
 /** Beats of lead-in before a lesson's beat 0 — the bar the count-in lives in. */
 export const COUNT_IN_BEATS = 4;
 
-export type MidiNote = { beat: number; note: number };
+// `vel` is MIDI velocity 1-127, carried only where it is used: backing tracks
+// play it as loudness. Playable notes are scored on timing alone, so nothing
+// on that path reads it.
+export type MidiNote = { beat: number; note: number; vel?: number };
 export type BackingTrack = { family: string; id: string; notes: MidiNote[] };
 
 export type ParsedMidi = {
@@ -117,7 +120,7 @@ export function parseMidi(buf: ArrayBuffer): ParsedMidi {
         const note = d.getUint8(p++);
         const vel = d.getUint8(p++);
         if (chan === 9) usesPercussion = true;
-        if (vel > 0) trackNotes.push({ beat: tick / ppq, note });
+        if (vel > 0) trackNotes.push({ beat: tick / ppq, note, vel });
         if (tick > trackMax) trackMax = tick;
       } else if (cmd === 0x80 || cmd === 0xa0 || cmd === 0xb0 || cmd === 0xe0) {
         p += 2;

@@ -479,7 +479,8 @@
 			let c = backingCursors[ti];
 			while (c < track.notes.length && track.notes[c].beat <= horizon) {
 				const when = Math.max(beatToAudioTime(track.notes[c].beat), ctx.currentTime);
-				backingPlayer?.playAt(track.family, track.id, track.notes[c].note, when);
+				const bn = track.notes[c];
+				backingPlayer?.playAt(track.family, track.id, bn.note, when, (bn.vel ?? 100) / 100);
 				c++;
 			}
 			backingCursors[ti] = c;
@@ -777,7 +778,8 @@
 			let c = demoBackCursors[ti];
 			while (c < track.notes.length && track.notes[c].beat <= horizon) {
 				const when = Math.max(demoBeatTime(track.notes[c].beat), ctx.currentTime);
-				backingPlayer?.playAt(track.family, track.id, track.notes[c].note, when);
+				const bn = track.notes[c];
+				backingPlayer?.playAt(track.family, track.id, bn.note, when, (bn.vel ?? 100) / 100);
 				c++;
 			}
 			demoBackCursors[ti] = c;
