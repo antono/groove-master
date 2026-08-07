@@ -1,0 +1,8 @@
+- in lesson preview show controller grid and when note plays reflect it on controller image.
+- fix ugly dialog when lesson finished
+- add important ga events
+  - lesson_start, end
+  - onboarding_start, onboarding each step, onboarding finished
+  - registration
+  - other...
+- add telegram support group
