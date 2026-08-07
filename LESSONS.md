@@ -170,7 +170,7 @@ starts to matter as much as when.
 | #   | slug                    | tier    | status | pattern                                              |
 | --- | ----------------------- | ------- | ------ | ---------------------------------------------------- |
 | 4.4 | `paradiddle-single`     | plain   | live   | R L R R / L R L L in 8ths                            |
-| 4.5 | `paradiddle-groove`     | core    | todo   | the paradiddle across hat and snare, kick underneath |
+| 4.5 | `paradiddle-groove`     | core    | live   | the paradiddle across hat and snare, kick underneath |
 | 4.6 | `paradiddle-inversions` | stretch | todo   | the four inversions, one per bar                     |
 
 ### Module: Bigger diddles

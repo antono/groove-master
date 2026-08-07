@@ -342,7 +342,7 @@
               "number": "4.5",
               "name": "Paradiddle Groove",
               "tier": "core",
-              "planned": true
+              "planned": false
             },
             {
               "id": "paradiddle-inversions",
@@ -820,6 +820,28 @@
         "The second double lands on the last two 8ths of the bar, so every bar starts on the opposite hand to the one that just played twice: two hats, then straight back to the snare on 1.",
         "A double that arrives as one flam means the second finger is chasing the first. Lift it early and drop it on time rather than pushing it faster.",
         "Extra notes usually mean a triple crept in. Stop at the bar line and restart the count instead of playing through it."
+      ]
+    },
+    {
+      "id": "paradiddle-groove",
+      "number": "4.5",
+      "name": "Paradiddle Groove",
+      "file": "stage-04-sticking/paradiddle-groove.mid",
+      "stage": "sticking",
+      "module": "the-paradiddle",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["paradiddle-single"],
+      "summary": "The same paradiddle, with a kick on 1 and 3 underneath — the rudiment becomes a groove.",
+      "description": "Everything your hands do here you already did in 4.4: the identical R L R R, L R L L, snare on the strong hand and closed hat on the weak one. What is new is the kick, on beats 1 and 3, and that is enough to turn a rudiment into something you could play behind a song. The two kicks are deliberately different problems. On beat 1 the strong hand is already playing the snare, so both pads fire together off one hand. On beat 3 the strong hand is free and the weak one is on the hat, so the kick lands against the opposite hand instead. If the sticking survives both, it will survive a real groove.",
+      "hints": [
+        "Play 4.4 once first. The hands are identical, so anything that falls apart here is the kick — you know exactly what changed.",
+        "Beat 1 is a stack: kick and snare together, one hand. Drop both fingers as a single movement rather than rolling one into the other, or it lands as a flam.",
+        "Beat 3 is the easier of the two and the one people rush — the strong hand is free, so it tends to arrive early. Let the hat on that beat set the timing and put the kick with it.",
+        "Keep saying \"pa-ra-did-dle\" through it. The kick is not part of the word, and the moment you start counting the kicks instead, the doubles go.",
+        "The doubles are still the lesson: two snares across beat 2 and its \"and\", two hats across beat 4 and its \"and\". Neither of them has a kick on it, so they should be the steadiest thing in the bar.",
+        "If a double turns into a single, you are almost certainly putting the missing energy into the kick. Play a bar with no kick at all, then add it back one beat at a time."
       ]
     }
   ]
