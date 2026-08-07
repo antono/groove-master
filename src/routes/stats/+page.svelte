@@ -12,6 +12,7 @@
 	import { base } from '$app/paths';
 	import { onMount } from 'svelte';
 	import TrendChart, { type TrendPoint } from '$lib/trend-chart.svelte';
+	import PageMeta from '$lib/page-meta.svelte';
 	import { allSessions, clearSessions, dayKey, type SessionStat } from '$lib/stats';
 
 	let sessions: SessionStat[] = $state([]);
@@ -508,9 +509,10 @@
 	const pct = (v: number) => Math.round(v * 100) + '%';
 </script>
 
-<svelte:head>
-	<title>Groove Academy — Practice stats</title>
-</svelte:head>
+<PageMeta
+	title="Groove Academy — Practice stats"
+	description="Your practice history: a year of attendance at a glance, accuracy and tempo trends, and every run of every day."
+/>
 
 {#if loading}
 	<p class="muted">Loading your history…</p>

@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import PageMeta from '$lib/page-meta.svelte';
 </script>
 
-<svelte:head>
-	<title>Groove Academy — free drum lessons</title>
-	<meta
-		name="description"
-		content="Free, interactive drum lessons in your browser. Built because Melodics can't be paid for from Belarus."
-	/>
-</svelte:head>
+<PageMeta
+	title="Groove Academy — free drum lessons"
+	description="Free, interactive drum lessons in your browser. Built because Melodics can't be paid for from Belarus."
+/>
 
 <section class="hero">
 	<svg class="mark" viewBox="0 0 512 512" role="img" aria-label="Groove Academy">

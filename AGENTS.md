@@ -197,6 +197,23 @@ drumming is supported.
 - **Any SoundFont whose samples are shipped must be credited in `THANKS.md`**
   (name, samples taken, license, authors).
 
+## Link previews
+
+- A page's title and description go through `$lib/page-meta.svelte`, which emits
+  `<title>`, `og:title`, `og:description`, `og:url` and `rel=canonical` together.
+  **Don't hand-write those in a page's `<svelte:head>`** — the layout already
+  emits the constant half (site name, card type, image, `twitter:card`), and a
+  second `og:title` anywhere in the head wins or loses by document order.
+- Absolute URLs come from `SITE_URL` in `src/lib/site.ts`. They have to be
+  absolute: every crawler drops a relative `og:image`, and `base` is relative
+  during SSR. Change that constant if the domain moves.
+- `static/og.png` is the 1200x630 card. Edit `docs/og-card.svg` and re-run
+  `scripts/render-og.sh` (headless Chrome — qlmanage, which rendered the
+  favicons, only makes square thumbnails).
+- `/lessons/[id]` fetches its manifest in `onMount`, so a crawler sees the
+  generic fallback rather than the lesson's own name. Naming it would mean
+  moving that fetch into a `+page.ts`.
+
 ## Commands
 
 - `pnpm dev` — start dev server

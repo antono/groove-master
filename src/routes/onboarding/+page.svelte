@@ -7,6 +7,7 @@
 	import { playScaleTone, unlockAudio } from '$lib/scale';
 	import { onboardingFinished, onboardingStarted, onboardingStep } from '$lib/analytics';
 	import PadGrid from '$lib/pad-grid.svelte';
+	import PageMeta from '$lib/page-meta.svelte';
 	import {
 		controlLabel,
 		parseControl,
@@ -262,9 +263,10 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Groove Academy — Set up your pads</title>
-</svelte:head>
+<PageMeta
+	title="Groove Academy — Set up your pads"
+	description="Point the browser at your MIDI kit, tap each pad once, and Groove Academy learns the layout. No kit? The on-screen pads work too."
+/>
 
 <div class="wizard">
 	<!-- step rail -->

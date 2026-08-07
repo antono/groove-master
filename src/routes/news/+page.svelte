@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import PageMeta from '$lib/page-meta.svelte';
 
 	const MASTODON = 'https://mastodon.social/@groove_academy';
 </script>
 
-<svelte:head>
-	<title>News — Groove Academy</title>
-	<meta name="description" content="What's new in Groove Academy, and what's coming next." />
-</svelte:head>
+<PageMeta
+	title="News — Groove Academy"
+	description="What's new in Groove Academy, and what's coming next."
+/>
 
 <h1>News</h1>
 <p class="lede">

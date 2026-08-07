@@ -7,6 +7,13 @@
 
 	import { savedKit } from '$lib/config';
 	import { warmKit } from '$lib/drums';
+	import {
+		OG_IMAGE,
+		OG_IMAGE_ALT,
+		OG_IMAGE_HEIGHT,
+		OG_IMAGE_WIDTH,
+		SITE_NAME
+	} from '$lib/site';
 
 	let { children } = $props();
 
@@ -58,6 +65,21 @@
 	     browsers, and the iOS home screen. Both are rendered from the same file. -->
 	<link rel="alternate icon" href="{base}/favicon-32.png" sizes="32x32" />
 	<link rel="apple-touch-icon" href="{base}/apple-touch-icon.png" />
+
+	<!-- The half of the link preview that is the same on every route. The title,
+	     description and URL are per-page and come from $lib/page-meta.svelte —
+	     emitting them here too would leave two og:title tags in the head, and
+	     crawlers keep whichever they meet first. -->
+	<meta property="og:site_name" content={SITE_NAME} />
+	<meta property="og:type" content="website" />
+	<meta property="og:locale" content="en_GB" />
+	<meta property="og:image" content={OG_IMAGE} />
+	<meta property="og:image:width" content={String(OG_IMAGE_WIDTH)} />
+	<meta property="og:image:height" content={String(OG_IMAGE_HEIGHT)} />
+	<meta property="og:image:alt" content={OG_IMAGE_ALT} />
+	<!-- Without this Twitter and Slack fall back to a thumbnail-sized card that
+	     crops the 1.91:1 image down to a square. -->
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <div class="app">

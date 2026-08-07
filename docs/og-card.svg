@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Groove Academy — free drum lessons">
+	<title>Groove Academy — free drum lessons</title>
+	<!-- Source for static/og.png, the 1200x630 social-preview card. Same recipe
+	     as static/logo.svg: the hero mark with the design tokens resolved
+	     (gold #f0c040, bg #0e0f17, text-muted #9298b4, text-faint #5d617e),
+	     plus the body's top glow so the card matches what a visitor lands on.
+	     Re-render it with scripts/render-og.sh. 1.91:1 is what Twitter, Slack and Facebook
+	     crop a preview to — a square logo loses its top and bottom there. -->
+	<defs>
+		<radialGradient id="glow" gradientUnits="userSpaceOnUse" cx="600" cy="-224" r="1280" gradientTransform="matrix(1 0 0 0.5 0 -112)">
+			<stop offset="0" stop-color="#1b1d31" />
+			<stop offset="0.6" stop-color="#1b1d31" stop-opacity="0" />
+		</radialGradient>
+	</defs>
+
+	<rect width="1200" height="630" fill="#0e0f17" />
+	<rect width="1200" height="630" fill="url(#glow)" />
+
+	<!-- The mark, scaled 0.85 from its native 512 box and centred vertically. -->
+	<g transform="translate(72 97) scale(0.85)">
+		<g fill="none" stroke="#f0c040" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+			<circle cx="256" cy="256" r="150" />
+			<g fill="#0e0f17">
+				<g transform="translate(256 256) rotate(34)">
+					<path d="M -6 170 L 6 170 L 3 -158 L -3 -158 Z" />
+					<circle cx="0" cy="-164" r="9" />
+				</g>
+				<g transform="translate(256 256) rotate(-34)">
+					<path d="M -6 170 L 6 170 L 3 -158 L -3 -158 Z" />
+					<circle cx="0" cy="-164" r="9" />
+				</g>
+			</g>
+		</g>
+		<g fill="#f0c040" font-family="system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif" font-weight="900" font-size="80" text-anchor="middle">
+			<text x="181" y="284">G</text>
+			<text x="331" y="284">A</text>
+		</g>
+		<g fill="#f0c040" font-family="system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif" font-weight="800" font-size="30" letter-spacing="4" text-anchor="middle">
+			<text x="256" y="372">2026</text>
+		</g>
+	</g>
+
+	<g font-family="system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif">
+		<text x="560" y="242" fill="#f0c040" font-size="66" font-weight="800" letter-spacing="-1">Groove Academy</text>
+		<g fill="#9298b4" font-size="30" font-weight="500">
+			<text x="562" y="306">Free drum lessons that scroll by in</text>
+			<text x="562" y="348">your browser. Bring a MIDI kit, or</text>
+			<text x="562" y="390">tap the on-screen pads.</text>
+		</g>
+		<text x="562" y="462" fill="#5d617e" font-size="26" font-weight="600" letter-spacing="1">groove.academy</text>
+	</g>
+</svg>

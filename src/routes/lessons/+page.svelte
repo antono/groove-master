@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { parseMidi } from '$lib/midi';
 	import LessonChart from '$lib/lesson-chart.svelte';
+	import PageMeta from '$lib/page-meta.svelte';
 	import { allSessions } from '$lib/stats';
 	import { progressByLesson, type LessonProgress } from '$lib/progress';
 
@@ -152,9 +153,10 @@
 	</li>
 {/snippet}
 
-<svelte:head>
-	<title>Groove Academy — Lessons</title>
-</svelte:head>
+<PageMeta
+	title="Groove Academy — Lessons"
+	description="Short looping grooves, three per module: plain strips a technique bare, core is how it is actually played, stretch pushes it as far as it usefully goes."
+/>
 
 <h1>Lessons</h1>
 <p class="lede">

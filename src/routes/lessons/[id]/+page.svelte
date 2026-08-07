@@ -10,6 +10,7 @@
 	import { dayKey, recordSession } from '$lib/stats';
 	import { lessonFinished, lessonStarted } from '$lib/analytics';
 	import { BPM_STEP, isCleanRun } from '$lib/progress';
+	import PageMeta from '$lib/page-meta.svelte';
 	import LessonChart from '$lib/lesson-chart.svelte';
 	import ControllerMap from '$lib/controller-map.svelte';
 	import { laneColor } from '$lib/drum-colors';
@@ -1035,9 +1036,14 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Groove Academy — {selected?.name ?? 'Lesson'}</title>
-</svelte:head>
+<!-- The manifest is fetched in onMount, so a crawler — which never runs the
+     script — only ever sees the fallbacks. Naming the lesson in a shared link
+     would mean loading the manifest in a +page.ts instead. -->
+<PageMeta
+	title="Groove Academy — {selected?.name ?? 'Lesson'}"
+	description={selected?.description ??
+		'A looping groove that scrolls toward the hit line. Play it on a MIDI kit or the on-screen pads.'}
+/>
 
 <a class="back" href="{base}/lessons">← All lessons</a>
 <h1>
