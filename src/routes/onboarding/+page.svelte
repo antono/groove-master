@@ -5,6 +5,7 @@
 	import { MidiHub, type MidiInputInfo } from '$lib/midi-hub.svelte';
 	import { matchPreset, MAX_COLS, MAX_ROWS, type Preset } from '$lib/presets';
 	import { playScaleTone, unlockAudio } from '$lib/scale';
+	import { onboardingFinished, onboardingStarted, onboardingStep } from '$lib/analytics';
 	import PadGrid from '$lib/pad-grid.svelte';
 	import {
 		controlLabel,
@@ -68,7 +69,28 @@
 	let lastAt = 0;
 	let hitTimer: ReturnType<typeof setTimeout>;
 
+	// Which step the student is on is the one thing worth measuring here — the wizard
+	// is where a new drummer either gets their pads working or gives up, and the step
+	// they were last on says which. Reported off `step` rather than from each
+	// transition so every route into a screen counts, Back included; only the finish
+	// is once-per-visit, so a student who steps back out of "done" and returns is not
+	// counted as having set up twice.
+	let reportedStep: Step | null = null;
+	let reportedFinish = false;
+
+	$effect(() => {
+		const current = step;
+		if (current === reportedStep) return;
+		reportedStep = current;
+		onboardingStep(current);
+		if (current === 'done' && !reportedFinish) {
+			reportedFinish = true;
+			onboardingFinished();
+		}
+	});
+
 	onMount(() => {
+		onboardingStarted();
 		const off = midi.onNote(handleNote);
 		const offRaw = midi.onMessage(handleMessage);
 		return () => {

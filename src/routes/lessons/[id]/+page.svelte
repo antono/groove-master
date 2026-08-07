@@ -8,6 +8,7 @@
 	import { Sampler } from '$lib/sampler';
 	import { asBinding, parseControl, sameControl, type TransportBinding } from '$lib/transport-control';
 	import { dayKey, recordSession } from '$lib/stats';
+	import { lessonFinished, lessonStarted } from '$lib/analytics';
 	import { BPM_STEP, isCleanRun } from '$lib/progress';
 	import LessonChart from '$lib/lesson-chart.svelte';
 	import ControllerMap from '$lib/controller-map.svelte';
@@ -707,6 +708,7 @@
 		startBeat = -COUNT_IN;
 		playing = true;
 		paused = false;
+		if (selected) lessonStarted(selected.id);
 		// The highway only exists during a session, so let it mount before the
 		// scroll and the clock start from it.
 		await tick();
@@ -772,6 +774,7 @@
 		// throws on those.
 		const built = buildReport();
 		report = built;
+		if (selected) lessonFinished(selected.id);
 		maybeUnlock(built);
 		void logSession(built);
 		beatPos = parsed ? parsed.lengthBeats : 0;
