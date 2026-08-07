@@ -18,6 +18,8 @@
 	let loading = $state(true);
 
 	onMount(async () => {
+		// Today, resolved on the client so the day is the reader's local one.
+		selectedDay = dayKey(new Date());
 		sessions = await allSessions();
 		loading = false;
 	});
@@ -335,7 +337,8 @@
 		{ label: '1y', value: 365 },
 		{ label: 'All', value: 0 }
 	];
-	let range = $state<Range>(90);
+	// Today by default: the page opens on the session you just played.
+	let range = $state<Range>('day');
 
 	// 'day' with nothing selected would scope everything to nothing, so the mode
 	// only counts as on once a day is actually picked.
@@ -508,8 +511,6 @@
 <svelte:head>
 	<title>Groove Academy — Practice stats</title>
 </svelte:head>
-
-<h1>Practice</h1>
 
 {#if loading}
 	<p class="muted">Loading your history…</p>
