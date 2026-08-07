@@ -3,6 +3,11 @@
 
 import { base } from "$app/paths";
 
+/** URL of one backing sample, e.g. sampleUrl("bass", "lately", 40). */
+export function sampleUrl(family: string, id: string, note: number) {
+  return `${base}/${family}/${id}/${note}.oga`;
+}
+
 export class Sampler {
   private cache = new Map<string, AudioBuffer>();
   private pending = new Map<string, Promise<AudioBuffer | null>>();
@@ -10,7 +15,7 @@ export class Sampler {
   constructor(private ctx: AudioContext) {}
 
   private url(family: string, id: string, note: number) {
-    return `${base}/${family}/${id}/${note}.oga`;
+    return sampleUrl(family, id, note);
   }
 
   async load(

@@ -4,8 +4,8 @@
 	import { page } from '$app/state';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import { parseMidi, COUNT_IN_BEATS, type ParsedMidi, type BackingTrack, type MidiNote } from '$lib/midi';
-	import { DrumPlayer } from '$lib/drums';
-	import { Sampler } from '$lib/sampler';
+	import { DrumPlayer, drumUrl, warmUrls } from '$lib/drums';
+	import { Sampler, sampleUrl } from '$lib/sampler';
 	import { asBinding, parseControl, sameControl, type TransportBinding } from '$lib/transport-control';
 	import { dayKey, recordSession } from '$lib/stats';
 	import { lessonFinished, lessonStarted } from '$lib/analytics';
@@ -369,6 +369,23 @@
 		status = '';
 		player?.preload(kit, kitNotes);
 		for (const t of backing) backingPlayer?.preload(t.family, t.id, t.notes.map((n) => n.note));
+		warmLessonSamples();
+	}
+
+	// Fetch everything this lesson will play — its kit drums and its backing
+	// samples — into the service-worker cache while the resting page sits idle, so
+	// the first Listen or Play is a decode of local bytes rather than a download.
+	// Fetch-only (no AudioContext), so it needs no gesture and can run on visit.
+	// The awaited preload on Play/Listen still guarantees correctness; this only
+	// removes the wait. Runs at low priority and is a no-op once samples are cached.
+	function warmLessonSamples() {
+		const urls = [
+			...kitNotes.map((n) => drumUrl(kit, n)),
+			...backing.flatMap((t) => t.notes.map((n) => sampleUrl(t.family, t.id, n.note)))
+		];
+		const run = () => void warmUrls(urls);
+		if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 3000 });
+		else setTimeout(run, 500);
 	}
 
 	function bars() {
@@ -726,7 +743,13 @@
 		await enableAudio(); // no-op once audio is already up
 		stopDemo(); // the in-place preview and the real run never overlap
 		await audioCtx?.resume();
-		await player?.preload(kit, kitNotes);
+		// Bass must be decoded before the run starts: playAt only fires cached
+		// buffers, so on a fresh device an un-awaited backing preload means the
+		// scheduler drops every bass note whose fetch+decode hasn't landed yet.
+		await Promise.all([
+			player?.preload(kit, kitNotes),
+			...backing.map((t) => backingPlayer?.preload(t.family, t.id, t.notes.map((n) => n.note)))
+		]);
 		resetScoring();
 		backingCursors = backing.map(() => 0);
 		countInCursor = 0;
@@ -872,7 +895,11 @@
 		await enableAudio();
 		if (!parsed || !audioCtx) return;
 		await audioCtx.resume();
-		await player?.preload(kit, kitNotes);
+		// Same as Play: await the bass so the preview isn't silent on a fresh device.
+		await Promise.all([
+			player?.preload(kit, kitNotes),
+			...backing.map((t) => backingPlayer?.preload(t.family, t.id, t.notes.map((n) => n.note)))
+		]);
 		demoDrumCursor = 0;
 		demoGuideCursor = 0;
 		demoBackCursors = backing.map(() => 0);

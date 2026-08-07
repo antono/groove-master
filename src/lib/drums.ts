@@ -23,7 +23,7 @@ export function drumUrl(kit: number, note: number) {
  * timeout covers browsers with no service worker at all — warming still fills
  * the HTTP cache there, so it is worth doing anyway.
  */
-async function whenCaching(timeoutMs = 5000): Promise<void> {
+export async function whenCaching(timeoutMs = 5000): Promise<void> {
   if (!("serviceWorker" in navigator) || navigator.serviceWorker.controller)
     return;
   await new Promise<void>((resolve) => {
@@ -36,19 +36,21 @@ async function whenCaching(timeoutMs = 5000): Promise<void> {
 }
 
 /**
- * Pull a whole kit into the service-worker cache (~700 KB).
+ * Pull a set of sample URLs into the service-worker cache.
  *
  * Fetch only — no decoding, so this needs no AudioContext and therefore no
  * user gesture, and can run on page load. Once the service worker has them,
- * later loads and kit switches are served locally.
+ * later loads are served locally. Used to warm both drums and backing samples.
  */
-export async function warmKit(kit: number, concurrency = 6): Promise<void> {
+export async function warmUrls(
+  urls: Iterable<string>,
+  concurrency = 6,
+): Promise<void> {
   await whenCaching();
-  const queue = [...DRUM_NOTES];
+  const queue = [...urls];
   const canCheck = typeof caches !== "undefined";
   const worker = async () => {
-    for (let note = queue.pop(); note !== undefined; note = queue.pop()) {
-      const url = drumUrl(kit, note);
+    for (let url = queue.pop(); url !== undefined; url = queue.pop()) {
       try {
         // Only fetch what isn't stored yet, so a repeat visit does no work at
         // all. caches.match searches every cache, so this needs no cache name.
@@ -63,6 +65,14 @@ export async function warmKit(kit: number, concurrency = 6): Promise<void> {
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
+}
+
+/** Pull a whole kit into the service-worker cache (~700 KB). */
+export function warmKit(kit: number, concurrency = 6): Promise<void> {
+  return warmUrls(
+    DRUM_NOTES.map((n) => drumUrl(kit, n)),
+    concurrency,
+  );
 }
 
 export class DrumPlayer {
