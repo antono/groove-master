@@ -1,7 +1,12 @@
 // Hue by drum family, shared by the preview chart and the play highway so a pad
 // is the same colour everywhere. Anything outside the common GM percussion falls
 // back to cycling the accents by lane position.
-export const FAMILY_HUES = ["var(--cyan)", "var(--gold)", "var(--green)"];
+//
+// These are identity, not judgement: they say which drum a note is, and must
+// stay clear of the colours that say how well it was hit. The --note-* tokens
+// own the cool arc for exactly that reason — see the band rule in app.css
+// before swapping any of them for a different hue.
+export const FAMILY_HUES = ["var(--note-1)", "var(--note-2)", "var(--note-3)"];
 
 const familyHue = new Map<number, string>([
   [35, FAMILY_HUES[2]], // acoustic bass drum

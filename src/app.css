@@ -33,6 +33,40 @@
   --violet-dim: rgba(167, 139, 250, 0.35);
   --red: #e07070;
 
+  /* --- lesson highway: two palettes that must never be confusable ----------
+   *
+   * A note on the highway carries two independent meanings at different times,
+   * and they are read at speed:
+   *
+   *   RESULT — what a hit was worth. Owns the warm-to-green arc, OKLCH hue
+   *            20°–160°: miss (red) → off (orange) → good → perfect (green).
+   *   NOTE   — which drum a note is, before it has been scored. Owns the cool
+   *            arc, OKLCH hue 200°–340°.
+   *
+   * THE RULE: the two bands are disjoint and stay that way. The closest pair
+   * across them is 46° of hue apart, so a pending note can never read as a
+   * score and a score can never read as a drum. Before adding a hue to either
+   * palette, check it lands inside that palette's band — the previous note
+   * colours were --green and --gold, which sat at 0° and 22° from "good" and
+   * "off" respectively, i.e. a pending kick was the exact hue of a good hit.
+   *
+   * Note hues also descend in lightness with pitch (hat .82 → kick .66), so
+   * the trio stays separable in greyscale and under colour blindness, where
+   * hue alone would not carry it.
+   */
+
+  /* result — a scored hit (the .grade-* ramp on the report is the same band) */
+  --res-perfect: #44ff77; /* oklch(.88 .23 148) */
+  --res-good: #33cc88; /* oklch(.75 .16 159) */
+  --res-off: #ff9900; /* oklch(.77 .17  65) */
+  --res-miss: #ee3333; /* oklch(.62 .22  27) */
+
+  /* note identity — drum family, never a score. Cycled by lane position for
+     drums outside the common GM set, so these are numbered, not named. */
+  --note-1: #36dcec; /* oklch(.82 .13 205) — hats */
+  --note-2: #849ff9; /* oklch(.72 .14 270) — snare */
+  --note-3: #cf64bb; /* oklch(.66 .17 335) — kick */
+
   /* neumorphic pad shadows (paired light/dark so pads read as raised) */
   --pad-shadow-dark: rgba(0, 0, 0, 0.55);
   --pad-shadow-light: rgba(255, 255, 255, 0.05);

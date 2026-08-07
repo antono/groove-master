@@ -1868,30 +1868,31 @@
 		margin-left: -13px;
 		border-radius: 0.3rem;
 		/* Pending notes get their drum-family colour inline (see markup); this is the
-		   fallback if that is ever absent. Status classes below recolour a scored note. */
-		background: var(--cyan);
+		   fallback if that is ever absent — an identity hue, never a result one.
+		   Status classes below recolour a scored note into the result band. */
+		background: var(--note-1);
 		transition: background 0.1s ease;
 		contain: layout paint;
 	}
 
 	.note.good {
-		background: #3c8;
-		box-shadow: 0 0 4px rgba(60, 220, 140, 0.5);
+		background: var(--res-good);
+		box-shadow: 0 0 4px color-mix(in srgb, var(--res-good) 55%, transparent);
 	}
 
 	.note.perfect {
-		background: #4f7;
-		box-shadow: 0 0 8px rgba(80, 255, 150, 0.9);
+		background: var(--res-perfect);
+		box-shadow: 0 0 8px color-mix(in srgb, var(--res-perfect) 90%, transparent);
 		animation: pop 0.28s ease;
 	}
 
 	.note.off {
-		background: #f90;
-		box-shadow: 0 0 4px rgba(255, 150, 0, 0.4);
+		background: var(--res-off);
+		box-shadow: 0 0 4px color-mix(in srgb, var(--res-off) 40%, transparent);
 	}
 
 	.note.miss {
-		background: #e33;
+		background: var(--res-miss);
 		box-shadow: none;
 	}
 
@@ -1982,23 +1983,28 @@
 		background: #444;
 	}
 
+	/* The grade is the coarsest result there is, so it walks the result band end
+	   to end: green at S, through amber, to red at E. Hue now falls monotonically
+	   with the grade (it used to rise from S to A, and A sat at hue 168 — a teal
+	   that had drifted out of the band and within 37° of the hi-hat note colour).
+	   White on every step clears 3:1 at this size. */
 	.grade-S {
-		background: #2a7;
+		background: #3ca059; /* oklch(.63 .14 150) */
 	}
 	.grade-A {
-		background: #4a8;
+		background: #749331; /* oklch(.62 .13 125) */
 	}
 	.grade-B {
-		background: #7a6;
+		background: #998700; /* oklch(.62 .13 100) */
 	}
 	.grade-C {
-		background: #b93;
+		background: #a87520; /* oklch(.60 .115 75) */
 	}
 	.grade-D {
-		background: #a55;
+		background: #ae5528; /* oklch(.55 .13  45) */
 	}
 	.grade-E {
-		background: #944;
+		background: #a43b38; /* oklch(.50 .14  25) */
 	}
 
 	.sub {
@@ -2021,25 +2027,31 @@
 		font-weight: bold;
 	}
 
+	/* Each chip is its own result hue, tinted into the page for the fill and
+	   lifted toward the text colour for the label — so the scoreline reads with
+	   the same vocabulary as the notes it is counting. "perfect" used to be teal
+	   on cyan, which is now note-identity territory. All four clear 4.5:1. */
 	.chip.perfect {
-		background: #175;
-		color: #cff;
+		background: color-mix(in srgb, var(--res-perfect) 18%, var(--bg));
+		color: color-mix(in srgb, var(--res-perfect) 70%, var(--text));
 	}
 	.chip.good {
-		background: #163;
-		color: #cfe;
+		background: color-mix(in srgb, var(--res-good) 18%, var(--bg));
+		color: color-mix(in srgb, var(--res-good) 70%, var(--text));
 	}
 	.chip.off {
-		background: #650;
-		color: #fe9;
+		background: color-mix(in srgb, var(--res-off) 18%, var(--bg));
+		color: color-mix(in srgb, var(--res-off) 70%, var(--text));
 	}
 	.chip.miss {
-		background: #522;
-		color: #fbb;
+		background: color-mix(in srgb, var(--res-miss) 18%, var(--bg));
+		color: color-mix(in srgb, var(--res-miss) 70%, var(--text));
 	}
+	/* Extra hits are not a grade on a target note, so they stay out of both
+	   bands and read as neutral. */
 	.chip.extra {
-		background: #334;
-		color: #bcd;
+		background: var(--surface-3);
+		color: var(--text-muted);
 	}
 
 	.timing {
