@@ -68,9 +68,12 @@
 		padding: 2.5rem 0 3rem;
 	}
 
+	/* Scales with the viewport like the heading below it, so the mark stays the
+	   biggest thing on the page without overflowing a narrow phone. */
 	.mark {
-		width: 132px;
-		height: 132px;
+		width: clamp(160px, 30vw, 224px);
+		height: auto;
+		aspect-ratio: 1;
 		color: var(--gold);
 		margin-bottom: 0.5rem;
 	}
