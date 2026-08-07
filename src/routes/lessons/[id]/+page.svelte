@@ -10,6 +10,7 @@
 	import { dayKey, recordSession } from '$lib/stats';
 	import { BPM_STEP, isCleanRun } from '$lib/progress';
 	import LessonChart from '$lib/lesson-chart.svelte';
+	import ControllerMap from '$lib/controller-map.svelte';
 	import { laneColor } from '$lib/drum-colors';
 
 	// `id` is the lesson's slug and never changes; `number` ("2.4") is rendered
@@ -73,6 +74,13 @@
 	let kit = $state(1);
 	// Play / Stop buttons on the controller, captured by the setup wizard.
 	let transport: TransportBinding = $state({ start: null, stop: null });
+
+	// The physical shape of the pad grid, plus the drum each pad triggers in that
+	// same order. Only the preview uses it — playing goes through ctrlMap — but it
+	// is what lets the resting page show the pattern *on the student's own device*.
+	let padCols = $state(0);
+	let padRows = $state(0);
+	let padDrums: (number | null)[] = $state([]);
 
 	let lessons: Lesson[] = $state([]);
 	let selected: Lesson | null = $state(null);
@@ -194,6 +202,8 @@
 	// plus the count-in click, which is no lane and so never appears in `lanes`.
 	const kitNotes = $derived([...lanes, ...countIn.map((n) => n.note)]);
 	const hasMapping = $derived(ctrlMap.size > 0);
+	// Nothing to draw for a student who has never run the setup wizard.
+	const hasPadLayout = $derived(padCols > 0 && padRows > 0 && padDrums.length > 0);
 
 	// A "session" spans from play until the result screen is dismissed. The highway
 	// stays fullscreen for the whole span — including while the report is shown — so
@@ -278,6 +288,9 @@
 		ctrlMap = new Map();
 		transport = { start: null, stop: null };
 		savedDeviceName = null;
+		padCols = 0;
+		padRows = 0;
+		padDrums = [];
 		try {
 			const raw = localStorage.getItem(STORAGE_PREFIX + deviceId);
 			if (!raw) return;
@@ -288,6 +301,16 @@
 				const m = new Map<number, number>();
 				cfg.notes.forEach((cn: number, i: number) => m.set(cn, cfg.soundNotes[i]));
 				ctrlMap = m;
+				// Grids written before the wizard stored their shape still map fine;
+				// they just have no layout to draw, so the schematic stays away.
+				if (typeof cfg.cols === 'number' && typeof cfg.rows === 'number') {
+					padCols = cfg.cols;
+					padRows = cfg.rows;
+					padDrums = Array.from(
+						{ length: cfg.cols * cfg.rows },
+						(_, i) => cfg.soundNotes[i] ?? null
+					);
+				}
 			}
 			if (typeof cfg.kit === 'number') kit = cfg.kit;
 		} catch {}
@@ -987,6 +1010,11 @@
 		};
 		measure();
 		unlockedLessons = readUnlockedLessons();
+		// Read the saved controller up front, before (and whether or not) MIDI is
+		// granted: the schematic is part of the resting page, not of a live session.
+		// Connecting a device re-runs this through the port effect below.
+		const savedDevice = localStorage.getItem(STORAGE_PREFIX + 'selectedDevice');
+		if (savedDevice) loadDeviceMapping(savedDevice);
 		window.addEventListener('resize', measure);
 		document.addEventListener('visibilitychange', handleVisibility);
 		void loadCatalogue();
@@ -1018,7 +1046,17 @@
 {/if}
 
 {#if parsed && !inSession}
-	<div class="chart-frame">
+	<div class="chart-frame" class:with-pads={hasPadLayout}>
+		{#if hasPadLayout}
+			<ControllerMap
+				cols={padCols}
+				rows={padRows}
+				drums={padDrums}
+				{lanes}
+				lit={flashing}
+				{laneName}
+			/>
+		{/if}
 		<LessonChart
 			notes={parsed.notes}
 			{lanes}
@@ -1277,12 +1315,34 @@
 		border-radius: var(--radius-sm);
 	}
 
+	/* With a controller to show, the frame becomes two columns — device on the
+	   left, chart on the right — and the actions row dissolves into that same grid
+	   (display: contents) so Listen lands squarely under the pads and its hint
+	   under the chart. Nothing is nested crookedly: one grid, two columns, and the
+	   button's left and right edges are the controller's. */
+	.chart-frame.with-pads {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		align-items: center;
+		column-gap: 0.9rem;
+		row-gap: 0.5rem;
+	}
+
 	.chart-actions {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
 		flex-wrap: wrap;
 		margin: 0.5rem 0.2rem 0.15rem;
+	}
+
+	.with-pads .chart-actions {
+		display: contents;
+	}
+
+	.with-pads .listen {
+		width: 100%;
+		min-width: 0;
 	}
 
 	.listen {
@@ -1366,6 +1426,13 @@
 	   links share the row beneath — the pair reads as "where am I" once, instead of
 	   pushing the ladder off the screen to sit beside it. */
 	@media (max-width: 46rem) {
+		/* The controller keeps its place beside the chart on a phone — the two only
+		   make sense read together — so only the gap between them gives way here;
+		   the pads shrink themselves (see controller-map.svelte). */
+		.chart-frame.with-pads {
+			column-gap: 0.55rem;
+		}
+
 		.launch {
 			grid-template-columns: 1fr 1fr;
 			grid-template-areas:
@@ -1489,8 +1556,8 @@
 	.rung.jump {
 		cursor: pointer;
 		background: var(--surface);
-		color: var(--text-faint);
-		font-size: 0.7rem;
+		color: var(--text-muted);
+		font-size: 0.85rem;
 	}
 
 	.rung.jump:hover {
