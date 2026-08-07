@@ -224,12 +224,28 @@
 	// finishing a lesson never collapses the layout (that reflow scored a 0.52 CLS).
 	const inSession = $derived(playing || !!report);
 
-	// Highway fills the whole viewport during a session; rests compact otherwise.
-	let winH = $state(0);
-	const laneH = $derived(
-		inSession && lanes.length ? Math.max(48, Math.floor(winH / lanes.length)) : LANE_H
-	);
 	const NOTE = 26; // note block size (px)
+	let winH = $state(0); // viewport height, for the full view; refreshed on resize
+
+	// Three ways to run a lesson, cycled from the HUD and remembered across lessons:
+	//  - compact (default): rows two note-heights apart — a thin strip centred in a
+	//    static field of its own colour, only the notes scrolling.
+	//  - medium: the same banded strip, twice as tall (four note-heights a row).
+	//  - full: lanes balloon to fill the viewport, the original stretched grid.
+	// compact and medium are "banded" — centred, edged top and bottom; full is not.
+	const VIEWS = ['compact', 'medium', 'full'] as const;
+	type View = (typeof VIEWS)[number];
+	let view = $state<View>('compact');
+	const laneH = $derived(
+		inSession && lanes.length
+			? view === 'full'
+				? Math.max(48, Math.floor(winH / lanes.length))
+				: view === 'medium'
+					? 4 * NOTE
+					: 2 * NOTE
+			: LANE_H
+	);
+	const viewLabel = $derived(view[0].toUpperCase() + view.slice(1));
 
 	// ---- boot / loading -------------------------------------------------
 
@@ -787,6 +803,14 @@
 		}
 	}
 
+	// Step compact -> medium -> full -> compact and remember it. Only the vertical
+	// layout changes — the horizontal scroll lives on the strip transform and is
+	// untouched — so this is safe to cycle mid-run.
+	function cycleView() {
+		view = VIEWS[(VIEWS.indexOf(view) + 1) % VIEWS.length];
+		if (browser) localStorage.setItem(STORAGE_PREFIX + 'highwayView', view);
+	}
+
 	function stop() {
 		playing = false;
 		paused = false;
@@ -1082,6 +1106,10 @@
 			dpr = window.devicePixelRatio || 1;
 		};
 		measure();
+		// The highway size is a display preference, not a per-lesson one, so it is
+		// remembered globally (unlike the per-lesson tempo).
+		const savedView = localStorage.getItem(STORAGE_PREFIX + 'highwayView');
+		if (savedView && (VIEWS as readonly string[]).includes(savedView)) view = savedView as View;
 		unlockedLessons = readUnlockedLessons();
 		// Read the saved controller up front, before (and whether or not) MIDI is
 		// granted: the schematic is part of the resting page, not of a live session.
@@ -1259,13 +1287,25 @@
 	{#if playing}
 		<div class="hud">
 			<span class="hud-tempo">{bpm} BPM</span>
+			<button
+				class="view-btn"
+				onclick={cycleView}
+				title="Cycle highway size (compact / medium / full)"
+			>
+				⤢ {viewLabel}
+			</button>
 			<button class="pause-btn" onclick={togglePause}>{paused ? '▶ Resume' : '❚❚ Pause'}</button>
 			<button class="exit" onclick={stop}>■ Stop</button>
 		</div>
 	{/if}
 
 	{#if parsed}
-		<div class="highway" class:full={inSession} style="height: {lanes.length * laneH}px">
+		<div
+			class="highway"
+			class:full={inSession}
+			class:banded={view !== 'full'}
+			style="height: {lanes.length * laneH}px"
+		>
 			<div class="labels">
 				{#each lanes as note (note)}
 					<div class="lane-label" class:flash={flashing.has(note)} style="height: {laneH}px">
@@ -1274,7 +1314,7 @@
 				{/each}
 			</div>
 
-			<div class="track">
+			<div class="track" style="height: {lanes.length * laneH}px">
 				<div class="hitline"></div>
 				{#each lanes as note (note)}
 					<div class="lane" style="height: {laneH}px; top: {laneRow(note) * laneH}px"></div>
@@ -1809,14 +1849,26 @@
 		max-width: 900px;
 	}
 
+	/* The band is compact now, so full mode is a static field of the highway colour
+	   filling the viewport with the lanes centred in it. Only the strip inside moves;
+	   the space above and below is the same background, never animated. */
 	.highway.full {
 		position: fixed;
 		inset: 0;
 		z-index: 50;
 		max-width: none;
 		height: 100vh !important;
+		align-items: center;
 		border: none;
 		border-radius: 0;
+	}
+
+	/* Banded (compact / medium) edges: a line top and bottom marks the strip off from
+	   the static field. Both children carry it so the line runs the full width. */
+	.highway.banded.full .labels,
+	.highway.banded.full .track {
+		border-top: 1px solid #333;
+		border-bottom: 1px solid #333;
 	}
 
 	/* Transport controls over the fullscreen highway, tempo readout included so the
@@ -1861,6 +1913,22 @@
 		border: 1px solid #579;
 		border-radius: 0.3rem;
 		cursor: pointer;
+	}
+
+	.view-btn {
+		padding: 0.5em 1em;
+		font-size: 1rem;
+		font-weight: bold;
+		color: #cdd;
+		background: #2a2a3e;
+		border: 1px solid var(--border-strong);
+		border-radius: 0.3rem;
+		cursor: pointer;
+	}
+
+	.view-btn:hover {
+		color: #fff;
+		background: #34344a;
 	}
 
 	.labels {
