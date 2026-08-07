@@ -3,6 +3,8 @@
 	import { onMount } from 'svelte';
 	import { parseMidi } from '$lib/midi';
 	import LessonChart from '$lib/lesson-chart.svelte';
+	import { allSessions } from '$lib/stats';
+	import { progressByLesson, type LessonProgress } from '$lib/progress';
 
 	// The catalogue renders the curriculum's own shape: stages hold modules, and a
 	// module is always three lessons — plain, core, stretch. A module slot that
@@ -39,6 +41,8 @@
 	let stages: Stage[] = $state([]);
 	let lessons = $state(new Map<string, Lesson>());
 	let previews = $state(new Map<string, Preview>());
+	// Clean runs and earned ceiling per lesson, read out of the practice history.
+	let progress = $state(new Map<string, LessonProgress>());
 	let drumNames = $state(new Map<number, string>());
 	let loading = $state(true);
 	let error = $state('');
@@ -79,8 +83,14 @@
 			loading = false;
 			return;
 		}
-		const entries = await Promise.all(list.map(async (l) => [l.id, await loadPreview(l)] as const));
+		// The history is a separate store from the MIDI, so fetch both at once —
+		// neither should hold the cards back on the other.
+		const [entries, runs] = await Promise.all([
+			Promise.all(list.map(async (l) => [l.id, await loadPreview(l)] as const)),
+			allSessions()
+		]);
 		previews = new Map(entries.filter((e): e is [string, Preview] => e[1] !== null));
+		progress = progressByLesson(runs);
 		loading = false;
 	});
 </script>
@@ -88,6 +98,10 @@
 {#snippet card(slot: Slot)}
 	{@const lesson = lessons.get(slot.id)}
 	{@const preview = previews.get(slot.id)}
+	{@const earned = progress.get(slot.id)}
+	<!-- The manifest BPM is the ladder's bottom rung, so it is also the floor for
+	     anything the history claims. -->
+	{@const topBpm = Math.max(lesson?.bpm ?? 0, earned?.maxBpm ?? 0)}
 	<li class="card" class:planned={!lesson}>
 		<div class="card-head">
 			<span class="number">{slot.number}</span>
@@ -117,7 +131,20 @@
 			{/if}
 			<div class="card-foot">
 				<a class="cta" href="{base}/lessons/{slot.id}">Practice →</a>
-				<span class="tempo">{lesson.bpm} BPM</span>
+				<div class="earned">
+					{#if earned?.cleared}
+						<span class="cleared" title="Runs finished without skipping a note"
+							>✓ {earned.cleared}</span
+						>
+					{/if}
+					<span
+						class="tempo"
+						class:unlocked={topBpm > lesson.bpm}
+						title={topBpm > lesson.bpm
+							? `Unlocked up to ${topBpm} BPM — starts at ${lesson.bpm}`
+							: 'Starting tempo'}>{topBpm} BPM</span
+					>
+				</div>
 			</div>
 		{:else}
 			<p class="summary">Not written yet.</p>
@@ -344,9 +371,28 @@
 		background: #f6cd5e;
 	}
 
+	/* What the student has to show for this lesson, opposite the way back into it. */
+	.earned {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+	}
+
+	.cleared {
+		font-family: var(--font-mono);
+		font-size: 0.8rem;
+		color: var(--cyan);
+	}
+
 	.tempo {
 		font-family: var(--font-mono);
 		font-size: 0.8rem;
 		color: var(--text-muted);
+	}
+
+	/* A tempo above the lesson's base was earned rung by rung — worth reading as
+	   progress rather than as the number the lesson shipped with. */
+	.tempo.unlocked {
+		color: var(--gold);
 	}
 </style>

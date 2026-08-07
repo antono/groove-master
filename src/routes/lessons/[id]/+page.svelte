@@ -8,6 +8,7 @@
 	import { Sampler } from '$lib/sampler';
 	import { asBinding, parseControl, sameControl, type TransportBinding } from '$lib/transport-control';
 	import { dayKey, recordSession } from '$lib/stats';
+	import { BPM_STEP, isCleanRun } from '$lib/progress';
 	import LessonChart from '$lib/lesson-chart.svelte';
 	import { laneColor } from '$lib/drum-colors';
 
@@ -86,7 +87,6 @@
 	// `bpm`, 60 for the early lessons) and every rung above is +10. The base is
 	// unlocked from the start; each higher rung unlocks only once the student clears
 	// the rung below it without skipping a note — so speed is earned, never just set.
-	const BPM_STEP = 10;
 	const LOCKED_AHEAD = 3; // locked rungs shown past the frontier before the ellipsis
 	const NEXT_LESSON_BPM = 80; // finishing at or above this opens the next lesson
 
@@ -109,6 +109,29 @@
 		return rungs;
 	});
 
+	// Every rung the student may actually pick, which is what the jump menu offers.
+	const unlockedRungs = $derived(tiers.filter((v) => v <= unlockedBpm));
+
+	// The ladder gains a rung per unlock, so a student who has climbed a while ends
+	// up with more rungs than the row can hold. The slow end folds away rather than
+	// scrolling — the whole point of the control is to show where the climb has got
+	// to, and a scrollbar hides exactly that. In its place sits a dropdown holding
+	// every unlocked tempo, so nothing folded away is out of reach.
+	const VISIBLE_RUNGS = 3; // unlocked rungs kept beside the frontier
+
+	const ladderRungs = $derived.by(() => {
+		const from = Math.max(baseBpm, unlockedBpm - (VISIBLE_RUNGS - 1) * BPM_STEP);
+		const shown = tiers.filter((v) => v >= from);
+		// A slower rung stays on screen while it is the one selected — the control
+		// must never hide what it is set to.
+		if (selectedBpm < from) shown.unshift(selectedBpm);
+		return shown;
+	});
+
+	// One menu covers every rung, so it only has to appear when something is missing
+	// from the ladder — and only once, in the same place each time: the slow end.
+	const hasFoldedRungs = $derived(unlockedRungs.some((v) => !ladderRungs.includes(v)));
+
 	// A rung the student has not earned yet.
 	const isLocked = (v: number) => v > unlockedBpm;
 	// There is a freshly unlocked, faster rung sitting above the current choice — the
@@ -123,17 +146,6 @@
 		return i >= 0 && i + 1 < lessons.length ? lessons[i + 1] : null;
 	});
 	const nextUnlocked = $derived(!!nextLesson && unlockedLessons.has(nextLesson.id));
-
-	// On a narrow screen the ladder scrolls, and a student who has climbed a few
-	// rungs would otherwise open the lesson with the selected one off to the right
-	// — the one thing the control exists to show. Centre it whenever it moves.
-	let ladderEl: HTMLDivElement | null = $state(null);
-	$effect(() => {
-		selectedBpm; // re-run on every change of rung
-		const el = ladderEl?.querySelector<HTMLElement>('.rung.selected');
-		if (!el || !ladderEl || ladderEl.scrollWidth <= ladderEl.clientWidth) return;
-		ladderEl.scrollLeft = el.offsetLeft - (ladderEl.clientWidth - el.offsetWidth) / 2;
-	});
 
 	// A locked Next lesson still shows — a curriculum you cannot see the shape of is
 	// not a curriculum — so it has to say what would open it, and how close you are.
@@ -573,7 +585,7 @@
 	//  - the next lesson, once the run was finished at NEXT_LESSON_BPM or faster.
 	function maybeUnlock(r: Report) {
 		if (!selected) return;
-		if (r.total > 0 && r.miss === 0 && selectedBpm === unlockedBpm) {
+		if (isCleanRun(r) && selectedBpm === unlockedBpm) {
 			unlockedBpm = selectedBpm + BPM_STEP;
 			writeMaxBpm(selected.id, unlockedBpm);
 		}
@@ -1051,14 +1063,31 @@
 		<div class="launch-controls">
 			<button class="start-btn play" onclick={() => play()} disabled={!parsed}>▶ Play</button>
 
-			<div
-				class="ladder"
-				bind:this={ladderEl}
-				role="group"
-				aria-label="Tempo (beats per minute)"
-			>
+			<div class="ladder" role="group" aria-label="Tempo (beats per minute)">
 				<span class="rung label">BPM</span>
-				{#each tiers as tier (tier)}
+				{#if hasFoldedRungs}
+					<!-- The rungs folded away, as one menu at the slow end of the ladder.
+					     The select carries the whole interaction — keyboard, touch, click —
+					     and sits invisibly over the chip, so all that shows is the caret. -->
+					<div class="rung jump">
+						<span aria-hidden="true">▾</span>
+						<select
+							aria-label="Jump to a tempo"
+							title="Jump to any unlocked tempo"
+							onchange={(e) => {
+								const value = Number(e.currentTarget.value);
+								e.currentTarget.selectedIndex = 0; // back to the caret
+								if (value) selectTier(value);
+							}}
+						>
+							<option value="">Jump to…</option>
+							{#each unlockedRungs as rung (rung)}
+								<option value={rung} disabled={rung === selectedBpm}>{rung} BPM</option>
+							{/each}
+						</select>
+					</div>
+				{/if}
+				{#each ladderRungs as tier (tier)}
 					<button
 						class="rung"
 						class:selected={tier === selectedBpm}
@@ -1300,7 +1329,7 @@
 		display: grid;
 		/* The outer columns never shrink below their own label (min-content on a
 		   nowrap link is its full width), and the middle one is allowed to go to
-		   zero — so a ladder long enough to fill the row scrolls inside itself
+		   zero — so a ladder long enough to fill the row wraps inside itself
 		   instead of crushing "Previous lesson" down to its arrow. An absent link
 		   has a min-content of 0, which is what keeps the controls centred on the
 		   first lesson. */
@@ -1348,6 +1377,11 @@
 			grid-area: controls;
 			flex-direction: column;
 			align-items: stretch;
+			/* Stacked, the ladder sits under Play — leaving the "Increase BPM"
+			   callout, which points down at a rung from above the control, room to
+			   land on. Reserved whether or not it is showing, so the column does not
+			   shift when it appears. */
+			gap: 2.25rem;
 		}
 
 		.launch-nav.to-prev {
@@ -1369,7 +1403,7 @@
 
 		/* Full width under a full-width Play button, so the rungs share the row
 		   instead of huddling at the left with dead space beside them. They only
-		   grow — min-width still floors them, and past that the ladder scrolls. */
+		   grow — min-width still floors them, and past that the ladder wraps. */
 		.launch-controls .rung {
 			flex: 1 0 auto;
 		}
@@ -1377,27 +1411,33 @@
 
 	/* Tempo picker — only on the resting page, so a run can never change tempo
 	   underneath itself. The rungs form one connected segmented control: a leading
-	   "BPM" label, every reachable rung, three locked ones ahead, then an ellipsis
-	   standing in for the climb beyond. Only the group's outer corners are rounded;
-	   the rungs share hairline dividers. A locked rung must be earned by clearing the
-	   one below it without skipping a note. */
+	   "BPM" label, a caret menu holding any slow rungs folded away, the rungs around
+	   the frontier, three locked ones ahead, then an ellipsis standing in for the
+	   climb beyond. Only the group's outer corners are rounded; the rungs share hairline
+	   dividers. A locked rung must be earned by clearing the one below it without
+	   skipping a note. */
+	/* Deliberately not a scroll container. `overflow-x: auto` also makes an element
+	   scroll vertically, and the "Increase BPM" callout is positioned above its rung
+	   — so the ladder grew a scrollbar and resized its own rungs every time that
+	   callout appeared. Folding keeps the width in hand; a ladder that still outruns
+	   its row (unfolded, or a phone) wraps to a second line instead. */
 	.ladder {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: stretch;
-		height: var(--ctl-h);
+		align-content: flex-start;
+		min-height: var(--ctl-h);
 		border: 1px solid var(--border-strong);
 		border-radius: var(--radius-sm);
-		/* A rung is added per unlock, so the ladder eventually outgrows any row.
-		   It scrolls inside its own box rather than widening the page or squeezing
-		   what sits beside it. */
 		min-width: 0;
-		overflow-x: auto;
-		scrollbar-width: thin;
 	}
 
 	.rung {
 		position: relative;
 		min-width: var(--ctl-h);
+		/* Sets the row height now that the ladder is free to wrap: without it the
+		   rungs would shrink to their text on a wrapped line. */
+		height: calc(var(--ctl-h) - 2px);
 		flex: 0 0 auto;
 		display: flex;
 		align-items: center;
@@ -1441,6 +1481,40 @@
 
 	.rung.ellipsis {
 		font-size: 1rem;
+	}
+
+	/* The jump menu: a caret drawn as a rung, with the real <select> laid over it at
+	   zero opacity. The native control keeps its own popup, keyboard handling and
+	   touch behaviour; only the caret is ours. */
+	.rung.jump {
+		cursor: pointer;
+		background: var(--surface);
+		color: var(--text-faint);
+		font-size: 0.7rem;
+	}
+
+	.rung.jump:hover {
+		color: var(--text);
+		background: var(--surface-3, var(--border));
+	}
+
+	.rung.jump select {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		border: none;
+		opacity: 0;
+		cursor: pointer;
+		font: inherit;
+	}
+
+	/* Keyboard focus lands on the select, which is invisible — so the chip around it
+	   has to carry the ring. */
+	.rung.jump:focus-within {
+		outline: 2px solid var(--gold);
+		outline-offset: -2px;
 	}
 
 	.rung:not(.locked):not(.label):not(.ellipsis):hover {
@@ -1914,5 +1988,9 @@
 	.start-btn {
 		font-size: 1.15rem;
 		cursor: pointer;
+		/* Play keeps its size whatever the ladder beside it does — an unfolded
+		   ladder wrapping to a second line must not squeeze it onto two lines too. */
+		flex: 0 0 auto;
+		white-space: nowrap;
 	}
 </style>
