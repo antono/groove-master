@@ -100,6 +100,10 @@ drumming is supported.
 
 ## Lessons
 
+- **[`docs/LESSONS.md`](docs/LESSONS.md) is the how-to** — adding a lesson or a
+  stage, the pattern helpers, choosing a backing line, what the driver checks.
+  Read it before touching `scripts/lessons/`. The rest of this section is the
+  summary.
 - The curriculum is **stage → module → lesson**, and a module is always exactly
   three lessons: `plain` (the technique alone), `core` (its normal musical
   form), `stretch` (its hardest useful variation). `LESSONS.md` is the
