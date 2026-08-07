@@ -1154,8 +1154,11 @@
 		white-space: nowrap;
 	}
 
-	.day-chip button,
-	.day-chip button:hover {
+	/* The arrows live inside .ranges, so their box must out-specify `.ranges
+	   button` in every state — otherwise they take the range-chip border and
+	   padding at rest and shed them on hover, and the chip resizes under the
+	   cursor. Hover changes colour only. */
+	.ranges .day-chip button {
 		border: 0;
 		border-radius: 0;
 		background: none;
@@ -1165,12 +1168,12 @@
 		padding: 0.3em 0.55em;
 	}
 
-	.day-chip button:hover:not(:disabled) {
+	.ranges .day-chip button:hover:not(:disabled) {
 		color: var(--text);
 		background: var(--surface-3);
 	}
 
-	.day-chip button:disabled {
+	.ranges .day-chip button:disabled {
 		opacity: 0.35;
 		cursor: default;
 	}
