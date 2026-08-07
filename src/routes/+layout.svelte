@@ -10,6 +10,8 @@
 
 	let { children } = $props();
 
+	const MASTODON = 'https://mastodon.social/@groove_academy';
+
 	// Pull the current kit's samples into the service-worker cache while the page
 	// is idle, so the first pad press is never waiting on a download. After the
 	// first visit these are all cache hits, so it costs nothing to repeat.
@@ -51,13 +53,17 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href={favicon} type="image/svg+xml" />
+	<!-- Raster fallbacks for the two places an SVG icon isn't picked up: older
+	     browsers, and the iOS home screen. Both are rendered from the same file. -->
+	<link rel="alternate icon" href="{base}/favicon-32.png" sizes="32x32" />
+	<link rel="apple-touch-icon" href="{base}/apple-touch-icon.png" />
 </svelte:head>
 
 <div class="app">
 	<header class="header">
 		<a class="brand" href="{base}/">
-			<span class="brand-mark" aria-hidden="true">▦</span>
+			<img class="brand-mark" src={favicon} alt="" width="512" height="512" />
 			<span class="brand-name">Groove Academy</span>
 		</a>
 		<nav class="nav">
@@ -70,6 +76,14 @@
 	<main class="main">
 		{@render children()}
 	</main>
+
+	<footer class="footer">
+		<!-- rel="me" is load-bearing, not decoration: Mastodon fetches the URL in the
+		     profile's Website field and only shows it as verified if it finds a link
+		     back to the account. That URL is the site root, so this lives in the
+		     layout rather than on /news alone. -->
+		<a href={MASTODON} target="_blank" rel="me noopener">Mastodon</a>
+	</footer>
 </div>
 
 <style>
@@ -100,17 +114,13 @@
 		color: var(--text);
 	}
 
+	/* The small-size variant of the mark — the same file the tab icon uses, which
+	   is the one that stays legible at this size. It draws its own gold tile and
+	   rounded corners, so nothing here paints behind it. */
 	.brand-mark {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		display: block;
 		width: 1.9rem;
 		height: 1.9rem;
-		border-radius: 0.5rem;
-		background: var(--gold);
-		color: #1a1505;
-		font-size: 1.05rem;
-		line-height: 1;
 	}
 
 	.brand-name {
@@ -163,5 +173,25 @@
 
 	.main {
 		flex: 1;
+	}
+
+	.footer {
+		display: flex;
+		justify-content: center;
+		padding: 2rem 0 1.25rem;
+		margin-top: 2rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.footer a {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		text-decoration: none;
+		color: var(--text-faint);
+		transition: color 120ms ease;
+	}
+
+	.footer a:hover {
+		color: var(--gold);
 	}
 </style>
