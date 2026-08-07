@@ -10,9 +10,14 @@ curriculum is one of two shapes:
 `per_bar` is what hand-swaps, feel switches and checkpoints are built from.
 """
 
-from .midi import BEATS_PER_BAR, PPQ, hit
+from .midi import BEATS_PER_BAR, CLOSED_HH, PPQ, hit
 
 BAR_TICKS = BEATS_PER_BAR * PPQ
+
+# How loud the borrowed hat sits under the student's own playing. Well below the
+# 100 a scored note is written at: a reference to lean on, not a voice competing
+# with the pads.
+GUIDE_VEL = 58
 
 # Common position sets, named so a pattern reads as music rather than arithmetic.
 BEATS = [0, 1, 2, 3]  # the numbers
@@ -71,6 +76,65 @@ def sticking(bars, lead, other, positions, hands):
         (lead, [p for p, is_lead in zip(positions, hands) if is_lead]),
         (other, [p for p, is_lead in zip(positions, hands) if not is_lead]),
     )
+
+
+def close_on_downbeat(events, bars):
+    """Repeat the pattern's own down-beat on the bar line after the last bar.
+
+    A loop that stops after its last note *stops*; it does not *end*. The ear
+    is already leaning on the bar line that would have opened bar five, and a
+    pattern that withholds it leaves the phrase hanging open — the same reason
+    the bass resolves onto that beat (see `bass.resolved`). The two land
+    together: the closing hit and the tonic underneath it.
+
+    Whatever sounds on beat 0 sounds again here, stack and all. It is the
+    pattern's own down-beat voice, so the closing hit is never a new thing to
+    learn — it is the note the student has been playing all the way through,
+    once more, to finish on.
+
+    This note **is** scored: landing it is part of finishing the lesson. The
+    transport keeps running a beat past it so it can actually be hit — see
+    TAIL_BEATS in $lib/midi.ts.
+    """
+    end = bars * BAR_TICKS
+    ons = [(tick, raw[1]) for tick, _order, raw in events if raw[0] == 0x99]
+    if not ons:
+        return events, end
+    # Everything on beat 0 — a stacked down-beat closes as the same stack.
+    opening = min(tick for tick, _note in ons)
+    closing = sorted({note for tick, note in ons if tick == opening})
+    out = list(events)
+    for note in closing:
+        hit(out, end, note)
+    return out, end + PPQ  # a beat of room for the closing hit to ring
+
+
+def guide_hats(bars):
+    """Closed hats on the 8ths — the timekeeper a hatless lesson has to borrow.
+
+    On a real kit the hat is the voice that never stops, and everything else is
+    read against it. A lesson whose pattern has no hat of its own leaves the
+    student counting in silence between their own hits, which is exactly where
+    a beginner's timing drifts. This track supplies that voice: audible, never
+    shown, never scored (see GUIDE-HAT RULE in make-lessons.py).
+
+    Eighths rather than quarters because the quarters are the part already
+    taken — every hatless lesson in the curriculum plays on the beat, so a
+    quarter-note guide would strike at the same instant as the student's own
+    note and not be heard at all. The 8ths fill the gaps *and* mark the beat.
+
+    It sits well under the kit: loud enough to lean on, quiet enough that
+    nobody mistakes it for a hit of their own that scored.
+    """
+    events = []
+    for bar in range(bars):
+        base = bar * BAR_TICKS
+        for pos in EIGHTHS:
+            hit(events, base + round(pos * PPQ), CLOSED_HH, vel=GUIDE_VEL)
+    # Carry the hat through the closing hit — a timekeeper that stops a beat
+    # before the pattern ends is not keeping time (see close_on_downbeat).
+    hit(events, bars * BAR_TICKS, CLOSED_HH, vel=GUIDE_VEL)
+    return events, bars * BAR_TICKS + PPQ
 
 
 def cycle_bars(bars, patterns):

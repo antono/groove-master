@@ -24,12 +24,28 @@ Track roles are chosen by the track name:
                       (e.g. "bass:lately"), never shown or scored.
   - "count-in"     -> the stick count that leads the student in; audible but
                       never shown or scored (see COUNT-IN RULE below).
+  - "guide"        -> the borrowed hi-hat a hatless lesson keeps time against;
+                      audible but never shown or scored (see GUIDE-HAT RULE).
 
 COUNT-IN RULE: every lesson must have three stick clicks before it starts, on
 the last three beats of the lead-in bar. Nothing clicks on the pattern's first
 beat — that one is the student's. build_lesson() adds the track to every lesson
 automatically, so a new entry gets it for free — do not hand-roll one per
 lesson, and do not remove it.
+
+CLOSING-HIT RULE: a pattern ends ON the bar line that follows it, not a beat
+before. Whatever sounds on beat 0 sounds once more on the down-beat after the
+last bar, so the phrase lands instead of running out; the bass resolves onto
+that same beat (see bass.resolved) and the two finish together. build_lesson()
+adds it to every lesson — it is scored, and the transport runs a beat past it
+so it can be played.
+
+GUIDE-HAT RULE: a lesson whose pattern has no hi-hat of its own gets one added,
+playing 8ths underneath at low velocity. On a kit the hat is the voice that
+never stops and everything else is heard against it; without one the student is
+counting in silence between their own hits. build_lesson() detects the absence
+and adds the track — a lesson that plays a hat already is left alone, and a
+lesson that wants a different timekeeper should put a real one in its pattern.
 
 Re-run after adding or editing a lesson:
   python3 scripts/make-lessons.py
@@ -43,11 +59,18 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from lessons import CURRICULUM  # noqa: E402
+from lessons.grids import close_on_downbeat, guide_hats  # noqa: E402
 from lessons.midi import (  # noqa: E402
+    CLOSED_HH,
+    OPEN_HH,
     build_track,
     count_in_sticks,
+    notes_in,
     write_midi,
 )
+
+# A lesson counts as having a hat if it strikes either of these itself.
+HAT_NOTES = {CLOSED_HH, OPEN_HH}
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "static", "lessons")
@@ -100,6 +123,8 @@ def build_lesson(lesson, out_dir, rel_dir):
     ]
 
     drum_events, length = lesson["drums"](bars)
+    # Land the pattern on the next bar line — see CLOSING-HIT RULE above.
+    drum_events, length = close_on_downbeat(drum_events, bars)
     count_events, count_length = count_in_sticks()
     tracks = [
         build_track("tempo", [], length, meta=conductor_meta),
@@ -107,6 +132,10 @@ def build_lesson(lesson, out_dir, rel_dir):
         # Every lesson counts in — see COUNT-IN RULE at the top of this file.
         build_track("count-in", count_events, count_length),
     ]
+    # A lesson with no hat of its own borrows one — see GUIDE-HAT RULE above.
+    if not notes_in(drum_events) & HAT_NOTES:
+        guide_events, _ = guide_hats(bars)
+        tracks.append(build_track("guide", guide_events, length))
     if lesson.get("bass"):
         bass_id, builder = lesson["bass"]
         bass_events, _ = builder(bars)

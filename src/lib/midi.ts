@@ -10,9 +10,23 @@
 //     the stick clicks that lead the student in — audible on the lesson's own
 //     kit, never shown or scored. Checked before the percussion-channel rule,
 //     which it would otherwise trip.
+//   - "guide"                                        -> GUIDE:
+//     the hi-hat a hatless lesson borrows to keep time against — audible on the
+//     lesson's own kit, never shown or scored. Same exemption from the
+//     percussion-channel rule as the count-in, and for the same reason.
 
 /** Beats of lead-in before a lesson's beat 0 — the bar the count-in lives in. */
 export const COUNT_IN_BEATS = 4;
+
+/**
+ * How long the transport keeps running past the last note in the file.
+ *
+ * One beat: enough for the closing hit to sit inside its own match window and
+ * be scored on its merits, and for the bass's resolving tonic to ring before
+ * the result screen arrives. Patterns whose last note is not on a bar line are
+ * unaffected — bar rounding already carries them further than this.
+ */
+const TAIL_BEATS = 1;
 
 // `vel` is MIDI velocity 1-127, carried only where it is used: backing tracks
 // play it as loudness. Playable notes are scored on timing alone, so nothing
@@ -31,6 +45,12 @@ export type ParsedMidi = {
    * (-3, -2, -1). Beat 0 is deliberately silent — it belongs to the student.
    */
   countIn: MidiNote[];
+  /**
+   * The borrowed hi-hat, on the pattern's own beat axis (0 upward). Present
+   * only for lessons whose pattern has no hat of its own. Carries `vel`, which
+   * the drum player applies as gain so it sits under the student's playing.
+   */
+  guide: MidiNote[];
   lengthBeats: number;
 };
 
@@ -75,6 +95,7 @@ export function parseMidi(buf: ArrayBuffer): ParsedMidi {
   const playable: MidiNote[] = [];
   const backing: BackingTrack[] = [];
   let countIn: MidiNote[] = [];
+  let guide: MidiNote[] = [];
   let bpm = 120;
   let maxTick = 0;
 
@@ -143,6 +164,14 @@ export function parseMidi(buf: ArrayBuffer): ParsedMidi {
       continue;
     }
 
+    // The guide runs the length of the pattern and no further, so it cannot
+    // extend the lesson — but it is still percussion on channel 10, so it has
+    // to be claimed here or the rule below would put it on the highway.
+    if (name.trim() === "guide") {
+      guide = trackNotes.sort((a, b) => a.beat - b.beat);
+      continue;
+    }
+
     if (trackMax > maxTick) maxTick = trackMax;
     const colon = name.indexOf(":");
     if (colon > 0 && !usesPercussion) {
@@ -158,7 +187,15 @@ export function parseMidi(buf: ArrayBuffer): ParsedMidi {
   }
 
   playable.sort((a, b) => a.beat - b.beat);
+  const lastBeat = maxTick / ppq;
   // Round the length up to a whole bar (4 beats) so the loop stays musical.
-  const lengthBeats = Math.max(4, Math.ceil(maxTick / ppq / 4) * 4);
-  return { ppq, bpm, notes: playable, backing, countIn, lengthBeats };
+  const barRounded = Math.max(4, Math.ceil(lastBeat / 4) * 4);
+  // A lesson closes ON the bar line that follows it — the pattern's down-beat
+  // struck once more, with the bass resolving onto the same beat. Bar rounding
+  // alone would end the transport on that very beat: the closing note would
+  // fall outside its own match window and be scored a miss no matter how well
+  // it was played, and the resolution would be cut off as the report appeared.
+  // So the run always outlasts its last note.
+  const lengthBeats = Math.max(barRounded, lastBeat + TAIL_BEATS);
+  return { ppq, bpm, notes: playable, backing, countIn, guide, lengthBeats };
 }

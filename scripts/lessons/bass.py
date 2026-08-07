@@ -1,6 +1,7 @@
 """Backing bass lines — the lesson's scaffold, ordered by how much they help.
 
-    riff        a hook in the gaps, with rests and a turnaround   most support
+    answer      replies on every off-beat, diatonic, one rest    most support
+    riff        a hook in the gaps, with rests and a turnaround
     quarter     the root on every beat
     octave      bounces on the 8ths, still rooted on the beat
     pedal       one long root, then a scramble in the second half
@@ -21,12 +22,45 @@ construction, which is what `quarter`, `octave` and `syncopated` all are.
 A walking bass — a note on every beat — is therefore the wrong tool for this
 app, however good it sounds elsewhere: there is nowhere for it to be heard.
 `riff` is what replaced it.
+
+**Every line ends on the tonic, after the drums have stopped.** Each one leads
+bar 4 toward the A without ever landing on it, so a run used to end on a
+question. `resolved()` supplies the answer on the down-beat the pattern would
+have turned over on — the one moment the bass is heard alone. Route new
+builders through it rather than returning their events directly.
 """
 
 from .midi import BEATS_PER_BAR, PPQ, bass_note
 
 BAR_TICKS = BEATS_PER_BAR * PPQ
 PROGRAM_CHANGE = (0, -1, bytes([0xC0, 0]))  # ignored by our sampler, kept for players
+
+# Every line in this file is in A minor, so this is the note they all go home to.
+TONIC = 33  # A1
+RESOLVE_DUR, RESOLVE_VEL = 900, 90
+
+
+def resolved(events, bars):
+    """Land the tonic on the down-beat after the last bar, and end there.
+
+    THE RULE: a bassline always finishes on the root of the key, and it does so
+    *after* the drums have stopped — on the down-beat the pattern would have
+    turned over on.
+
+    Every line here already ends bar 4 on a leading tone pointing at the A: the
+    riff walks up a semitone from G#, the answer falls a fifth from E. Without
+    this note that pull is simply left hanging, and a run ends on a question.
+    The tonic underneath the silence is what makes it an ending — and because
+    the drums have already finished, it is the one moment in the lesson the
+    bass is heard completely alone.
+
+    It costs no length. `lengthBeats` rounds up to a whole bar, so a note
+    exactly on the bar line lands inside the pattern's existing final bar; the
+    scheduler queues it on the same tick that ends the run, and the note is
+    already on the audio clock by the time the transport stops.
+    """
+    bass_note(events, bars * BAR_TICKS, TONIC, dur=RESOLVE_DUR, vel=RESOLVE_VEL)
+    return events, bars * BAR_TICKS
 
 
 def riff_bass(bars=4):
@@ -92,7 +126,62 @@ def riff_bass(bars=4):
         base = bar * BAR_TICKS
         for pos, note, dur, vel in figures[bar % len(figures)]:
             bass_note(events, base + round(pos * PPQ), note, dur=dur, vel=vel)
-    return events, bars * BAR_TICKS
+    return resolved(events, bars)
+
+
+def answer_bass(bars=4):
+    """A call-and-response line for a lesson whose drums own every beat.
+
+    Written for the opening lessons, where the student plays on all four beats
+    and there is no room on any of them. **Every note lands on an off-beat** —
+    exactly halfway between two of their hits — so the bar reads as a
+    conversation: they play, it answers, they play, it answers. That is also
+    what makes it audible at all; a note struck with the kick is not heard as
+    bass (see the module docstring).
+
+    Strictly diatonic over Am - Am - F - G, and only chord tones. `riff_bass`
+    leans on chromatic approach notes to pull one bar into the next, which
+    works underneath a full groove and sounds wrong over a bare kick — there is
+    nothing else sounding to explain the dissonance, so it just reads as a
+    wrong note. Here the pull between bars comes from the melody instead: bar 4
+    climbs G - B - D - E and the E drops a fifth onto the A that opens bar 1.
+
+    Bar 2 stops after two notes. A phrase that never rests is a texture rather
+    than a line, and the hole is what makes the answer in bars 3 and 4 arrive
+    as an answer.
+    """
+    events = [PROGRAM_CHANGE]
+    ROOT, MID, SOFT = 88, 76, 68
+    # (off-beat position, note, duration in ticks, velocity)
+    figures = [
+        [  # bar 1 — Am. States the phrase, arching up.
+            (0.5, 33, 400, ROOT),  # A1
+            (1.5, 36, 260, MID),  # C2
+            (2.5, 40, 400, MID),  # E2
+            (3.5, 38, 260, SOFT),  # D2  steps back down into C
+        ],
+        [  # bar 2 — Am. Answers in two notes, then leaves the bar open.
+            (0.5, 36, 300, MID),  # C2
+            (1.5, 33, 700, ROOT),  # A1  rings on across beats 3 and 4
+        ],
+        [  # bar 3 — F. Lifts the phrase onto the new chord.
+            (0.5, 29, 400, ROOT),  # F1
+            (1.5, 33, 260, MID),  # A1
+            (2.5, 36, 400, MID),  # C2
+            (3.5, 33, 260, SOFT),  # A1
+        ],
+        [  # bar 4 — G. Walks up and hands back to the A.
+            (0.5, 31, 400, ROOT),  # G1
+            (1.5, 35, 260, MID),  # B1
+            (2.5, 38, 300, MID),  # D2
+            (3.5, 40, 300, SOFT),  # E2  falls a fifth onto bar 1's A
+        ],
+    ]
+    for bar in range(bars):
+        base = bar * BAR_TICKS
+        for pos, note, dur, vel in figures[bar % len(figures)]:
+            bass_note(events, base + round(pos * PPQ), note, dur=dur, vel=vel)
+    return resolved(events, bars)
 
 
 def quarter_bass(bars=4):
@@ -108,7 +197,7 @@ def quarter_bass(bars=4):
         root = roots[bar % len(roots)]
         for beat in range(BEATS_PER_BAR):
             bass_note(events, base + beat * PPQ, root, dur=360)
-    return events, bars * BAR_TICKS
+    return resolved(events, bars)
 
 
 def octave_bass(bars=4):
@@ -132,7 +221,7 @@ def octave_bass(bars=4):
             else:
                 note = root + 12  # off-beat: octave up
             bass_note(events, base + pos, note, dur=180)
-    return events, bars * BAR_TICKS
+    return resolved(events, bars)
 
 
 def syncopated_bass(bars=4):
@@ -152,9 +241,10 @@ def syncopated_bass(bars=4):
         bass_note(events, base + 3 * PPQ // 2, root + 12, dur=200)  # 2-and: octave
         bass_note(events, base + 2 * PPQ, root, dur=300)  # beat 3: root
         bass_note(events, base + 7 * PPQ // 2, nxt - 1, dur=200)  # 4-and: approach
-    return events, bars * BAR_TICKS
+    return resolved(events, bars)
 
 
+ANSWER = ("lately", answer_bass)
 RIFF = ("lately", riff_bass)
 QUARTER = ("lately", quarter_bass)
 OCTAVE = ("lately", octave_bass)

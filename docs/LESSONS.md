@@ -114,10 +114,23 @@ Old numeric ids from before the slug scheme are mapped in `LEGACY_IDS`
 
 4. **Check it**: `pnpm dev`, open `/lessons`, play it.
 
-Do **not** write a count-in. `build_lesson()` adds one to every lesson
-automatically — three side-stick clicks on the last three beats of the lead-in
-bar, with the pattern's own first beat left silent for the student. Hand-rolling
-one produces a double count.
+### Three things the driver adds for you
+
+Do not hand-roll any of these — `build_lesson()` puts them on every lesson, and
+writing your own produces a double.
+
+- **The count-in.** Three side-stick clicks on the last three beats of the
+  lead-in bar; the pattern's own first beat stays silent, because it is the
+  student's.
+- **The closing hit.** Whatever sounds on beat 0 sounds once more on the bar
+  line after the last bar, so the phrase lands rather than running out. It is
+  scored, and the transport runs a beat past it so it can be played — see
+  `TAIL_BEATS` in `$lib/midi.ts`. A stacked down-beat closes as the same stack.
+- **The guide hat.** Only when the pattern has no hi-hat of its own: closed
+  hats on the 8ths, well under the kit, audible but never shown or scored.
+
+The bass lands its own resolution on that same closing beat (below), so the hit
+and the tonic finish together.
 
 ## Adding a stage
 
@@ -153,18 +166,49 @@ Named position sets: `BEATS`, `OFFBEATS`, `EIGHTHS`, `SIXTEENTHS`, `BACKBEAT`
 
 ## Choosing a backing bass
 
-`bass.py` exports four lines, ordered by how much they help the student:
+`bass.py` exports five lines, ordered by how much they help the student:
 
-| line         | does                                            |
-| ------------ | ----------------------------------------------- |
-| `RIFF`       | a hook in the gaps, with rests and a turnaround |
-| `QUARTER`    | the root on every beat — most support           |
-| `OCTAVE`     | bounces on the 8ths, still rooted on the beat   |
-| `SYNCOPATED` | pushes between the hits and must be ignored     |
+| line         | does                                            | most → least support |
+| ------------ | ----------------------------------------------- | -------------------- |
+| `ANSWER`     | replies on every off-beat, strictly diatonic    | most                 |
+| `RIFF`       | a hook in the gaps, with rests and a turnaround |                      |
+| `QUARTER`    | the root on every beat                          |                      |
+| `OCTAVE`     | bounces on the 8ths, still rooted on the beat   |                      |
+| `SYNCOPATED` | pushes between the hits and must be ignored     | least                |
 
 **Support that never fades is not support.** A module opens on a line that marks
 every beat and a stage ends on one that does not, where holding your own against
 the bass is the exercise rather than an obstacle to the first note anyone plays.
+
+Two things sink a line, and they are independent — both are worth checking
+against the lesson's drum pattern before picking:
+
+- **Placement.** A bass note struck at the same instant as a drum is not heard
+  as bass at all; the kit wins. A lesson that plays on all four beats has no
+  room on any of them, which is what `ANSWER` is for.
+- **Motion.** A line that repeats one pitch is dull however it is placed.
+  `QUARTER` is one pitch per bar, so it only works where the drums leave gaps.
+
+Chromatic approach notes are a third trap: they pull one bar into the next
+underneath a full groove, but over a bare pattern there is nothing sounding to
+explain the dissonance and they just read as wrong notes. `ANSWER` is all chord
+tones for that reason; `RIFF` is not, and belongs under busier lessons.
+
+**Every line ends on the tonic, after the drums have stopped.** Each one leads
+bar 4 toward the A without landing on it, so a run would otherwise end on a
+question. `resolved()` supplies the answer on the closing beat — the one moment
+in a lesson the bass is heard completely alone. New builders return through it
+rather than returning their events directly:
+
+```python
+def my_bass(bars=4):
+    events = [PROGRAM_CHANGE]
+    ...
+    return resolved(events, bars)   # not: return events, bars * BAR_TICKS
+```
+
+Everything in `bass.py` is in A minor, so `TONIC` is a module-level constant. A
+line in another key would need its own root passed through.
 
 Backing is never shown and never scored. `bass=None` is supported by the driver
 — for a lesson where a second voice would only give the student somewhere else

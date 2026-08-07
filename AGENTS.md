@@ -140,6 +140,16 @@ drumming is supported.
 - Hints must not tell the student to change tempo. The manifest BPM is the tempo
   the lesson is written for; the slider and `?bpm=` are the student's own call,
   not something the lesson text should direct.
+- **Every lesson ends ON the next bar line**, not a beat before it: whatever
+  sounds on beat 0 sounds once more on the down-beat after the last bar, and the
+  bass resolves onto the tonic on that same beat. The closing hit is scored, so
+  `parseMidi` runs the transport `TAIL_BEATS` past the last note — otherwise it
+  would fall outside its own match window and count as a miss however well it
+  was played.
+- **A lesson with no hi-hat of its own borrows one**: a `guide` track of closed
+  8ths at low velocity, audible on the lesson's kit but never shown or scored,
+  added by `build_lesson()` only when the pattern has no hat. Without it the
+  student is counting in silence between their own hits.
 - **Every lesson counts in**: three side-stick clicks on the last three beats of
   the lead-in bar, with the pattern's first beat left silent for the student. It
   ships as a `count-in` track in each MIDI, written in the lead-in bar the

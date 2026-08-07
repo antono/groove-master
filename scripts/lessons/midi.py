@@ -52,10 +52,20 @@ def write_midi(path, tracks):
         f.write(hdr + b"".join(tracks))
 
 
-def hit(events, tick, note):
-    """A percussion strike on channel 10: note-on then a short note-off."""
-    events.append((tick, 1, bytes([0x99, note, 100])))
+def hit(events, tick, note, vel=100):
+    """A percussion strike on channel 10: note-on then a short note-off.
+
+    `vel` survives the whole path — parseMidi keeps it and the drum player
+    applies it as gain — but only the guide hats use it. A scored note is
+    graded on timing alone, so its loudness is never read.
+    """
+    events.append((tick, 1, bytes([0x99, note, vel])))
     events.append((tick + 60, 0, bytes([0x89, note, 0])))
+
+
+def notes_in(events):
+    """The set of GM notes a channel-10 event list strikes."""
+    return {raw[1] for _tick, _order, raw in events if raw[0] == 0x99}
 
 
 def bass_note(events, tick, note, dur=200, vel=95):

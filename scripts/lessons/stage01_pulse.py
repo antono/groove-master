@@ -8,7 +8,7 @@ Hand convention, set here and kept for the rest of the curriculum:
 **strong hand plays kick and snare, weak hand plays the hi-hats.**
 """
 
-from .bass import OCTAVE, QUARTER, RIFF, SYNCOPATED
+from .bass import ANSWER, OCTAVE, QUARTER, RIFF, SYNCOPATED
 from .grids import BEATS, EIGHTHS, cycle_bars, per_bar, voices
 from .midi import CLOSED_HH, KICK, SNARE
 from .schema import checkpoint, lesson, module, stage
@@ -111,14 +111,16 @@ STAGE = stage(
                     name="Kick on Every Beat",
                     tier="plain",
                     drums=kick_quarters,
-                    bass=QUARTER,
+                    bass=ANSWER,
                     summary="One pad, straight quarter notes: kick on all four beats.",
                     description=(
                         "Your first groove: nothing but the kick, once on every "
-                        "beat. The bass plays the same four beats underneath, so "
-                        "the pulse is never in doubt — all you have to do is land "
-                        "on it. Aim for even spacing rather than force; one steady "
-                        "bar is worth four rushed ones."
+                        "beat. A hi-hat ticks underneath to keep time — you are "
+                        "not playing it, just leaning on it — and the bass answers "
+                        "halfway between your hits, so the bar comes back at you "
+                        "as a conversation rather than a metronome. Aim for even "
+                        "spacing rather than force; one steady bar is worth four "
+                        "rushed ones."
                     ),
                     hints=[
                         "Press Listen first. Play only once you can hum the pulse back.",

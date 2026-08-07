@@ -97,10 +97,18 @@ export class DrumPlayer {
     await Promise.all([...new Set(notes)].map((n) => this.load(kit, n)));
   }
 
-  private fire(buf: AudioBuffer, when?: number) {
+  private fire(buf: AudioBuffer, when?: number, gain = 1) {
     const src = this.ctx.createBufferSource();
     src.buffer = buf;
-    src.connect(this.ctx.destination);
+    if (gain === 1) {
+      src.connect(this.ctx.destination);
+    } else {
+      // Only the guide hats ask for this. A node per strike is fine — they are
+      // one-shots and get collected once the source ends.
+      const g = this.ctx.createGain();
+      g.gain.value = gain;
+      src.connect(g).connect(this.ctx.destination);
+    }
     src.start(when);
   }
 
@@ -112,8 +120,8 @@ export class DrumPlayer {
 
   // Sample-accurate strike for the lesson demo, scheduled off the audio clock.
   // Only cached buffers can hit an exact time, so this never falls back to a load.
-  playAt(kit: number, note: number, when: number) {
+  playAt(kit: number, note: number, when: number, gain = 1) {
     const cached = this.cache.get(kit + ":" + note);
-    if (cached) this.fire(cached, when);
+    if (cached) this.fire(cached, when, gain);
   }
 }

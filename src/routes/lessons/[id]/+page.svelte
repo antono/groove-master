@@ -64,6 +64,13 @@
 	let countIn: MidiNote[] = $state([]);
 	let countInCursor = 0;
 
+	// The hi-hat a hatless lesson borrows to keep time against. Rides the same
+	// clock and the same lookahead as everything else, plays on the lesson's own
+	// kit, and — like the count-in — is never shown and never scored. Its MIDI
+	// velocity is what keeps it under the student's playing.
+	let guide: MidiNote[] = $state([]);
+	let guideCursor = 0;
+
 	// MIDI + the device's saved pad->drum mapping (from the Settings page).
 	let midiAccess: MIDIAccess | null = $state(null);
 	let inputs: { id: string; name: string | null }[] = $state([]);
@@ -201,8 +208,13 @@
 	const laneName = (n: number) => drumNames.get(n) ?? String(n);
 	const laneRow = (n: number) => lanes.indexOf(n);
 	// Everything the drum player needs decoded before a run: the lesson's own pads
-	// plus the count-in click, which is no lane and so never appears in `lanes`.
-	const kitNotes = $derived([...lanes, ...countIn.map((n) => n.note)]);
+	// plus the count-in click and the guide hat, neither of which is a lane and so
+	// neither of which ever appears in `lanes`.
+	const kitNotes = $derived([
+		...lanes,
+		...countIn.map((n) => n.note),
+		...guide.map((n) => n.note)
+	]);
 	const hasMapping = $derived(ctrlMap.size > 0);
 	// Nothing to draw for a student who has never run the setup wizard.
 	const hasPadLayout = $derived(padCols > 0 && padRows > 0 && padDrums.length > 0);
@@ -350,6 +362,8 @@
 		backingCursors = backing.map(() => 0);
 		countIn = parsed.countIn;
 		countInCursor = 0;
+		guide = parsed.guide;
+		guideCursor = 0;
 		resetScoring();
 		beatPos = -COUNT_IN;
 		status = '';
@@ -554,6 +568,18 @@
 			player?.playAt(kit, click.note, Math.max(beatToAudioTime(click.beat), ctx.currentTime));
 		}
 
+		// The borrowed hat, on the same lookahead. It starts at beat 0, so the
+		// count-in still leads in alone and the hat arrives with the pattern.
+		while (guideCursor < guide.length && guide[guideCursor].beat <= horizon) {
+			const g = guide[guideCursor++];
+			player?.playAt(
+				kit,
+				g.note,
+				Math.max(beatToAudioTime(g.beat), ctx.currentTime),
+				(g.vel ?? 100) / 100
+			);
+		}
+
 		backing.forEach((track, ti) => {
 			let c = backingCursors[ti];
 			while (c < track.notes.length && track.notes[c].beat <= horizon) {
@@ -704,6 +730,7 @@
 		resetScoring();
 		backingCursors = backing.map(() => 0);
 		countInCursor = 0;
+		guideCursor = 0;
 		report = null;
 		beatPos = -COUNT_IN;
 		startBeat = -COUNT_IN;
@@ -832,6 +859,7 @@
 	let demoTimer: ReturnType<typeof setInterval> | 0 = 0;
 	let demoRaf = 0;
 	let demoDrumCursor = 0;
+	let demoGuideCursor = 0;
 	let demoBackCursors: number[] = [];
 
 	const demoBeatTime = (beat: number) => demoStart + beat * (60 / bpm);
@@ -846,6 +874,7 @@
 		await audioCtx.resume();
 		await player?.preload(kit, kitNotes);
 		demoDrumCursor = 0;
+		demoGuideCursor = 0;
 		demoBackCursors = backing.map(() => 0);
 		// Listen skips the count-in and starts on beat 0 straight away: nobody is
 		// playing along, so a bar of clicks would just be a wait before the preview.
@@ -868,6 +897,19 @@
 			const when = Math.max(demoBeatTime(n.beat), ctx.currentTime);
 			player?.playAt(kit, n.note, when);
 			setTimeout(() => flash(n.note), Math.max(0, (when - ctx.currentTime) * 1000));
+		}
+
+		// The preview is what the lesson sounds like, so the borrowed hat belongs
+		// in it — without it the groove previews differently from how it plays. It
+		// flashes nothing: there is no lane of its own to light up.
+		while (demoGuideCursor < guide.length && guide[demoGuideCursor].beat <= horizon) {
+			const g = guide[demoGuideCursor++];
+			player?.playAt(
+				kit,
+				g.note,
+				Math.max(demoBeatTime(g.beat), ctx.currentTime),
+				(g.vel ?? 100) / 100
+			);
 		}
 
 		backing.forEach((track, ti) => {
