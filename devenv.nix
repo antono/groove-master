@@ -35,6 +35,11 @@ in
     typescript-language-server
     vscode-langservers-extracted
 
+    # Announcing releases on the fediverse. One-time `toot login` per account
+    # stores the token in ~/.config/toot/config.json (outside the repo), after
+    # which `toot post` is non-interactive.
+    toot
+
     # Sample pipeline — scripts/render-{drums,bass}.py shell out to these.
     python3
     fluidsynth # renders the .sf2 SoundFonts to one-shots
@@ -87,6 +92,7 @@ in
     echo "  check – type-check"
     echo "  lint  – run linter"
     echo "  mcp   – chrome-devtools (.mcp.json)"
+    echo "  toot  – Mastodon CLI (run 'toot login' once)"
     echo "  audit-samples / repair-samples – drum sample health"
   '';
 
