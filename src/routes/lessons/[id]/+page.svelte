@@ -1345,13 +1345,9 @@
 						<span class="nav-label">Next lesson</span>
 						<span aria-hidden="true">→</span>
 					</a>
-				{:else if nextLesson}
-					<button class="lesson-nav next locked" disabled title={nextLessonHint}>
-						<span class="nav-label">Next lesson</span>
-						<span class="lock" aria-hidden="true">🔒</span>
-					</button>
+				{:else}
+					<button class="done" onclick={exitReport}>Done</button>
 				{/if}
-				<button class="done" onclick={exitReport}>Done</button>
 			</div>
 		</div>
 	{/if}
