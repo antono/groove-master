@@ -39,6 +39,7 @@
 		{ href: `${base}/lessons`, route: '/lessons', label: 'Lessons' },
 		{ href: `${base}/stats`, route: '/stats', label: 'Stats' },
 		{ href: `${base}/onboarding`, route: '/onboarding', label: 'Setup' },
+		{ href: `${base}/news`, route: '/news', label: 'News' },
 		...(showDebug ? [{ href: `${base}/debug`, route: '/debug', label: 'Debug' }] : [])
 	]);
 
