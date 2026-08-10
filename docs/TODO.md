@@ -6,3 +6,4 @@
   - registration
   - other...
 - add telegram support group
+- virtual on screen controller when no midi attached

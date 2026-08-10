@@ -1,12 +1,10 @@
 { pkgs, config, inputs, ... }:
 
 let
-  # Claude Code MCP config for this project. Follows mcp-servers-nix's
-  # claude-code-project example: build a .mcp.json in the store and symlink it in,
-  # touching only .mcp.json (unlike the devenv `claude.code` module, which would
-  # overwrite the hand-maintained .claude/settings.json).
-  mcpConfig = inputs.mcp-servers-nix.lib.mkConfig pkgs {
-    flavor = "claude-code";
+  # Generate Claude Code and OpenCode MCP configs in the store, so their shared
+  # server definitions cannot drift. Unlike devenv's Claude module, this leaves
+  # the hand-maintained .claude/settings.json untouched.
+  mcpSettings = {
     programs.chrome-devtools = {
       enable = true;
       args = [
@@ -14,7 +12,23 @@ let
         "${pkgs.google-chrome}/bin/google-chrome-stable"
       ];
     };
+    # Supabase MCP over HTTP. A remote transport, so no local command — the URL
+    # carries the project_ref and the enabled feature groups. Equivalent to
+    # `claude mcp add --scope project --transport http supabase <url>`.
+    settings.servers.supabase = {
+      type = "http";
+      url = "https://mcp.supabase.com/mcp?project_ref=dbfmnbnjjjmbywbeuqts&features=docs,account,database,debugging,development,functions,branching";
+    };
   };
+  claudeMcpConfig = inputs.mcp-servers-nix.lib.mkConfig pkgs (mcpSettings // {
+    flavor = "claude-code";
+  });
+  opencodeMcpConfig = inputs.mcp-servers-nix.lib.mkConfig pkgs (mcpSettings // {
+    flavor = "opencode";
+    settings = mcpSettings.settings // {
+      "$schema" = "https://opencode.ai/config.json";
+    };
+  });
 in
 {
   languages.javascript = {
@@ -85,13 +99,13 @@ in
   };
 
   enterShell = ''
-    ln -sfT ${mcpConfig} "${config.devenv.root}/.mcp.json"
+    ln -sfT ${claudeMcpConfig} "${config.devenv.root}/.mcp.json"
+    ln -sfT ${opencodeMcpConfig} "${config.devenv.root}/opencode.json"
     echo "✦ SvelteKit dev environment ready"
     echo "  dev   – start dev server"
     echo "  build – build for production"
     echo "  check – type-check"
     echo "  lint  – run linter"
-    echo "  mcp   – chrome-devtools (.mcp.json)"
     echo "  toot  – Mastodon CLI (run 'toot login' once)"
     echo "  audit-samples / repair-samples – drum sample health"
   '';
