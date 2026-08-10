@@ -211,6 +211,29 @@ drumming is supported.
 - **Any SoundFont whose samples are shipped must be credited in `THANKS.md`**
   (name, samples taken, license, authors).
 
+## Quote of the Day
+
+- Between lessons — pressing **Next lesson** on a scored run's result screen —
+  `$lib/quote-of-the-day.svelte` shows one random drummer/producer quote
+  full-screen; the author's name reveals its testimonial on hover/click/focus,
+  and a **like/dislike** (or the **never show quotes** checkbox) advances to the
+  next lesson. Navigation stays on the lesson page; the component only signals
+  `onAdvance`.
+- `docs/groove_academy_quotes.csv` is the editorial source.
+  `python3 scripts/make-quotes.py` converts it to `static/quotes/quotes.json` —
+  **re-run after editing the CSV**. Each quote's id is
+  `<author-slug>-<8-hex citation hash>`, stable across adds/reorders and tied
+  only to the citation text.
+- Selection **prefers unseen quotes**; once every quote has been shown the cycle
+  restarts. Seen set, the "never show" opt-out, and ratings live in
+  `localStorage` via `$lib/quote-store.ts` (offline-first, best-effort like
+  `progress-store.ts`).
+- Ratings sync per user to the owner-scoped `quote_ratings` table (RLS keyed to
+  `auth.uid()`), folded into `reconcile()` in `$lib/sync.ts` as `syncRatings`.
+  Unlike progress (monotonic) and stats (append-only), a rating can change, so
+  the merge is **last-write-wins by `updated_at`**. With no Supabase configured
+  the whole feature still works, device-local only.
+
 ## Link previews
 
 - A page's title and description go through `$lib/page-meta.svelte`, which emits
