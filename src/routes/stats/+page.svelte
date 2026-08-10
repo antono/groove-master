@@ -13,7 +13,13 @@
 	import { onMount } from 'svelte';
 	import TrendChart, { type TrendPoint } from '$lib/trend-chart.svelte';
 	import PageMeta from '$lib/page-meta.svelte';
+	import SyncBadge from '$lib/sync-badge.svelte';
 	import { allSessions, clearSessions, dayKey, type SessionStat } from '$lib/stats';
+	import { authState } from '$lib/auth.svelte';
+	import { reconcile } from '$lib/sync';
+
+	// Disclosure for the "how does sync work?" note next to the sync badge.
+	let showSyncHelp = $state(false);
 
 	let sessions: SessionStat[] = $state([]);
 	let loading = $state(true);
@@ -23,6 +29,11 @@
 		selectedDay = dayKey(new Date());
 		sessions = await allSessions();
 		loading = false;
+		// Signed in: pull any cloud runs into the local store, then show the union.
+		if (authState.user) {
+			await reconcile();
+			sessions = await allSessions();
+		}
 	});
 
 	// ---- per-day aggregation ---------------------------------------------
@@ -526,6 +537,28 @@
 		<a class="cta" href="{base}/lessons">Browse lessons</a>
 	</div>
 {:else}
+	{#if authState.user}
+		<div class="sync-line">
+			<SyncBadge />
+			<button
+				class="help"
+				aria-expanded={showSyncHelp}
+				aria-label="How does sync work?"
+				title="How does sync work?"
+				onclick={() => (showSyncHelp = !showSyncHelp)}>?</button
+			>
+		</div>
+		{#if showSyncHelp}
+			<p class="sync-help muted">
+				Your runs and progress are saved on this device first, then backed up to
+				your account in the background while you're signed in — after each run,
+				when you come back online, and when you reopen the tab. Open the same
+				account on another device and this history follows you. Signing out keeps
+				everything on this device; it just stops syncing.
+			</p>
+		{/if}
+	{/if}
+
 	<!-- One filter row above everything it scopes: tiles, trends, controllers and
 	     the run table all read the same slice. The heatmap below is the exception
 	     and says so — it is the navigator, not a scoped view. -->
@@ -849,6 +882,41 @@
 <style>
 	.muted {
 		color: var(--text-muted);
+	}
+
+	.sync-line {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.help {
+		width: 1.2rem;
+		height: 1.2rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--border);
+		border-radius: 50%;
+		background: none;
+		color: var(--text-muted);
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	.help:hover {
+		color: var(--text);
+		border-color: var(--text-muted);
+	}
+
+	.sync-help {
+		max-width: 42rem;
+		margin: 0 0 1rem;
+		font-size: 0.85rem;
+		line-height: 1.55;
 	}
 
 	.small {

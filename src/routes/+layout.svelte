@@ -1,12 +1,15 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { invalidate } from '$app/navigation';
 	import favicon from '$lib/assets/favicon.svg';
 	import { base } from '$app/paths';
 	import { page } from '$app/state';
 
 	import { savedKit } from '$lib/config';
 	import { warmKit } from '$lib/drums';
+	import { authState } from '$lib/auth.svelte';
+	import { startSync, queueReconcile } from '$lib/sync';
 	import {
 		OG_IMAGE,
 		OG_IMAGE_ALT,
@@ -15,7 +18,32 @@
 		SITE_NAME
 	} from '$lib/site';
 
-	let { children } = $props();
+	let { children, data } = $props();
+
+	// Mirror the layout's resolved auth into the shared store on every load
+	// (including after invalidate('supabase:auth')), so UI stays in step.
+	$effect(() => {
+		authState.user = data.user;
+		authState.session = data.session;
+		authState.ready = true;
+	});
+
+	// Start background sync and keep the client session in step with the server.
+	onMount(() => {
+		const supabase = data.supabase;
+		if (!supabase) return;
+		startSync(supabase);
+		const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
+			authState.session = newSession;
+			authState.user = newSession?.user ?? null;
+			// A changed session means the server load must re-run to match.
+			if (newSession?.expires_at !== data.session?.expires_at) {
+				void invalidate('supabase:auth');
+			}
+			queueReconcile();
+		});
+		return () => sub.subscription.unsubscribe();
+	});
 
 	const MASTODON = 'https://mastodon.social/@groove_academy';
 
@@ -49,6 +77,7 @@
 		{ href: `${base}/stats`, route: '/stats', label: 'Stats' },
 		{ href: `${base}/onboarding`, route: '/onboarding', label: 'Setup' },
 		{ href: `${base}/news`, route: '/news', label: 'News' },
+		{ href: `${base}/account`, route: '/account', label: 'Account' },
 		...(showDebug ? [{ href: `${base}/debug`, route: '/debug', label: 'Debug' }] : [])
 	]);
 

@@ -1,0 +1,4 @@
+# esbuild (via @sveltejs/adapter-vercel) needs its install script to run, else a
+# fresh `pnpm install` / `pnpm check` fails with ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  esbuild: true

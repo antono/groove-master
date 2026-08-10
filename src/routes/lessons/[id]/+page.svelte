@@ -8,6 +8,7 @@
 	import { Sampler, sampleUrl } from '$lib/sampler';
 	import { asBinding, parseControl, sameControl, type TransportBinding } from '$lib/transport-control';
 	import { dayKey, recordSession } from '$lib/stats';
+	import { queueReconcile } from '$lib/sync';
 	import { lessonFinished, lessonStarted } from '$lib/analytics';
 	import { BPM_STEP, isCleanRun } from '$lib/progress';
 	import PageMeta from '$lib/page-meta.svelte';
@@ -891,6 +892,9 @@
 				avgMs: l.avgMs
 			}))
 		});
+		// Nudge a background sync so this run and any freshly-earned progress reach
+		// the cloud promptly. No-op when signed out or offline; queued either way.
+		queueReconcile();
 	}
 
 	// ---- listen (in-place preview) --------------------------------------

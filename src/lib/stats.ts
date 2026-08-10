@@ -13,8 +13,26 @@
 // so no call rejects: writes resolve silently and reads resolve empty.
 
 export const DB_NAME = "groove-master";
-const DB_VERSION = 1;
+// v2 adds `uuid`/`remoteSynced` to each run for Supabase cloud sync (see
+// sync.ts): the uuid is the cloud primary key and dedup key, backfilled onto
+// existing rows during the upgrade so a pre-sync history uploads exactly once.
+const DB_VERSION = 2;
 const STORE = "sessions";
+
+/** A stable, origin-assigned id. Browser crypto with a defensive fallback. */
+export function newUuid(): string {
+  try {
+    if (typeof crypto !== "undefined" && crypto.randomUUID)
+      return crypto.randomUUID();
+  } catch {
+    // fall through
+  }
+  return "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = Math.floor(Math.random() * 16);
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 
 /** Per-pad accuracy for one run, as shown in the lesson's result table. */
 export type LaneStat = {
@@ -27,7 +45,16 @@ export type LaneStat = {
 
 /** One completed lesson run. Mirrors the lesson page's result report. */
 export type SessionStat = {
-  id?: number; // assigned by the store on write
+  id?: number; // local autoIncrement key, assigned by the store on write
+  /**
+   * Stable client-generated id, the cloud primary key. Append-only sync counts a
+   * run once by this uuid regardless of how many devices it lands on. Optional on
+   * the type for back-compat with v1 rows; every new row and every migrated row
+   * has one.
+   */
+  uuid?: string;
+  /** Whether this run has been uploaded to Supabase. Local bookkeeping only. */
+  remoteSynced?: boolean;
   at: number; // epoch ms, when the run finished
   /**
    * Local calendar day, `YYYY-MM-DD`. Stored rather than derived on read: the
@@ -105,15 +132,38 @@ function openDb(): Promise<IDBDatabase | null> {
       // Firefox throws here instead of erroring the request when storage is off.
       return resolve(null);
     }
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = (event) => {
       const db = req.result;
-      if (db.objectStoreNames.contains(STORE)) return;
-      const store = db.createObjectStore(STORE, {
-        keyPath: "id",
-        autoIncrement: true,
-      });
-      store.createIndex("at", "at");
-      store.createIndex("lesson", "lesson");
+      const store = db.objectStoreNames.contains(STORE)
+        ? req.transaction!.objectStore(STORE)
+        : (() => {
+            const s = db.createObjectStore(STORE, {
+              keyPath: "id",
+              autoIncrement: true,
+            });
+            s.createIndex("at", "at");
+            s.createIndex("lesson", "lesson");
+            return s;
+          })();
+
+      // v1 → v2: index the cloud key and backfill it onto existing runs so a
+      // pre-sync history uploads exactly once.
+      if ((event.oldVersion ?? 0) < 2) {
+        if (!store.indexNames.contains("uuid"))
+          store.createIndex("uuid", "uuid");
+        store.openCursor().onsuccess = (e) => {
+          const cursor = (e.target as IDBRequest<IDBCursorWithValue | null>)
+            .result;
+          if (!cursor) return;
+          const row = cursor.value as SessionStat;
+          if (!row.uuid) {
+            row.uuid = newUuid();
+            row.remoteSynced = false;
+            cursor.update(row);
+          }
+          cursor.continue();
+        };
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => resolve(null);
@@ -131,6 +181,12 @@ function openDb(): Promise<IDBDatabase | null> {
 export async function recordSession(stat: SessionStat): Promise<void> {
   const db = await openDb();
   if (!db) return;
+  // Stamp the cloud key at record time; the run is unsynced until sync.ts uploads it.
+  const row: SessionStat = {
+    ...stat,
+    uuid: stat.uuid ?? newUuid(),
+    remoteSynced: stat.remoteSynced ?? false,
+  };
   await new Promise<void>((resolve) => {
     let tx: IDBTransaction;
     try {
@@ -138,10 +194,108 @@ export async function recordSession(stat: SessionStat): Promise<void> {
     } catch {
       return resolve();
     }
-    tx.objectStore(STORE).add(stat);
+    tx.objectStore(STORE).add(row);
     tx.oncomplete = () => resolve();
     tx.onerror = () => resolve();
     tx.onabort = () => resolve();
+  });
+}
+
+/**
+ * Runs not yet uploaded to the cloud — the implicit "outbox" for stats. Rather
+ * than a second store to keep consistent, the source of truth is the flag on the
+ * run itself: unsynced = never uploaded. Returns oldest first.
+ */
+export async function unsyncedSessions(): Promise<SessionStat[]> {
+  const rows = await rawSessions();
+  return rows.filter((r) => !r.remoteSynced);
+}
+
+/** The set of cloud uuids already present locally, for pull de-duplication. */
+export async function localUuids(): Promise<Set<string>> {
+  const rows = await rawSessions();
+  return new Set(
+    rows.map((r) => r.uuid).filter((u): u is string => Boolean(u)),
+  );
+}
+
+/** Mark the given runs (by uuid) as uploaded, so they are not pushed again. */
+export async function markSynced(uuids: Set<string>): Promise<void> {
+  if (uuids.size === 0) return;
+  const db = await openDb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    let tx: IDBTransaction;
+    try {
+      tx = db.transaction(STORE, "readwrite");
+    } catch {
+      return resolve();
+    }
+    const store = tx.objectStore(STORE);
+    store.openCursor().onsuccess = (e) => {
+      const cursor = (e.target as IDBRequest<IDBCursorWithValue | null>).result;
+      if (!cursor) return;
+      const row = cursor.value as SessionStat;
+      if (row.uuid && uuids.has(row.uuid) && !row.remoteSynced) {
+        row.remoteSynced = true;
+        cursor.update(row);
+      }
+      cursor.continue();
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+    tx.onabort = () => resolve();
+  });
+}
+
+/**
+ * Insert runs pulled from the cloud that the device has never seen. Already-synced
+ * by definition (they came from the cloud), and skipped if the uuid is present.
+ */
+export async function insertRemoteSessions(
+  incoming: SessionStat[],
+): Promise<void> {
+  if (incoming.length === 0) return;
+  const db = await openDb();
+  if (!db) return;
+  const have = await localUuids();
+  const fresh = incoming.filter((r) => r.uuid && !have.has(r.uuid));
+  if (fresh.length === 0) return;
+  await new Promise<void>((resolve) => {
+    let tx: IDBTransaction;
+    try {
+      tx = db.transaction(STORE, "readwrite");
+    } catch {
+      return resolve();
+    }
+    const store = tx.objectStore(STORE);
+    for (const r of fresh) {
+      // Drop the local autoIncrement id so this device assigns its own.
+      const { id: _id, ...rest } = r;
+      void _id;
+      store.add({ ...rest, remoteSynced: true });
+    }
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+    tx.onabort = () => resolve();
+  });
+}
+
+/** Raw rows in `at` order, without legacy-id canonicalisation. */
+async function rawSessions(): Promise<SessionStat[]> {
+  const db = await openDb();
+  if (!db) return [];
+  return new Promise((resolve) => {
+    let tx: IDBTransaction;
+    try {
+      tx = db.transaction(STORE, "readonly");
+    } catch {
+      return resolve([]);
+    }
+    const req = tx.objectStore(STORE).index("at").getAll();
+    req.onsuccess = () => resolve((req.result as SessionStat[]) ?? []);
+    req.onerror = () => resolve([]);
+    tx.onabort = () => resolve([]);
   });
 }
 

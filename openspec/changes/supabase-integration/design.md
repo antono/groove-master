@@ -193,12 +193,29 @@ provision the two public env vars there.
 (or a feature flag) reverts every user to today's device-local behavior with no
 data migration; local storage is never removed or rewritten destructively.
 
-## Open Questions
+## Open Questions (resolved)
 
-- Which deploy adapter/host is the target (decides `adapter-node` vs edge)?
-- Should `tier` sync at all, or stay a purely local UI preference? (Currently
-  synced for full cross-device continuity.)
-- Periodic reconcile cadence and whether to also reconcile on tab `visibility`
-  regain.
-- Do we want a "sign in to back up your progress" nudge, or keep auth fully
-  passive/discoverable only?
+- **Deploy adapter/host** → **Vercel** (`@sveltejs/adapter-vercel`). Env wiring
+  and setup steps in `supabase/SETUP.md`.
+- **Does `tier` sync?** → **Yes**, for full cross-device continuity. It is the one
+  mutable scalar; ties resolve to the row with the higher ceiling.
+- **Reconcile cadence** → on sign-in, `online`, `visibilitychange` (tab regain),
+  after each local write, and a 60s periodic backstop. Single-flight so triggers
+  coalesce.
+- **Sign-in nudge** → **passive**: an "Account" nav entry and copy on `/account`
+  ("back up your progress"), no interruptive prompt. Auth stays optional.
+
+### Implementation notes / deviations
+
+- **Outbox** is derived, not a separate store: a run is pending iff
+  `remoteSynced=false`, and progress is re-merged from localStorage each
+  reconcile. Avoids a second source of truth (see `sync.ts`).
+- **`sessions` RLS** is select/insert only (no update/delete policy) — append-only
+  enforced at the database, tighter than the original task wording.
+- **Magic-link callback** accepts both PKCE `code` and `token_hash`, so it works
+  with the default Supabase email template.
+- **Env key name** stays `PUBLIC_SUPABASE_ANON_KEY` (per the artifacts) though the
+  value is a publishable `sb_publishable_…` key.
+- **Redirect-URL allowlist** (task 2.5) is dashboard/Management-API config, not
+  reachable from the Supabase MCP — documented in `supabase/SETUP.md` for a
+  one-time manual step.
