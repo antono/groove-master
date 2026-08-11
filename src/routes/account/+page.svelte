@@ -3,6 +3,7 @@
 	import { base } from "$app/paths";
 	import { authState } from "$lib/auth.svelte";
 	import { supabaseConfigured } from "$lib/supabase";
+	import { signinLinkFailed, signinLinkSent } from "$lib/analytics";
 	import PageMeta from "$lib/page-meta.svelte";
 	import SyncBadge from "$lib/sync-badge.svelte";
 	import type { SupabaseClient } from "@supabase/supabase-js";
@@ -28,8 +29,13 @@
 			options: { emailRedirectTo: redirectTo },
 		});
 		busy = false;
-		if (err) error = err.message;
-		else sent = true;
+		if (err) {
+			error = err.message;
+			signinLinkFailed();
+		} else {
+			sent = true;
+			signinLinkSent();
+		}
 	}
 
 	async function signOut() {

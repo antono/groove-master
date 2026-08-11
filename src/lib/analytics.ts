@@ -41,3 +41,9 @@ export const onboardingStep = (step: string) =>
 
 /** The wizard was carried through to its final screen. */
 export const onboardingFinished = () => track("onboarding_finished");
+
+/** A magic sign-in link was requested from /account and Supabase accepted it. */
+export const signinLinkSent = () => track("signin_link_sent");
+
+/** The request for a sign-in link came back with an error. */
+export const signinLinkFailed = () => track("signin_link_failed");
