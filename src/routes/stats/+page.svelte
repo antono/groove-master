@@ -144,8 +144,25 @@
 
 	// ---- heatmap ----------------------------------------------------------
 
-	const WEEKS = 53;
+	const TRACK = 14; // px per day, cell + gutter — mirrored in the CSS grid tracks
 	const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+	// How much history the strip shows is a question of width, not of taste: a
+	// year of columns on a phone is a year behind a scrollbar, and a heatmap you
+	// have to scroll sideways stops answering "am I showing up" at a glance. So
+	// the calendar is cut to what fits — a laptop still gets its 53 weeks, a
+	// phone gets the last few months — and the header says which it is.
+	const MIN_WEEKS = 12;
+	const MAX_WEEKS = 53;
+	// Measured rather than guessed from a breakpoint: the card's width is what
+	// actually decides, and it moves with the window, not with the device.
+	let stripWidth = $state(0);
+	let gutterWidth = $state(0);
+	const WEEKS = $derived(
+		stripWidth
+			? Math.min(MAX_WEEKS, Math.max(MIN_WEEKS, Math.floor((stripWidth - gutterWidth) / TRACK)))
+			: MAX_WEEKS
+	);
 
 	type Cell = { key: string; date: Date; runs: number; agg: DayAgg | undefined; future: boolean };
 
@@ -209,10 +226,36 @@
 		year: 'numeric'
 	});
 
-	const TRACK = 14; // px per day, cell + gutter — mirrored in the CSS grid tracks
-
 	let hoverCell: Cell | null = $state(null);
+	// Viewport coordinates of the hovered mark's top centre. Viewport, not grid:
+	// the tip is fixed-positioned (see below), so this is the space it lives in.
 	let hoverPos = $state({ x: 0, y: 0 });
+	let tipWidth = $state(0);
+	let tipHeight = $state(0);
+
+	const TIP_GAP = 6; // px between the mark and the tip
+	const EDGE = 8; // and between the tip and the edge of the screen
+
+	/**
+	 * Where the tip goes, in viewport space.
+	 *
+	 * It is `position: fixed` because the strip is a horizontal scroller, and a
+	 * scroller clips: an absolutely-positioned tip on the last column was cut off
+	 * at the container's right edge, and one on the top row at its top edge.
+	 * Fixed takes it out of that box entirely, which leaves only the screen to
+	 * stay inside of — hence the clamp, and the flip below the mark when there is
+	 * no room above.
+	 */
+	const tipStyle = $derived.by(() => {
+		const half = tipWidth / 2;
+		const lo = EDGE + half;
+		// max() so a viewport narrower than the tip degrades to flush-left rather
+		// than inverting the bounds.
+		const x = Math.min(Math.max(hoverPos.x, lo), Math.max(lo, window.innerWidth - EDGE - half));
+		const above = hoverPos.y - TIP_GAP - tipHeight >= EDGE;
+		const y = above ? hoverPos.y - TIP_GAP : hoverPos.y + TRACK + TIP_GAP;
+		return `left: ${x}px; top: ${y}px; transform: translate(-50%, ${above ? '-100%' : '0'});`;
+	});
 
 	// One hit layer over the whole grid rather than a handler per cell: an 11px
 	// mark is far below a comfortable pointer target, so the nearest day within
@@ -227,7 +270,7 @@
 			return;
 		}
 		hoverCell = cell;
-		hoverPos = { x: col * TRACK + TRACK / 2, y: row * TRACK };
+		hoverPos = { x: rect.left + col * TRACK + TRACK / 2, y: rect.top + row * TRACK };
 	}
 
 	// ---- single day --------------------------------------------------------
@@ -520,6 +563,10 @@
 	const pct = (v: number) => Math.round(v * 100) + '%';
 </script>
 
+<!-- A fixed tip is pinned to the screen, not to the mark it describes, so a
+     scroll would leave it stranded mid-page. Drop it instead. -->
+<svelte:window onscroll={() => (hoverCell = null)} />
+
 <PageMeta
 	title="Groove Academy — Practice stats"
 	description="Your practice history: a year of attendance at a glance, accuracy and tempo trends, and every run of every day."
@@ -621,7 +668,7 @@
 			<span class="muted small">last {WEEKS} weeks · pick a day</span>
 		</header>
 
-		<div class="heatmap-scroll">
+		<div class="heatmap-scroll" bind:clientWidth={stripWidth}>
 			<div class="heatmap">
 				<div class="months" style="--cols: {WEEKS}">
 					{#each monthLabels as m (m.col)}
@@ -629,7 +676,7 @@
 					{/each}
 				</div>
 
-				<div class="weekdays">
+				<div class="weekdays" bind:clientWidth={gutterWidth}>
 					{#each WEEKDAYS as d, i (d)}
 						<span class:hidden={i % 2 === 1}>{d}</span>
 					{/each}
@@ -671,7 +718,12 @@
 					{/each}
 
 					{#if hoverCell}
-						<div class="tip" style="left: {hoverPos.x}px; top: {hoverPos.y}px">
+						<div
+							class="tip"
+							style={tipStyle}
+							bind:clientWidth={tipWidth}
+							bind:clientHeight={tipHeight}
+						>
 							<strong>
 								{hoverCell.runs
 									? `${hoverCell.runs} ${hoverCell.runs === 1 ? 'run' : 'runs'}`
@@ -932,12 +984,20 @@
 		margin-bottom: 1.25rem;
 	}
 
+	/* Side by side while both fit, stacked when they don't: squeezed onto one row
+	   a narrow screen breaks the title and its note mid-phrase, and two half
+	   sentences read worse than two lines. */
 	.card-head {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 1rem;
+		gap: 0.15rem 1rem;
 		margin-bottom: 0.75rem;
+	}
+
+	.card-head > :first-child {
+		white-space: nowrap;
 	}
 
 	.blank {
@@ -1154,9 +1214,15 @@
 		margin: 0 0.35rem;
 	}
 
+	/* Fixed, and placed entirely from `tipStyle` — see there for why the strip's
+	   own scroll box is the one place this must not live. */
 	.tip {
-		position: absolute;
-		transform: translate(-50%, -100%) translateY(-0.4rem);
+		position: fixed;
+		/* max-content, so the box is as wide as its longest line wants to be and
+		   the cap only bites on a narrow screen — without it the flex column sizes
+		   to the nowrap lines and the detail wraps with room to spare. */
+		width: max-content;
+		max-width: calc(100vw - 2 * 8px);
 		pointer-events: none;
 		display: flex;
 		flex-direction: column;
@@ -1181,8 +1247,11 @@
 		color: var(--text-muted);
 	}
 
+	/* The one line long enough to need the max-width above, so it is the one line
+	   allowed to wrap into it. */
 	.tip .detail {
 		color: var(--text-faint);
+		white-space: normal;
 	}
 
 	/* --- trends ------------------------------------------------------------ */
