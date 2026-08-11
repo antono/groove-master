@@ -4,7 +4,8 @@
   Controlled by `open`: while true it shows one random quote (preferring ones
   the user hasn't seen this cycle; when all are seen the cycle restarts). The
   author's testimonial is revealed on hover, click, or keyboard focus. A like or
-  dislike records the rating (offline-first via quote-store, synced by sync.ts)
+  dislike records the rating (offline-first via quote-store; device-local for now
+  — nothing in sync.ts syncs ratings yet)
   and calls `onAdvance`; the "never show quotes" checkbox opts out and advances
   with no rating. Navigation is the parent's job — this only signals `onAdvance`.
 -->
@@ -120,9 +121,12 @@
             {current.author}
           </button>
           {#if showTestimonial && current.testimonial}
-            <!-- Absolutely positioned so showing it doesn't reflow the column
-                 and steal the hover from the button (which caused flicker).
-                 pointer-events:none keeps it from intercepting the mouse. -->
+            <!-- In the flow, directly under the author: it pushes what is below
+                 it down and so can never cover the quote, whatever its length.
+                 Safe from the hover flicker it used to cause because the column
+                 is top-anchored — growing it does not move the author out from
+                 under the cursor. pointer-events:none keeps it from intercepting
+                 the mouse as well. -->
             <span class="testimonial" role="tooltip">{current.testimonial}</span>
           {/if}
         </span>
@@ -158,9 +162,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    /* Top-anchored, not centred. Revealing the author's testimonial grows this
+       column, and a centred column would shift everything up by half of what it
+       grew — moving the author out from under the pointer, which hid the
+       testimonial, which shrank the column again: the hover flicker. Anchored
+       here the quote and the author never move. The offset keeps the resting
+       state sitting where a centred one did. */
+    justify-content: flex-start;
     gap: 2.5rem;
-    padding: 2rem;
+    padding: clamp(2rem, 22vh, 12rem) 2rem 2rem;
+    overflow-y: auto;
     background: var(--bg);
     text-align: center;
   }
@@ -214,20 +225,18 @@
   }
 
   .author-wrap {
-    position: relative;
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  /* A small floating popover above the author name. Out of flow (no reflow →
-     no hover flicker) and non-interactive so it never steals the mouse. */
+  /* Who the author is, under their name. Floating this above the author was the
+     old bug: directly above the author is the last line of the citation, so a
+     long testimonial covered the quote it belonged to. In the flow it can only
+     push the buttons down. */
   .testimonial {
-    position: absolute;
-    bottom: calc(100% + 0.6rem);
-    left: 50%;
-    transform: translateX(-50%);
-    width: max-content;
     max-width: min(34rem, 85vw);
-    margin: 0;
+    margin: 0.6rem 0 0;
     padding: 0.7rem 0.95rem;
     border-radius: 0.6rem;
     background: var(--surface-2);
@@ -237,7 +246,6 @@
     line-height: 1.5;
     color: var(--text-muted);
     text-align: center;
-    z-index: 1001;
     pointer-events: none;
   }
 
