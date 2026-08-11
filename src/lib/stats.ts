@@ -121,6 +121,11 @@ export function dayKey(when: number | Date): string {
 // the database, so concurrent callers share a single open request.
 let dbPromise: Promise<IDBDatabase | null> | null = null;
 
+// How long to wait for the open request before giving up on storage for this
+// page load. Only a pathological upgrade takes this long; a request still
+// pending after it is wedged, and a wedged promise is a blank page.
+const OPEN_TIMEOUT_MS = 5000;
+
 function openDb(): Promise<IDBDatabase | null> {
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve) => {
@@ -132,6 +137,20 @@ function openDb(): Promise<IDBDatabase | null> {
       // Firefox throws here instead of erroring the request when storage is off.
       return resolve(null);
     }
+
+    // This promise MUST settle. /lessons and /stats both await the history
+    // before they render, so an open request that never fires is not a missing
+    // chart, it is an empty page. Giving up also clears the cached promise: the
+    // condition is transient (another tab closes) and the next call retries.
+    let settled = false;
+    const giveUp = () => {
+      if (settled) return;
+      settled = true;
+      dbPromise = null;
+      resolve(null);
+    };
+    const timer = setTimeout(giveUp, OPEN_TIMEOUT_MS);
+
     req.onupgradeneeded = (event) => {
       const db = req.result;
       const store = db.objectStoreNames.contains(STORE)
@@ -165,11 +184,37 @@ function openDb(): Promise<IDBDatabase | null> {
         };
       }
     };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => resolve(null);
-    // No `onblocked`: it can only fire on a version change, and at version 1
-    // there is no older connection to be blocked by. Bumping DB_VERSION means
-    // adding one here, or a second tab wedges this promise forever.
+    req.onsuccess = () => {
+      clearTimeout(timer);
+      const db = req.result;
+      // Stand aside for a version bump elsewhere. A connection left open here is
+      // precisely what blocks the upgrade over there, and the page holding it
+      // need not be one the student can see — a background tab, or one the
+      // browser is keeping in bfcache, blocks just as well.
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+      };
+      // Already gave up on this request; don't leak the connection we no longer
+      // wait on, and don't hand back a database nobody asked for.
+      if (settled) return db.close();
+      settled = true;
+      resolve(db);
+    };
+    req.onerror = () => {
+      // Storage is refused rather than busy — a permanent condition for this
+      // page, so keep the cached null instead of retrying on every read.
+      clearTimeout(timer);
+      if (settled) return;
+      settled = true;
+      resolve(null);
+    };
+    // An older connection is still open at the previous version, so the upgrade
+    // cannot start. Without this the request simply never fires again.
+    req.onblocked = () => {
+      clearTimeout(timer);
+      giveUp();
+    };
   });
   return dbPromise;
 }

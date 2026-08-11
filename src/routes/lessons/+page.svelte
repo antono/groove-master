@@ -84,14 +84,17 @@
 			loading = false;
 			return;
 		}
-		// The history is a separate store from the MIDI, so fetch both at once —
-		// neither should hold the cards back on the other.
-		const [entries, runs] = await Promise.all([
-			Promise.all(list.map(async (l) => [l.id, await loadPreview(l)] as const)),
-			allSessions()
-		]);
+		// The history lives in a different store from the MIDI and is only ever
+		// decoration on a card, so it is started alongside the previews but never
+		// awaited: storage can be refused or busy, and the catalogue must not go
+		// blank waiting on a badge.
+		void allSessions().then((runs) => {
+			progress = progressByLesson(runs);
+		});
+		const entries = await Promise.all(
+			list.map(async (l) => [l.id, await loadPreview(l)] as const)
+		);
 		previews = new Map(entries.filter((e): e is [string, Preview] => e[1] !== null));
-		progress = progressByLesson(runs);
 		loading = false;
 	});
 </script>
