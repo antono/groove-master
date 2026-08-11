@@ -49,6 +49,11 @@ in
     typescript-language-server
     vscode-langservers-extracted
 
+    # Supabase CLI — link the project and push auth/config to the remote
+    # (Site URL, redirect allowlist) or run a local stack. `supabase login`
+    # once (token in ~/.supabase, outside the repo).
+    supabase-cli
+
     # Announcing releases on the fediverse. One-time `toot login` per account
     # stores the token in ~/.config/toot/config.json (outside the repo), after
     # which `toot post` is non-interactive.
@@ -86,6 +91,15 @@ in
   scripts.lint = {
     exec = "pnpm lint";
     description = "Lint SvelteKit app";
+  };
+
+  # Vercel CLI isn't packaged in this nixpkgs (nodePackages was removed
+  # upstream), so run it through npx on the node the JS toolchain already
+  # provides. `vercel login` once (token in ~/.local/share/com.vercel.cli,
+  # outside the repo), then `vercel env` / `vercel deploy` are non-interactive.
+  scripts.vercel = {
+    exec = ''npx --yes vercel@latest "$@"'';
+    description = "Vercel CLI (via npx)";
   };
 
   scripts.audit-samples = {
