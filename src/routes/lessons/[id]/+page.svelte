@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import { parseMidi, COUNT_IN_BEATS, type ParsedMidi, type BackingTrack, type MidiNote } from '$lib/midi';
@@ -14,6 +15,8 @@
 	import PageMeta from '$lib/page-meta.svelte';
 	import LessonChart from '$lib/lesson-chart.svelte';
 	import ControllerMap from '$lib/controller-map.svelte';
+	import QuoteOfTheDay from '$lib/quote-of-the-day.svelte';
+	import { isQuotesOff } from '$lib/quote-store';
 	import { laneColor } from '$lib/drum-colors';
 
 	// `id` is the lesson's slug and never changes; `number` ("2.4") is rendered
@@ -164,6 +167,22 @@
 		return i >= 0 && i + 1 < lessons.length ? lessons[i + 1] : null;
 	});
 	const nextUnlocked = $derived(!!nextLesson && unlockedLessons.has(nextLesson.id));
+
+	// Between lessons: the result screen's "Next lesson" shows a Quote of the Day
+	// first (unless opted out), then advances on rate/close. The resting-page nav
+	// link is unchanged — the quote is only for finishing a scored run.
+	let quoteOpen = $state(false);
+
+	function toNextLesson() {
+		if (!nextLesson) return;
+		if (isQuotesOff()) goto(`${base}/lessons/${nextLesson.id}`);
+		else quoteOpen = true;
+	}
+
+	function advanceToNext() {
+		quoteOpen = false;
+		if (nextLesson) goto(`${base}/lessons/${nextLesson.id}`);
+	}
 
 	// A locked Next lesson still shows — a curriculum you cannot see the shape of is
 	// not a curriculum — so it has to say what would open it, and how close you are.
@@ -1385,10 +1404,10 @@
 					</button>
 				{/if}
 				{#if nextLesson && nextUnlocked}
-					<a class="lesson-nav next" href="{base}/lessons/{nextLesson.id}">
+					<button class="lesson-nav next" onclick={toNextLesson}>
 						<span class="nav-label">Next lesson</span>
 						<span aria-hidden="true">→</span>
-					</a>
+					</button>
 				{:else}
 					<button class="done" onclick={exitReport}>Done</button>
 				{/if}
@@ -1396,6 +1415,8 @@
 		</div>
 	{/if}
 {/if}
+
+<QuoteOfTheDay open={quoteOpen} onAdvance={advanceToNext} />
 
 <style>
 	.back {
@@ -1782,10 +1803,12 @@
 		background: var(--surface-2);
 		border: 1px solid var(--border-strong);
 		color: var(--text);
+		font: inherit;
 		font-size: 0.95rem;
 		text-decoration: none;
 		white-space: nowrap;
 		min-width: 0;
+		cursor: pointer;
 	}
 
 	.lesson-nav:hover {

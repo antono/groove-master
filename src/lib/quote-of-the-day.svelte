@@ -106,21 +106,26 @@
     <figure class="quote">
       <blockquote>{current.citation}</blockquote>
       <figcaption>
-        <button
-          type="button"
-          class="author"
-          aria-expanded={showTestimonial}
-          onclick={() => (showTestimonial = !showTestimonial)}
-          onmouseenter={() => (showTestimonial = true)}
-          onmouseleave={() => (showTestimonial = false)}
-          onfocus={() => (showTestimonial = true)}
-          onblur={() => (showTestimonial = false)}
-        >
-          {current.author}
-        </button>
-        {#if showTestimonial && current.testimonial}
-          <p class="testimonial">{current.testimonial}</p>
-        {/if}
+        <span class="author-wrap">
+          <button
+            type="button"
+            class="author"
+            aria-expanded={showTestimonial}
+            onclick={() => (showTestimonial = !showTestimonial)}
+            onmouseenter={() => (showTestimonial = true)}
+            onmouseleave={() => (showTestimonial = false)}
+            onfocus={() => (showTestimonial = true)}
+            onblur={() => (showTestimonial = false)}
+          >
+            {current.author}
+          </button>
+          {#if showTestimonial && current.testimonial}
+            <!-- Absolutely positioned so showing it doesn't reflow the column
+                 and steal the hover from the button (which caused flicker).
+                 pointer-events:none keeps it from intercepting the mouse. -->
+            <span class="testimonial" role="tooltip">{current.testimonial}</span>
+          {/if}
+        </span>
       </figcaption>
     </figure>
 
@@ -208,12 +213,32 @@
     border-bottom-color: var(--gold);
   }
 
+  .author-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  /* A small floating popover above the author name. Out of flow (no reflow →
+     no hover flicker) and non-interactive so it never steals the mouse. */
   .testimonial {
+    position: absolute;
+    bottom: calc(100% + 0.6rem);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: min(34rem, 85vw);
     margin: 0;
-    max-width: 34rem;
-    font-size: 0.95rem;
+    padding: 0.7rem 0.95rem;
+    border-radius: 0.6rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    font-size: 0.9rem;
     line-height: 1.5;
     color: var(--text-muted);
+    text-align: center;
+    z-index: 1001;
+    pointer-events: none;
   }
 
   .rate {
