@@ -7,6 +7,86 @@ only shows up in how the project is built.
 Announcements for each release live in [`/news`](src/lib/news/); this file is
 the complete list, that one is the readable half.
 
+## v0.0.3 — 11 August 2026
+
+Practice stopped being tied to one browser. Ten commits.
+
+### User-facing
+
+**An optional account, and cloud backup behind it.** Email magic-link sign-in —
+no password. Signed in, earned tempo ceilings, unlocked lessons and every scored
+run back up in the background and return on any device. Signed out the app is
+unchanged: fully usable, fully offline, nothing withheld. First sign-in adopts
+whatever that device had already practised instead of discarding it, and signing
+out keeps the device's own copy.
+
+**Two devices cannot undo each other.** Progress merges by taking the best of
+both (higher ceiling, union of unlocked lessons); runs are append-only and
+de-duplicated by id. A week on one machine and a week on another add up rather
+than the later sync winning.
+
+**Quote of the Day between lessons.** _Next lesson_ on a result screen shows one
+line from a drummer or producer before the next lesson loads. The author's name
+reveals who they are and where the line is from; like/dislike advances, and
+_never show quotes_ ends them for good. 58 quotes, unseen ones preferred until
+the set is exhausted. Ratings are stored on the device.
+
+**The practice heatmap fits its window.** It drew 53 weeks whatever the space —
+now it draws the weeks that fit, measured from the card rather than a breakpoint,
+so it tracks a resized window: a year on a laptop, around 18 at 360px, never
+fewer than 12. The header says how many weeks are shown.
+
+**Fixes**
+
+- `/lessons` and `/stats` could both render blank. The sync work moved the
+  practice-history store to version 2, and an older connection in another tab or
+  in bfcache blocks that upgrade — with no `onblocked` handler the open request
+  never settled and both pages waited on it forever. It now gives up and retries
+  later, yields when another tab needs the upgrade, and `/lessons` draws its
+  cards without awaiting history at all.
+- The Quote of the Day never appeared: the component shipped in its feature
+  commit but was never imported by the result screen.
+- The quote's author testimonial covered the quote it belonged to. Floating it
+  above the author put it exactly where the citation's last line is, so a long
+  bio hid the words being credited. It sits in the flow under the author now, and
+  the overlay is top-anchored rather than centred — which is what makes that
+  safe: a centred column shifted up by half of whatever the reveal added, moving
+  the author out from under the pointer and flickering the bio on and off. The
+  quote and author no longer move at all.
+- The heatmap's day tooltip was clipped by the scroller it lived in — 55px off
+  the right on the last column, 35px off the top on the first row. It is
+  fixed-positioned and clamped to the screen now, flipping below the mark when
+  there is no room above and dismissing on scroll. The card header also wraps as
+  a unit instead of breaking its title mid-phrase.
+
+### Internal
+
+- Supabase integration: `@supabase/ssr` magic-link auth with SSR-validated
+  sessions (`hooks.server.ts` `safeGetSession` → `getUser`), owner-scoped
+  `lesson_progress` and `sessions` tables with RLS, and a background
+  `reconcile()` sync engine (`$lib/sync.ts`). `adapter-auto` → `adapter-vercel`,
+  since cookie auth needs SSR.
+- A `quote_ratings` table and migration exist with RLS and last-write-wins
+  merge, but **rating sync is not wired**: there is no `syncRatings` in
+  `$lib/sync.ts`, so ratings are device-local. Noted as a follow-up when the
+  openspec change was archived.
+- `scripts/make-quotes.py` builds `static/quotes/quotes.json` from
+  `docs/groove_academy_quotes.csv`; ids are `<author>-<8-hex citation hash>`.
+- Analytics: `signinLinkSent` / `signinLinkFailed` on `/account`. No email
+  address or error text is sent as a parameter.
+- `supabase/config.toml` from `supabase init`, with `[auth]` aligned to the live
+  project so `config push` stays surgical; `supabase/SETUP.md` documents the
+  Vercel env and auth-config steps. `supabase-cli` and a `vercel` script added to
+  `devenv.nix`, which also generates the shared MCP configs into the Nix store.
+- `.vercelignore` keeps `soundfonts/` (244 MB, over Vercel's 100 MB per-file
+  limit) and the dev-only directories out of CLI deploys.
+- News posts can carry screenshots: `$lib/news-article.svelte` styles
+  `figure`/`img`/`figcaption`, and images live at `static/news/<slug>/`.
+- `AGENTS.md` gained a **Releases** section — the version/changelog/news/tag/
+  announce flow, and how to shoot the screenshots.
+- openspec: `supabase-integration` and `quote-of-the-day` archived, capabilities
+  synced into `openspec/specs/`.
+
 ## v0.0.2 — 8 August 2026
 
 Lessons went from stopping to ending. Fourteen commits since launch.

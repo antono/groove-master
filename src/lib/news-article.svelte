@@ -71,6 +71,30 @@
 		color: var(--gold);
 	}
 
+	/* Screenshots. A post's figures sit flush to the column's edges — the app is
+	   dark and so is the card, so an inset image reads as a panel of the page
+	   rather than a picture of one; the border is what separates them. */
+	.entry :global(figure) {
+		margin: 1rem 0 1.25rem;
+	}
+
+	.entry :global(figure img) {
+		display: block;
+		width: 100%;
+		height: auto;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		background: var(--surface-2);
+	}
+
+	/* The caption says what to look at; alt text says what is there. Both are
+	   needed and neither substitutes for the other. */
+	.entry :global(figcaption) {
+		margin-top: 0.5rem;
+		font-size: 0.85rem;
+		color: var(--text-faint);
+	}
+
 	.entry :global(.promise) {
 		color: var(--text);
 		border-left: 2px solid var(--gold);

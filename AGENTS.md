@@ -228,11 +228,13 @@ drumming is supported.
   restarts. Seen set, the "never show" opt-out, and ratings live in
   `localStorage` via `$lib/quote-store.ts` (offline-first, best-effort like
   `progress-store.ts`).
-- Ratings sync per user to the owner-scoped `quote_ratings` table (RLS keyed to
-  `auth.uid()`), folded into `reconcile()` in `$lib/sync.ts` as `syncRatings`.
-  Unlike progress (monotonic) and stats (append-only), a rating can change, so
-  the merge is **last-write-wins by `updated_at`**. With no Supabase configured
-  the whole feature still works, device-local only.
+- **Ratings are device-local; cloud sync is designed but not wired.** The
+  owner-scoped `quote_ratings` table exists (RLS keyed to `auth.uid()`, migration
+  applied) and `quote-store.ts` shapes a rating to match its row, but there is no
+  `syncRatings` in `$lib/sync.ts` and `reconcile()` does not touch ratings. When
+  it is wired: unlike progress (monotonic) and stats (append-only) a rating can
+  change, so the merge is **last-write-wins by `updated_at`**. The feature works
+  either way, and works with no Supabase configured at all.
 
 ## Link previews
 
@@ -250,6 +252,99 @@ drumming is supported.
 - `/lessons/[id]` fetches its manifest in `onMount`, so a crawler sees the
   generic fallback rather than the lesson's own name. Naming it would mean
   moving that fetch into a `+page.ts`.
+
+## Releases
+
+A release is three artefacts that must agree: an annotated **tag**, a
+**CHANGELOG.md** entry, and a **news post** under `src/lib/news/`. The changelog
+is the complete list (user-facing _and_ internal); the news post is the readable
+half, written as prose for someone who practises here and does not read commits.
+Versions are `vX.Y.Z`, tagged from `main`.
+
+The whole thing is a negotiation, not a script: draft, show the user, adjust,
+and only then commit, push and announce. Never tag, push or toot without asking.
+
+1. **Pick the version.** `git describe --tags --abbrev=0` for the previous one,
+   then ask the user which part to bump — the answer decides what the release is
+   called, so it comes first even though the tag itself is created last.
+   `package.json`'s `version` is _not_ maintained; the tag is the version of
+   record.
+2. **Read the range.** `git log --oneline <prev>..HEAD` plus the diffs behind
+   anything unclear. Sort it into user-facing and internal by one test: _would
+   you notice this while practising?_ A refactor with no audible or visible
+   effect is internal however large it was.
+3. **Draft both texts** and show them to the user together — the changelog entry
+   (`## vX.Y.Z — D Month YYYY`, then `### User-facing` / `### Internal`,
+   newest-first at the top of the file) and the news post. Expect to revise;
+   the user's edits to the prose are the point of this step.
+4. **Take the screenshots** (see below) for whatever in the post is visual, and
+   place them in the draft before the user reviews it — a post is judged with its
+   pictures in, not as prose plus a promise of pictures.
+5. **Commit** the changelog, the post and its images, then **tag** that commit:
+   `git tag -a vX.Y.Z` with a message that opens `vX.Y.Z — <the release's name>`,
+   a short paragraph, a bulleted digest of the user-facing half, and a pointer to
+   `CHANGELOG.md`. Tagging after the commit is deliberate — the tag has to
+   contain its own release notes.
+6. **Push** commit and tag (`git push && git push origin vX.Y.Z`) once the user
+   agrees. Vercel builds `main` on push.
+7. **Wait for it to be live and check**, don't assume: fetch
+   `https://groove.academy/news/<slug>` until it answers 200 with the post's
+   title in it. A deploy that failed looks exactly like one that has not
+   finished yet.
+8. **Announce on Mastodon** — draft the toot, show it to the user, amend, and
+   post only after explicit confirmation. `toot post` (the CLI is in
+   `devenv.nix`, already logged in). Keep it to a few lines of what changed and
+   the post's URL; the news page carries the detail. Link the permalink, not the
+   root, so the toot stays accurate after the next release.
+
+### News posts
+
+- One entry per release in `NEWS` in `src/lib/news/index.ts`, newest first, with
+  the body as its own `YYYY-MM-DD-slug.svelte` beside it. The file-level comment
+  there is the authoring contract — most importantly a **published slug never
+  changes**, because it has been shared and indexed; titles are free to correct.
+- A post opens with a paragraph saying what the release is _about_, then an `h3`
+  per change. Write what the student gains and, where it helps, what was wrong
+  before — "you were counting in silence between your own hits" lands where "a
+  guide hi-hat track was added" does not. Internal work does not appear at all.
+- The body receives `mastodon` as a prop, so the handle is written once; close on
+  a link to it and a link back into `{base}/lessons`.
+- The listing and the link preview read `title` and `summary` from the index and
+  never render the body, so a `summary` that drifts from the post is invisible
+  until someone shares the link.
+
+### Screenshots
+
+**A release post about something you can see gets a picture of it.** Most of what
+ships here is visual — a highway, a chart, a result screen — and one screenshot
+settles what a paragraph can only describe. Prose-only is for a release with
+nothing to show.
+
+- Shoot the **real app**, never a mock-up: `pnpm dev`, then drive the page with
+  the Chrome DevTools MCP tools (`navigate_page`, `resize_page`,
+  `take_screenshot`). Get the app into the state being announced first — start a
+  run for the highway, play a lesson through for the result screen — because a
+  screenshot of an empty page is what makes a post feel like documentation.
+- Save to `static/news/<slug>/<name>.png` — same slug as the post, so the images
+  are as permanent as the URL that shows them and are never orphaned by the next
+  release. Reference them absolutely from `base`: `src="{base}/news/<slug>/…"`.
+- **Shoot near the width the figure is displayed at, not bigger.** A post's
+  column is 40rem, and an image fills it at `width: 100%` — so a 1280px-wide
+  screenshot lands at roughly half scale and its body text becomes unreadable.
+  Around **840px wide** keeps type legible; shoot a wide layout narrower rather
+  than shrinking it. Use one width for every figure in a post.
+- Set the viewport height to the content instead of cropping afterwards: a short
+  viewport is the crop. It also overflows, so hide the scrollbar
+  (`document.documentElement.style.overflow = 'hidden'`) or it shows up as a
+  stripe down the edge of the figure. macOS has no `ffmpeg` outside the devenv
+  shell and `sips` only crops from the centre, so cropping is the harder path.
+- Every image is a `<figure>` with real `alt` text and a `<figcaption>`. The alt
+  describes what is in the picture for someone who cannot see it; the caption
+  points at what to notice. `$lib/news-article.svelte` styles both — a post
+  should never carry its own image CSS.
+- Keep them out of the way of weight: PNG for UI (it is flat colour and
+  compresses well), and check the total the post adds. These ship in `static/`
+  and are downloaded by everyone who opens the feed.
 
 ## Commands
 
