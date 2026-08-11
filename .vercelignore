@@ -1,0 +1,12 @@
+# Keep CLI deploys small — none of this is needed to build or serve the app.
+# soundfonts is 244 MB and exceeds Vercel's 100 MB per-file limit; the drums are
+# already pre-rendered into static/drums, so the .sf2 is build-time-only.
+soundfonts/
+scripts/
+docs/
+openspec/
+supabase/
+.devenv/
+devenv.nix
+devenv.lock
+devenv.yaml
