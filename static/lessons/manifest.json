@@ -512,7 +512,7 @@
       "bars": 4,
       "prereq": ["alternating-quarters"],
       "summary": "The single stroke roll: snare on the numbers, hat on the \"and\"s.",
-      "description": "The same trade, twice as often. This is the single stroke roll — the first rudiment, and the one everything in Stage 4 is built on. The bass still plays quarter notes, so the numbers are always underneath you and only the \"and\"s are yours alone.",
+      "description": "The same trade, twice as often. This is the single stroke roll — the first rudiment, and the one everything in Sticking is built on. The bass still plays quarter notes, so the numbers are always underneath you and only the \"and\"s are yours alone.",
       "hints": [
         "Two hands sharing 8ths is easier than one hand playing them. Let the alternation do the work rather than hurrying.",
         "Your strong hand always lands on a number, your weak hand always on an \"and\". If that ever inverts, stop at the bar line and restart.",
@@ -554,7 +554,7 @@
       "bars": 4,
       "prereq": ["alternating-8ths"],
       "summary": "Eight 8th notes a bar on the snare, one hand, no help.",
-      "description": "The same eight notes as the alternating lesson, but one hand plays all of them. Two hands sharing 8ths is easy; one hand keeping them even is not, and this is where the hi-hat lines in every groove from Stage 2 onward come from.",
+      "description": "The same eight notes as the alternating lesson, but one hand plays all of them. Two hands sharing 8ths is easy; one hand keeping them even is not, and this is where the hi-hat lines in every groove from the backbeat onward come from.",
       "hints": [
         "Bounce, don't push. The finger falls and rebounds; it does not press eight separate times.",
         "Missing notes usually means the wrist has tensed up. Shake the hand out and start again rather than gripping harder.",
@@ -574,7 +574,7 @@
       "bars": 4,
       "prereq": ["eighths-strong-hand"],
       "summary": "The same eight notes on the weak hand's hi-hat.",
-      "description": "This is the hi-hat line of a rock groove with everything else stripped away, and it lives on the weak hand for the rest of the curriculum. Getting it even now means Stage 2 is only about the other hand.",
+      "description": "This is the hi-hat line of a rock groove with everything else stripped away, and it lives on the weak hand for the rest of the curriculum. Getting it even now means the backbeat is only about the other hand.",
       "hints": [
         "Weak hand alone. The strong hand stays off the pads entirely.",
         "Let the hand run like a metronome — it should feel like one continuous motion, not eight decisions.",
@@ -615,7 +615,7 @@
       "bars": 4,
       "prereq": [],
       "summary": "One bar each of the stage: quarters, alternating 8ths, one-hand 8ths, and 8ths through a rest.",
-      "description": "Four bars, four different patterns, no repeats. Practising one pattern until it is smooth feels productive and holds up badly; switching between patterns feels worse and holds up far better. This is where the stage is actually passed — if you can play it clean, Stage 2 is yours.",
+      "description": "Four bars, four different patterns, no repeats. Practising one pattern until it is smooth feels productive and holds up badly; switching between patterns feels worse and holds up far better. This is where the stage is actually passed — if you can play it clean, the backbeat is yours.",
       "hints": [
         "Read one bar ahead. The pattern changes at every bar line, so the note you are playing is never the one you should be looking at.",
         "The hands change job three times: strong, both, weak, weak. Know which hand starts each bar before you press Play.",
@@ -635,7 +635,7 @@
       "bars": 4,
       "prereq": ["alternating-quarters"],
       "summary": "Kick on 1 and 3, snare on 2 and 4 — the shape under most songs you know.",
-      "description": "Two voices and no hi-hat: the skeleton of nearly every rock and pop groove ever recorded. Nothing sounds at the same time as anything else, so this is Stage 1's alternation with the pads renamed — but 2 and 4 are now the loud ones, and that is what makes it a groove instead of an exercise.",
+      "description": "Two voices and no hi-hat: the skeleton of nearly every rock and pop groove ever recorded. Nothing sounds at the same time as anything else, so this is the alternation from Pulse with the pads renamed — but 2 and 4 are now the loud ones, and that is what makes it a groove instead of an exercise.",
       "hints": [
         "Both pads on the strong hand: kick under the index, snare under the middle. The weak hand rests this lesson.",
         "Lean on 2 and 4. The backbeat should be the loudest thing in the bar — that is where the song is.",
@@ -757,7 +757,7 @@
       "bars": 4,
       "prereq": ["rock-beat-quarter-hats", "eighths-weak-hand"],
       "summary": "The basic rock beat: 8th hats, kick on 1 and 3, snare on 2 and 4.",
-      "description": "The groove behind more records than any other. Only one thing changed from the quarter-hat version: the hat hand now runs in 8ths, twice the speed of everything else. You already played that hat line on its own in Stage 1 — this is where it gets a groove underneath it.",
+      "description": "The groove behind more records than any other. Only one thing changed from the quarter-hat version: the hat hand now runs in 8ths, twice the speed of everything else. You already played that hat line on its own back in Pulse — this is where it gets a groove underneath it.",
       "hints": [
         "Three voices, three fingers, fixed positions: hat on the weak hand, kick and snare on the strong.",
         "Keep the hat hand running continuously and land the other voices inside it. Do not start it and stop it.",

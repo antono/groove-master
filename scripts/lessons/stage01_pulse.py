@@ -246,8 +246,8 @@ STAGE = stage(
                     'the "and"s.',
                     description=(
                         "The same trade, twice as often. This is the single stroke "
-                        "roll — the first rudiment, and the one everything in Stage "
-                        "4 is built on. The bass still plays quarter notes, so the "
+                        "roll — the first rudiment, and the one everything in "
+                        "Sticking is built on. The bass still plays quarter notes, so the "
                         "numbers are always underneath you and only the \"and\"s "
                         "are yours alone."
                     ),
@@ -315,7 +315,7 @@ STAGE = stage(
                         "The same eight notes as the alternating lesson, but one "
                         "hand plays all of them. Two hands sharing 8ths is easy; "
                         "one hand keeping them even is not, and this is where the "
-                        "hi-hat lines in every groove from Stage 2 onward come from."
+                        "hi-hat lines in every groove from the backbeat onward come from."
                     ),
                     hints=[
                         "Bounce, don't push. The finger falls and rebounds; it does "
@@ -339,7 +339,7 @@ STAGE = stage(
                     description=(
                         "This is the hi-hat line of a rock groove with everything "
                         "else stripped away, and it lives on the weak hand for the "
-                        "rest of the curriculum. Getting it even now means Stage 2 "
+                        "rest of the curriculum. Getting it even now means the backbeat "
                         "is only about the other hand."
                     ),
                     hints=[
@@ -399,7 +399,7 @@ STAGE = stage(
             "pattern until it is smooth feels productive and holds up badly; "
             "switching between patterns feels worse and holds up far better. This "
             "is where the stage is actually passed — if you can play it clean, "
-            "Stage 2 is yours."
+            "the backbeat is yours."
         ),
         hints=[
             "Read one bar ahead. The pattern changes at every bar line, so the "

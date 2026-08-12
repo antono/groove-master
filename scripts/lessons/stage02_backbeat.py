@@ -36,7 +36,7 @@ def trading_three_voices(bars=4):
     """Kick, snare, hat rotating through the 8ths. Nothing ever stacks.
 
     Three voices in a bar with no two of them ever sounding together — a first
-    taste of the linear drumming in Stage 9, and the clearest possible proof
+    taste of linear drumming, and the clearest possible proof
     that "three voices" and "three at once" are different problems.
     """
     rotation = [KICK, SNARE, CLOSED_HH]
@@ -153,8 +153,8 @@ STAGE = stage(
                     description=(
                         "Two voices and no hi-hat: the skeleton of nearly every "
                         "rock and pop groove ever recorded. Nothing sounds at the "
-                        "same time as anything else, so this is Stage 1's "
-                        "alternation with the pads renamed — but 2 and 4 are now "
+                        "same time as anything else, so this is the alternation "
+                        "from Pulse with the pads renamed — but 2 and 4 are now "
                         "the loud ones, and that is what makes it a groove instead "
                         "of an exercise."
                     ),
@@ -342,7 +342,7 @@ STAGE = stage(
                         "The groove behind more records than any other. Only one "
                         "thing changed from the quarter-hat version: the hat hand "
                         "now runs in 8ths, twice the speed of everything else. You "
-                        "already played that hat line on its own in Stage 1 — this "
+                        "already played that hat line on its own back in Pulse — this "
                         "is where it gets a groove underneath it."
                     ),
                     hints=[
