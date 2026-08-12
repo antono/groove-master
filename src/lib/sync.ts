@@ -1,16 +1,22 @@
 // Offline-first sync between the device and Supabase.
 //
-// The local stores (localStorage progress + IndexedDB runs) stay the source of
-// truth; this reconciles them with the cloud in the background. There is no
-// separate outbox to keep consistent — the "pending" set is derived: progress is
-// re-merged from localStorage each run, and a run is pending iff its
-// `remoteSynced` flag is false. Reconcile is single-flight and best-effort: any
-// failure leaves local state untouched and the pending set intact for next time.
+// The local stores stay the source of truth; this reconciles them with the cloud
+// in the background. Reconcile is single-flight and best-effort.
 //
-// Merge rules (design.md Decision 6):
-//   progress — max ceiling, union of unlocks, tier follows the higher ceiling
-//   stats    — union by uuid, append-only, never updated
-// Both are idempotent, so re-running changes nothing once converged.
+// Sync-coverage rule: every dataset the app persists locally has a routine in the
+// registry below, each with a merge strategy and a pull-back decision. Adding a
+// locally-persisted dataset means adding its routine here.
+//
+//   dataset   local store        merge                    pull-back?
+//   --------  -----------------  -----------------------  ----------
+//   progress  localStorage       max ceiling, union       yes
+//   stats     IndexedDB          append-only, dedup uuid  yes
+//   ratings   localStorage       last-write-wins @updated yes
+//   (controller config — a separate branch adds the next routine)
+//
+// All three merges are idempotent, so re-running changes nothing once converged.
+// The routines run fault-isolated (Promise.allSettled): one failing — e.g. a
+// table not yet provisioned — never aborts or hides the others.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { authState, syncState } from "./auth.svelte";
@@ -27,6 +33,12 @@ import {
   unsyncedSessions,
   type SessionStat,
 } from "./stats";
+import {
+  applyRemoteRatings,
+  markRatingsSynced,
+  readRatings,
+  type RatingValue,
+} from "./quote-store";
 
 const PERIODIC_MS = 60_000;
 
@@ -78,14 +90,30 @@ export async function reconcile(): Promise<void> {
   running = true;
   syncState.status = "syncing";
   try {
-    await syncProgress(supabase, user.id);
-    await syncStats(supabase, user.id);
-    syncState.status = "idle";
+    // Each dataset syncs independently: one failing (e.g. a table not yet
+    // provisioned, a transient error, a permission denial) must neither abort nor
+    // hide the others, and the ones that succeed keep their results. Concurrent
+    // is safe — disjoint tables/stores, one shared client that multiplexes.
+    const routines: Array<[string, Promise<void>]> = [
+      ["progress", syncProgress(supabase, user.id)],
+      ["stats", syncStats(supabase, user.id)],
+      ["ratings", syncRatings(supabase, user.id)],
+    ];
+    const results = await Promise.allSettled(routines.map(([, p]) => p));
+    const failed = results
+      .map((r, i) =>
+        r.status === "rejected" ? [routines[i][0], r.reason] : null,
+      )
+      .filter((x): x is [string, unknown] => x !== null);
+
+    if (failed.length > 0) {
+      for (const [name, reason] of failed)
+        console.warn(`[sync] ${name} failed`, reason);
+      syncState.status = "error";
+    } else {
+      syncState.status = "idle";
+    }
     syncState.lastSyncedAt = Date.now();
-  } catch (err) {
-    // Offline, transient error, or permission denied — keep local state and retry later.
-    console.warn("[sync] reconcile failed", err);
-    syncState.status = "error";
   } finally {
     running = false;
     await refreshPending();
@@ -207,6 +235,51 @@ async function syncStats(
   }
   for (const p of toPush) if (p.uuid) syncedNow.add(p.uuid);
   await markSynced(syncedNow);
+}
+
+async function syncRatings(
+  supabase: SupabaseClient,
+  userId: string,
+): Promise<void> {
+  const { data, error } = await supabase
+    .from("quote_ratings")
+    .select("quote_id, value, updated_at");
+  if (error) throw error;
+
+  // Remote ratings keyed by quote id, with updated_at as the LWW clock.
+  const remote = new Map<string, { value: RatingValue; at: number }>();
+  for (const r of data ?? []) {
+    remote.set(r.quote_id as string, {
+      value: r.value as RatingValue,
+      at: Date.parse(r.updated_at as string),
+    });
+  }
+
+  // Pull: any remote value at least as new as the local one wins locally.
+  applyRemoteRatings([...remote.entries()].map(([id, r]) => ({ id, ...r })));
+
+  // Push: local ratings the cloud is missing or that are strictly newer.
+  // First sign-in adoption is the same path — local ratings are all "newer"
+  // than a cloud that has none. Preserve each local `at` as updated_at so the
+  // LWW clock survives the round-trip and the merge stays idempotent.
+  const local = readRatings();
+  const toPush = Object.entries(local).filter(([id, r]) => {
+    const rem = remote.get(id);
+    return !rem || r.at > rem.at;
+  });
+  if (toPush.length > 0) {
+    const rows = toPush.map(([id, r]) => ({
+      user_id: userId,
+      quote_id: id,
+      value: r.value,
+      updated_at: new Date(r.at).toISOString(),
+    }));
+    const { error: upErr } = await supabase
+      .from("quote_ratings")
+      .upsert(rows, { onConflict: "user_id,quote_id" });
+    if (upErr) throw upErr;
+    markRatingsSynced(toPush.map(([id]) => id));
+  }
 }
 
 async function refreshPending(): Promise<void> {
