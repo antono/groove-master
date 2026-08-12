@@ -41,6 +41,42 @@
 	</div>
 </section>
 
+<section class="how">
+	<h2>How it works</h2>
+	<ol class="steps">
+		<li>
+			<span class="step-n">1</span>
+			<div>
+				<h3>Bring your kit</h3>
+				<p>
+					Connect a MIDI drum controller, or just tap the on-screen pads — no
+					hardware required to start.
+				</p>
+			</div>
+		</li>
+		<li>
+			<span class="step-n">2</span>
+			<div>
+				<h3>Play the highway</h3>
+				<p>
+					Pick a lesson and a note highway scrolls in time with a backing track,
+					showing exactly what to hit and when.
+				</p>
+			</div>
+		</li>
+		<li>
+			<span class="step-n">3</span>
+			<div>
+				<h3>Level up</h3>
+				<p>
+					Every run is scored on timing and accuracy. Clean runs raise the tempo
+					and unlock the next lesson, and your stats track the streak.
+				</p>
+			</div>
+		</li>
+	</ol>
+</section>
+
 <section class="story">
 	<h2>Why this exists</h2>
 	<p>
@@ -128,6 +164,50 @@
 	.btn.primary:hover {
 		background: #f6cd5e;
 		border-color: #f6cd5e;
+	}
+
+	.how {
+		max-width: 40rem;
+		margin: 0 auto;
+		padding-bottom: 1rem;
+	}
+
+	.steps {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	.steps li {
+		display: flex;
+		align-items: flex-start;
+		gap: 1rem;
+	}
+
+	.step-n {
+		flex: none;
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		background: var(--gold);
+		color: #1a1505;
+		font-weight: 800;
+		font-family: var(--font-mono);
+	}
+
+	.steps h3 {
+		margin: 0.1rem 0 0.35rem;
+		font-size: 1.05rem;
+	}
+
+	.steps p {
+		margin: 0;
+		color: var(--text-muted);
 	}
 
 	.story {
