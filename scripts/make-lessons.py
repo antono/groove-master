@@ -58,7 +58,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from lessons import CURRICULUM  # noqa: E402
+from lessons import CURRICULUM, TIERS  # noqa: E402
 from lessons.grids import close_on_downbeat, guide_hats  # noqa: E402
 from lessons.midi import (  # noqa: E402
     CLOSED_HH,
@@ -167,6 +167,12 @@ def check(entries):
     dupes = {s for s in slugs if slugs.count(s) > 1}
     if dupes:
         raise SystemExit(f"duplicate lesson slugs: {sorted(dupes)}")
+    # `tier` and `stage` name the catalogue's navigation routes
+    # (/lessons/tier/…, /lessons/stage/…); a lesson at /lessons/<slug> must
+    # never be able to shadow them.
+    reserved = {"tier", "stage"} & set(slugs)
+    if reserved:
+        raise SystemExit(f"reserved lesson slugs: {sorted(reserved)}")
     known = set(slugs)
     for _stage, _mod, entry, number in entries:
         missing = [p for p in entry.get("prereq", []) if p not in known]
@@ -255,7 +261,7 @@ def main():
     ]
 
     with open(os.path.join(OUT, "manifest.json"), "w") as f:
-        f.write(render({"stages": stages, "lessons": lessons}) + "\n")
+        f.write(render({"tiers": TIERS, "stages": stages, "lessons": lessons}) + "\n")
 
     planned = sum(1 for _s, _m, e, _n in entries if e.get("planned"))
     print(f"wrote {len(lessons)} lesson(s) ({planned} planned) to {OUT}")
