@@ -45,7 +45,7 @@
 				{@const locked = roll.total === 0}
 				<article class="stage" class:locked>
 					<div class="head">
-						<span class="num">Stage {stage.number}</span>
+						<span class="num">Stage {stage.tierNumber}</span>
 						{#if locked}
 							<h2>{stage.title}</h2>
 						{:else}

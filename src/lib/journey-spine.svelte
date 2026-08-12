@@ -64,12 +64,12 @@
 							<span class="dot" aria-hidden="true"></span>
 							{#if slocked}
 								<span class="label"
-									><span class="num">Stage {stage.number}</span>{stage.title}</span
+									><span class="num">Stage {stage.tierNumber}</span>{stage.title}</span
 								>
 								<span class="tag">soon</span>
 							{:else}
 								<a class="label" href="{base}/lessons/stage/{stage.slug}"
-									><span class="num">Stage {stage.number}</span>{stage.title}</a
+									><span class="num">Stage {stage.tierNumber}</span>{stage.title}</a
 								>
 								<span class="count">{sr.cleared}/{sr.total}</span>
 							{/if}

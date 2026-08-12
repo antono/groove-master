@@ -145,20 +145,41 @@ def build_lesson(lesson, out_dir, rel_dir):
     return f"{rel_dir}/{lesson['slug']}.mid"
 
 
-def walk():
+def tier_local_numbers():
+    """Map each stage's global number to its position within its own tier.
+
+    Stages are numbered from 1 inside each tier — Foundations reads Stage 1, 2,
+    Vocabulary starts again at Stage 1 — rather than straight through the whole
+    curriculum, because in the drill-down catalogue a student is always inside a
+    tier and a global "Stage 3 · Subdivision" reads oddly. Position is taken over
+    the stages that actually exist, so inserting an earlier stage shifts the ones
+    after it — the same positional rule the lesson numbers already follow.
+    """
+    tier_of = {sn: t["slug"] for t in TIERS for sn in t["stages"]}
+    counters, local = {}, {}
+    for stage in CURRICULUM:
+        slug = tier_of.get(stage["number"])
+        counters[slug] = counters.get(slug, 0) + 1
+        local[stage["number"]] = counters[slug]
+    return local
+
+
+def walk(local):
     """Yield every declared slot in curriculum order, numbered.
 
     A stage's lessons are numbered straight through it — modules are headings,
-    not numbers — so a student says "2.4", never "2.2.1".
+    not numbers — so a student says "1.4", never "1.2.1". The stage part is
+    tier-local (see `tier_local_numbers`).
     """
     for stage in CURRICULUM:
         position = 0
+        num = local[stage["number"]]
         for mod in stage["modules"]:
             for entry in mod["lessons"]:
                 position += 1
-                yield stage, mod, entry, f"{stage['number']}.{position}"
+                yield stage, mod, entry, f"{num}.{position}"
         if stage.get("closing"):
-            yield stage, None, stage["closing"], f"{stage['number']}.◆"
+            yield stage, None, stage["closing"], f"{num}.◆"
 
 
 def check(entries):
@@ -181,7 +202,8 @@ def check(entries):
 
 
 def main():
-    entries = list(walk())
+    local = tier_local_numbers()
+    entries = list(walk(local))
     check(entries)
 
     # A stale MIDI from a renamed lesson would keep being served, so the tree is
@@ -225,6 +247,10 @@ def main():
         {
             "slug": stage["slug"],
             "number": stage["number"],
+            # Tier-local position (Stage 1, 2 … within each tier) — what the
+            # catalogue displays. `number` stays the global one, used to match a
+            # stage to its tier and to name its MIDI directory.
+            "tierNumber": local[stage["number"]],
             "title": stage["title"],
             "goal": stage["goal"],
             "modules": [

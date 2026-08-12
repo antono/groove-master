@@ -135,7 +135,11 @@ genuinely hard, and it is the rung that carries a student into the next module
 instead of leaving them at "well, I can do it slowly."
 
 Modules are a catalogue heading, not a number: numbering stays two levels and
-runs straight through the stage (`2.1` … `2.9`), so nobody has to say "2.2.1".
+runs straight through the stage (`1.1` … `1.9`), so nobody has to say "1.2.1".
+Stages themselves are numbered **within their tier** — every tier restarts at
+Stage 1 — because in the drill-down catalogue a student is always inside a tier,
+and a global "Stage 3 · Subdivision" reads oddly where "Vocabulary · Stage 1"
+does not. The stage part of a lesson number is therefore tier-local too.
 
 The lesson-by-lesson index is [`LESSONS.md`](../LESSONS.md).
 

@@ -50,13 +50,19 @@ its stage file.
 ## The model
 
 ```
-Stage    a phase of the journey, with a stated goal
- Module  one technique — always exactly three lessons
-  plain    the technique alone, nothing else sounding
-  core     the technique in its normal musical form
-  stretch  the technique pushed to its hardest useful variation
- Checkpoint  the stage's closing lesson (optional, one per stage)
+Tier     a phase of the journey, with a question it answers   "Foundations"
+ Stage   a chapter within a tier, with a stated goal
+  Module  one technique — always exactly three lessons
+   plain    the technique alone, nothing else sounding
+   core     the technique in its normal musical form
+   stretch  the technique pushed to its hardest useful variation
+  Checkpoint  the stage's closing lesson (optional, one per stage)
 ```
+
+Tiers are declared in `scripts/lessons/__init__.py` (`TIERS`) — a slug, the
+question a student can feel, and the global stage numbers the tier owns — and
+emitted to the manifest so the catalogue can render the road ahead, including
+tiers whose stages are not written yet.
 
 `module()` **rejects** anything that is not exactly `plain, core, stretch` in
 that order. That is deliberate: a module missing a tier is a module that has not
@@ -67,7 +73,12 @@ Currently: 4 stages, 21 playable lessons, 17 planned slots.
 ## Ids are permanent
 
 A lesson's **id is its slug** (`kick-quarters`). The displayed `2.4` is derived
-from position at build time and lives only in the manifest.
+from position at build time and lives only in the manifest. Stages are numbered
+**within their tier** — each tier restarts at Stage 1 — so the lesson number's
+stage part is tier-local (`1.4` is the fourth lesson of the tier's first stage),
+while a stage keeps a stable global `number` used only to map it to its tier and
+name its MIDI directory. Inserting a stage shifts the display numbers after it
+in that tier; slugs never move, so history and tempo ceilings are untouched.
 
 This is the one rule with consequences outside the build. A student's practice
 history and their earned tempo ceiling are both keyed by slug in browser

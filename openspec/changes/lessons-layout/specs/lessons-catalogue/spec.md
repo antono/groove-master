@@ -173,6 +173,30 @@ SHALL treat `tiers` as optional and degrade gracefully if it is absent.
 - **WHEN** the app reads a manifest that has no `tiers` field
 - **THEN** it still renders the catalogue, grouping stages under a single untitled section rather than failing
 
+### Requirement: Tier-local stage numbering
+
+Stages SHALL be numbered within their tier, each tier restarting at Stage 1, and
+the catalogue SHALL display that tier-local number. The stage part of a lesson's
+displayed number SHALL be tier-local to match. A stage SHALL retain a stable
+global identifier used only to map it to its tier and name its files; changing
+the display numbering SHALL NOT change any lesson slug or stored history.
+
+#### Scenario: Each tier restarts at Stage 1
+
+- **WHEN** a tier's stages are shown
+- **THEN** the first stage of every tier is displayed as Stage 1, the next as Stage 2, and so on
+- **AND** a stage's displayed number counts only the stages present in its own tier
+
+#### Scenario: Lesson numbers follow the tier-local stage number
+
+- **WHEN** a lesson card is shown
+- **THEN** the stage part of its number matches the tier-local number of its stage
+
+#### Scenario: Renumbering does not touch identity
+
+- **WHEN** the display numbering changes
+- **THEN** no lesson slug changes and no practice history or remembered tempo is affected
+
 ### Requirement: Reserved navigation slugs
 
 The lesson generator SHALL reject `tier` and `stage` as lesson slugs, so the

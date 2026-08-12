@@ -113,6 +113,16 @@ drumming is supported.
   renumbers the catalogue without orphaning a student's practice history or a
   remembered tempo. Old numeric ids map to slugs via `LEGACY_IDS` in
   `$lib/stats.ts`, applied on read.
+  - **Stages are numbered within their tier** — every tier restarts at Stage 1,
+    so the stage part of a lesson number is tier-local. A stage still carries a
+    stable global `number` (used only to map it to its tier and name its MIDI
+    directory) plus a `tierNumber` the catalogue displays; `make-lessons.py`
+    derives `tierNumber` from the stage's position among its tier's stages.
+  - The four **tiers** (Foundations…Mastery) are declared in
+    `scripts/lessons/__init__.py` (`TIERS`) — slug, orienting question, and the
+    global stage numbers each owns — and emitted to the manifest. `tier` and
+    `stage` are reserved lesson slugs so they can't shadow the catalogue's
+    `/lessons/tier/…` and `/lessons/stage/…` routes.
 - `python3 scripts/make-lessons.py` writes the MIDIs and
   `static/lessons/manifest.json`. It is only a driver: the curriculum lives in
   `scripts/lessons/`, one module per stage (`stage01_pulse.py`, …), each

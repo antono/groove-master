@@ -33,7 +33,10 @@ export type Module = {
 
 export type Stage = {
   slug: string;
+  // Global curriculum number — matches a stage to its tier and names its MIDI
+  // directory. `tierNumber` is what the catalogue shows.
   number: number;
+  tierNumber: number;
   title: string;
   goal: string;
   modules: Module[];

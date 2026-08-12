@@ -133,17 +133,17 @@
 	</li>
 {/snippet}
 
-<PageMeta title="Groove Academy — Stage {stage.number} · {stage.title}" description={stage.goal} />
+<PageMeta title="Groove Academy — Stage {stage.tierNumber} · {stage.title}" description={stage.goal} />
 
 <Breadcrumbs
 	crumbs={[
 		{ label: 'Lessons', href: `${base}/lessons` },
 		...(tier ? [{ label: tier.name, href: `${base}/lessons/tier/${tier.slug}` }] : []),
-		{ label: `Stage ${stage.number} · ${stage.title}` }
+		{ label: `Stage ${stage.tierNumber} · ${stage.title}` }
 	]}
 />
 
-<h1><span class="stage-num">Stage {stage.number}</span>{stage.title}</h1>
+<h1><span class="stage-num">Stage {stage.tierNumber}</span>{stage.title}</h1>
 <p class="goal">{stage.goal}</p>
 
 {#each stage.modules as mod (mod.slug)}

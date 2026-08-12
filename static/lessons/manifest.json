@@ -29,6 +29,7 @@
     {
       "slug": "pulse",
       "number": 1,
+      "tierNumber": 1,
       "title": "Pulse",
       "goal": "A steady internal clock and a strike that lands where you meant it. One voice at a time — nothing ever stacks, so a note that is late can only be your timing.",
       "modules": [
@@ -128,6 +129,7 @@
     {
       "slug": "backbeat",
       "number": 2,
+      "tierNumber": 2,
       "title": "The Backbeat",
       "goal": "Two and three voices, including the first pads that have to fire as one sound. Fingers stay where they are — every difficulty here is coordination, not travel.",
       "modules": [
@@ -227,6 +229,7 @@
     {
       "slug": "subdivision",
       "number": 3,
+      "tierNumber": 1,
       "title": "Subdivision & the Grid",
       "goal": "The 16th grid and the triplet grid, and a note placed anywhere on either.",
       "modules": [
@@ -237,21 +240,21 @@
           "lessons": [
             {
               "id": "hats-16ths-split",
-              "number": "3.1",
+              "number": "1.1",
               "name": "16ths, Split Hands",
               "tier": "plain",
               "planned": true
             },
             {
               "id": "rock-16th-hats",
-              "number": "3.2",
+              "number": "1.2",
               "name": "Rock Beat, 16th Hats",
               "tier": "core",
               "planned": true
             },
             {
               "id": "kick-16th-grid",
-              "number": "3.3",
+              "number": "1.3",
               "name": "Kick on the \"e\" and the \"a\"",
               "tier": "stretch",
               "planned": true
@@ -265,21 +268,21 @@
           "lessons": [
             {
               "id": "triplets-8th",
-              "number": "3.4",
+              "number": "1.4",
               "name": "8th-Note Triplets",
               "tier": "plain",
               "planned": true
             },
             {
               "id": "triplet-groove",
-              "number": "3.5",
+              "number": "1.5",
               "name": "Triplet Groove",
               "tier": "core",
               "planned": true
             },
             {
               "id": "triplets-broken",
-              "number": "3.6",
+              "number": "1.6",
               "name": "Broken Triplets",
               "tier": "stretch",
               "planned": true
@@ -293,21 +296,21 @@
           "lessons": [
             {
               "id": "shuffle-hats",
-              "number": "3.7",
+              "number": "1.7",
               "name": "Shuffle Hats",
               "tier": "plain",
               "planned": true
             },
             {
               "id": "shuffle-groove",
-              "number": "3.8",
+              "number": "1.8",
               "name": "The Shuffle",
               "tier": "core",
               "planned": true
             },
             {
               "id": "half-time-shuffle",
-              "number": "3.9",
+              "number": "1.9",
               "name": "Half-Time Shuffle",
               "tier": "stretch",
               "planned": true
@@ -320,6 +323,7 @@
     {
       "slug": "sticking",
       "number": 4,
+      "tierNumber": 2,
       "title": "Sticking",
       "goal": "Rudiments, then rudiments inside a groove. Which hand plays a note starts to matter as much as when.",
       "modules": [
@@ -330,21 +334,21 @@
           "lessons": [
             {
               "id": "singles-16ths",
-              "number": "4.1",
+              "number": "2.1",
               "name": "Single Strokes in 16ths",
               "tier": "plain",
               "planned": true
             },
             {
               "id": "doubles-8ths",
-              "number": "4.2",
+              "number": "2.2",
               "name": "Double Strokes",
               "tier": "core",
               "planned": true
             },
             {
               "id": "doubles-16ths",
-              "number": "4.3",
+              "number": "2.3",
               "name": "Double Strokes in 16ths",
               "tier": "stretch",
               "planned": true
@@ -358,21 +362,21 @@
           "lessons": [
             {
               "id": "paradiddle-single",
-              "number": "4.4",
+              "number": "2.4",
               "name": "Single Paradiddle",
               "tier": "plain",
               "planned": false
             },
             {
               "id": "paradiddle-groove",
-              "number": "4.5",
+              "number": "2.5",
               "name": "Paradiddle Groove",
               "tier": "core",
               "planned": false
             },
             {
               "id": "paradiddle-inversions",
-              "number": "4.6",
+              "number": "2.6",
               "name": "The Four Inversions",
               "tier": "stretch",
               "planned": true
@@ -386,21 +390,21 @@
           "lessons": [
             {
               "id": "paradiddle-double",
-              "number": "4.7",
+              "number": "2.7",
               "name": "Double Paradiddle",
               "tier": "plain",
               "planned": true
             },
             {
               "id": "paradiddle-diddle",
-              "number": "4.8",
+              "number": "2.8",
               "name": "Paradiddle-diddle",
               "tier": "core",
               "planned": true
             },
             {
               "id": "six-stroke-roll",
-              "number": "4.9",
+              "number": "2.9",
               "name": "Six Stroke Roll",
               "tier": "stretch",
               "planned": true
@@ -827,7 +831,7 @@
     },
     {
       "id": "paradiddle-single",
-      "number": "4.4",
+      "number": "2.4",
       "name": "Single Paradiddle",
       "file": "stage-04-sticking/paradiddle-single.mid",
       "stage": "sticking",
@@ -850,7 +854,7 @@
     },
     {
       "id": "paradiddle-groove",
-      "number": "4.5",
+      "number": "2.5",
       "name": "Paradiddle Groove",
       "file": "stage-04-sticking/paradiddle-groove.mid",
       "stage": "sticking",
