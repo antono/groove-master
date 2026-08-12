@@ -166,10 +166,18 @@
 		border-color: #f6cd5e;
 	}
 
-	.how {
+	.how,
+	.story {
 		max-width: 40rem;
 		margin: 0 auto;
-		padding-bottom: 1rem;
+		padding: 1.75rem 0;
+	}
+
+	.how h2,
+	.story h2 {
+		font-size: clamp(1.5rem, 4vw, 2rem);
+		letter-spacing: -0.02em;
+		margin: 0 0 1.5rem;
 	}
 
 	.steps {
@@ -211,9 +219,7 @@
 	}
 
 	.story {
-		max-width: 40rem;
-		margin: 0 auto;
-		padding-bottom: 3rem;
+		padding-bottom: 3.5rem;
 	}
 
 	.story p {
