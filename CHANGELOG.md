@@ -84,8 +84,9 @@ a bare "Stage N" ambiguous.
   reassignable from its own panel, so notes are always captured. Profile
   schematics are geometry-only SVGs under `static/kits/`, inlined so drums can
   be marked by id — first-party assets exclusively.
-- `scripts/check-kits.py` fails the build when a profile and its schematic drift
-  apart in either direction; it runs from `pnpm check` and `pnpm build`.
+- `scripts/check-kits.py` fails `pnpm check` when a profile and its schematic
+  drift apart in either direction. Not wired into `pnpm build`: `.vercelignore`
+  excludes `scripts/`, so a build gated on it cannot run on the deploy host.
 - Device identity folds in the manufacturer and strips zero-width and bidi
   control characters — the MD-90 appends U+202D to its maker string.
 - A `device_layouts` table for opt-in sharing of a layout we have no profile

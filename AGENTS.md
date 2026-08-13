@@ -155,9 +155,12 @@ reassignable from its own front panel.
 - The preview **inlines** that SVG to mark drums by id, so only first-party files
   under `static/kits/` are ever loaded this way. A submitted layout never
   becomes one.
-- `scripts/check-kits.py` fails the build if a pad id has no drum in the
-  schematic, or a drum has no pad. It runs from `pnpm check` and `pnpm build` —
-  drift there breaks the wizard and the lesson page at once, and silently.
+- `scripts/check-kits.py` fails **`pnpm check`** if a pad id has no drum in the
+  schematic, or a drum has no pad — drift there breaks the wizard and the lesson
+  page at once, and silently. It is deliberately **not** in `pnpm build`:
+  `.vercelignore` excludes `scripts/`, so a build gated on it dies on the deploy
+  host with a missing-file error. Authoring checks belong where authoring
+  happens.
 
 ### Sharing a layout
 
