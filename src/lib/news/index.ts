@@ -16,6 +16,7 @@ import type { Component } from "svelte";
 import OnAir from "./2026-08-07-groove-academy-on-air.svelte";
 import LessonsThatFinish from "./2026-08-08-lessons-that-finish.svelte";
 import PracticeOnEveryDevice from "./2026-08-11-practice-on-every-device.svelte";
+import BringYourKit from "./2026-08-13-bring-your-kit.svelte";
 
 /** Every post body takes the Mastodon URL, so the handle is written once. */
 export type NewsBody = Component<{ mastodon: string }>;
@@ -34,6 +35,16 @@ export type NewsEntry = {
 export const MASTODON = "https://mastodon.social/@groove_academy";
 
 export const NEWS: NewsEntry[] = [
+  {
+    slug: "2026-08-13-bring-your-kit",
+    date: "2026-08-13",
+    title: "Bring your kit",
+    summary:
+      "Electronic drum kits are set up as kits now, pedals and all, with your " +
+      "own instrument drawn beside the lesson — and the catalogue opens on " +
+      "four tiers instead of one long list.",
+    body: BringYourKit,
+  },
   {
     slug: "2026-08-11-practice-on-every-device",
     date: "2026-08-11",

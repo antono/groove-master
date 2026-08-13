@@ -7,6 +7,98 @@ only shows up in how the project is built.
 Announcements for each release live in [`/news`](src/lib/news/); this file is
 the complete list, that one is the readable half.
 
+## v0.0.4 — 13 August 2026
+
+The app stopped assuming what you play it on. Nine commits.
+
+### User-facing
+
+**Electronic drum kits.** Until now a controller had to be a rectangle of pads;
+an e-drum kit could only be set up as a grid with most of its cells empty, in an
+order you had to invent. There is now a second setup path that shows a kit as a
+kit — its drums where they actually sit on the unit — and walks them one at a
+time. A **Millenium MD-90** profile ships with it, matched by its maker: the
+module announces itself as `e-drum` by `Medeli`, which is what it is, so the
+wizard offers the layout rather than asserting the model.
+
+**Your feet, discovered rather than assumed.** A pedals step captures the bass
+pedal, then works out how your hi-hat is actually wired from three gestures —
+some kits send one note and let the pedal decide, some send two different notes,
+some have no pedal at all. Every pedal is skippable on its own, and what you
+skipped is stated, so a kick that will never sound is something you learn before
+a lesson rather than during one.
+
+**Lessons know what your kit can't play.** If a lesson needs a drum your setup
+cannot produce, the page says so before the run instead of letting those notes
+surface as misses nobody can explain.
+
+**A controller you have already set up is checked, not re-mapped.** Reconnecting
+a known device goes straight to a screen where you hit pads and it names both the
+pad and the drum it plays, and sounds it. Pressing all sixteen again to arrive
+back where you started was never setup.
+
+**Your instrument sits beside the lesson.** The pattern chart already said
+_when_; the picture of your own controller now says _where_ — the drums a lesson
+uses named in the same colours the chart gives them, and lighting as you hit
+them. During a run it appears under the highway when there is room for it.
+
+**The catalogue is a drill-down.** `/lessons` opens on four tiers, each with the
+question it answers; open a tier for its stages and a stage for its lessons.
+Stages are numbered **within their tier**, so you read "Vocabulary · Stage 1"
+rather than a running total, and a **Continue** button goes straight to where you
+left off.
+
+**Quote ratings follow you between devices**, and a failure in one part of sync
+can no longer take the rest down with it — progress, runs and ratings now
+reconcile independently, so one dataset erroring cannot abort or hide the others.
+
+**A "How it works" section on the landing page**, with larger section headings
+and even spacing.
+
+**Lesson text names stages instead of numbering them** — "the alternation from
+Pulse" rather than "Stage 1's alternation" — because tier-local numbering makes
+a bare "Stage N" ambiguous.
+
+**Fixes**
+
+- A hi-hat pedal at rest reads as _open_, which is right for a drummer and
+  useless here: the lessons are overwhelmingly closed hats, so every hat you hit
+  scored nothing unless you held the footswitch down for the whole lesson. Worse,
+  it failed silently — the controller picture lit either way, so the hits looked
+  like they landed. A lesson that uses one hi-hat voice now pins the hat to it;
+  only the two lessons using both leave the pedal in charge.
+
+### Internal
+
+- **A `Controller` abstraction** (`$lib/controller.svelte.ts`): one object for
+  the student's instrument and a facade over what its inputs mean. `handle()`
+  turns a MIDI message into a hit with the GM note already resolved, a pedal, a
+  transport press, an unmapped note, or nothing — replacing a note map, a
+  transport check and a geometry triple that each page assembled for itself.
+  Grid and kit share one internal shape, so `kind` is consulted when building a
+  controller and essentially nowhere afterwards.
+- `$lib/controller-preview.svelte` becomes the only thing that draws pads, in
+  three modes over geometry taken from the controller, absorbing and retiring
+  `pad-grid.svelte` and `controller-map.svelte`.
+- Kit profiles describe a model, never a MIDI note: a module's pads are
+  reassignable from its own panel, so notes are always captured. Profile
+  schematics are geometry-only SVGs under `static/kits/`, inlined so drums can
+  be marked by id — first-party assets exclusively.
+- `scripts/check-kits.py` fails the build when a profile and its schematic drift
+  apart in either direction; it runs from `pnpm check` and `pnpm build`.
+- Device identity folds in the manufacturer and strips zero-width and bidi
+  control characters — the MD-90 appends U+202D to its maker string.
+- A `device_layouts` table for opt-in sharing of a layout we have no profile
+  for: insert-only, with no select policy for anyone, so it is a write-only
+  mailbox rather than a catalogue the app reads back.
+- `/debug/settings` refuses a drum kit rather than flattening it into the 4×4
+  grid it hard-codes.
+- Saved controller configs from before this release load unchanged and are never
+  rewritten on read; the `notes`/`soundNotes` pair is still written for
+  consumers that predate the class, so nothing needed migrating.
+- OpenSpec: `edrum-support` change added; `lessons-layout` drafted and completed;
+  `sync-local-data` planned and partly delivered.
+
 ## v0.0.3 — 11 August 2026
 
 Practice stopped being tied to one browser. Ten commits.
