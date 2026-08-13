@@ -42,9 +42,18 @@ kit are both first-class, and which one a student has is a property of their
 - `/stats` — practice history (see **Practice stats** below).
 - `/onboarding` — setup wizard. `/debug/settings` — pad grid, device mapping, kit
   choice.
-  - `/` redirects to `/lessons`. Debug pages (`/debug`, `/debug/settings`,
-    `/debug/levels`) are only linked from the top menu when `localStorage.debug`
-    is set; they stay reachable by URL either way.
+  - `/` redirects to `/lessons`. Debug pages (`/debug`, `/debug/controller`,
+    `/debug/settings`, `/debug/levels`) are only linked from the top menu when
+    `localStorage.debug` is set; they stay reachable by URL either way.
+  - **`/debug/controller`** is the record, where every other view is
+    interpretation: each pad with the note it listens for and the drum it fires,
+    the hi-hat wiring, the transport bindings, plus a **live monitor** showing
+    what `Controller.handle()` makes of each incoming message — the quickest way
+    to tell a wrong mapping from a wrong picture. It exports and imports that
+    record as JSON. **Import always re-targets**, because a mapping is keyed by
+    the MIDI port id and browsers scope that per origin: the same kit is a
+    different id on localhost and in production, so the id inside a file is
+    ignored and you choose the device it lands on.
   - The wizard's last step captures the controller's **Play / Stop buttons**, so a
     lesson can be started and paused from the hardware. Both are optional and
     skippable. Buttons are not always notes — a transport section may send a CC or
