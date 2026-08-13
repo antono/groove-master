@@ -48,6 +48,25 @@ export const OPEN_HAT = 46;
  */
 export const SYNTHETIC_NOTE_BASE = 128;
 
+/**
+ * True when a note is one we have a drum sample for — the range `DRUM_NOTES`
+ * renders (see drums.ts).
+ *
+ * Drum modules are overwhelmingly GM-mapped: a Millenium MD-90 sends 38 for its
+ * snare, 42 for the closed hat, 48/45/43 for its toms. When a kit says which
+ * drum it thinks a pad is, believing it beats any suggestion a profile could
+ * carry — profiles are written from photographs, the module is the instrument.
+ * So an e-drum pad whose captured note lands in this range takes that note as
+ * its sound.
+ *
+ * Deliberately not applied to pad grids: an MPD218's notes are just pad
+ * addresses and mean nothing about drums, which is what DEFAULT_GRID_SOUNDS is
+ * for.
+ */
+export function isDrumNote(note: number): boolean {
+  return note >= 35 && note <= 70;
+}
+
 export type ControllerKind = "grid" | "edrum";
 
 export type Pad = {

@@ -186,12 +186,15 @@ export const KIT_PROFILES: KitProfile[] = [
     match: /\bmedeli\b|\be-?drum\b/i,
     family: "Medeli e-drum module",
     schematic: "/kits/millenium-md-90.svg",
+    // Sounds confirmed against the hardware: this module is GM-mapped and sends
+    // 38 / 42 / 48 / 45 / 43 / 49 / 51 / 36. The toms were guessed wrong here
+    // (47 and 45) until a real unit said otherwise.
     pads: [
       { id: "snare", label: "Snare", role: "snare", sound: 38 },
       { id: "hihat", label: "Hi-hat", role: "hihat", sound: 42 },
       { id: "tom-1", label: "Tom 1", role: "tom", sound: 48 },
-      { id: "tom-2", label: "Tom 2", role: "tom", sound: 47 },
-      { id: "tom-3", label: "Floor tom", role: "tom", sound: 45 },
+      { id: "tom-2", label: "Tom 2", role: "tom", sound: 45 },
+      { id: "tom-3", label: "Floor tom", role: "tom", sound: 43 },
       { id: "crash", label: "Crash", role: "crash", sound: 49 },
       { id: "ride", label: "Ride", role: "ride", sound: 51 },
       {
