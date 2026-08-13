@@ -1,6 +1,13 @@
 { pkgs, config, inputs, ... }:
 
 let
+  # Agent skills live in .agents/skills — the tool-neutral location, so one
+  # skill serves every assistant. OpenCode is told about it in its config;
+  # Claude Code has no such setting (skillsPaths is a plugin-manifest field and
+  # skillsDirs is team-store only), so enterShell mirrors each skill into
+  # .claude/skills, which is the only directory it scans.
+  skillsDir = ".agents/skills";
+
   # Generate Claude Code and OpenCode MCP configs in the store, so their shared
   # server definitions cannot drift. Unlike devenv's Claude module, this leaves
   # the hand-maintained .claude/settings.json untouched.
@@ -27,6 +34,9 @@ let
     flavor = "opencode";
     settings = mcpSettings.settings // {
       "$schema" = "https://opencode.ai/config.json";
+      # Relative, so it resolves against the project root rather than the store
+      # path this file is symlinked from.
+      skills.paths = [ skillsDir ];
     };
   });
 in
@@ -73,8 +83,13 @@ in
     sox
   ];
 
+  # A long session walks the module graph often enough to exhaust V8's default
+  # ~4 GB heap and abort the server mid-work ("Ineffective mark-compacts near
+  # heap limit"). Nothing is leaking that a restart wouldn't also fix — the
+  # ceiling is simply too low for a dev server left running for hours. Raised
+  # for the dev server alone; build and check are short-lived and don't need it.
   scripts.dev = {
-    exec = "pnpm dev --host";
+    exec = "NODE_OPTIONS=--max-old-space-size=8192 pnpm dev --host";
     description = "Start SvelteKit dev server";
   };
 
@@ -115,6 +130,20 @@ in
   enterShell = ''
     ln -sfT ${claudeMcpConfig} "${config.devenv.root}/.mcp.json"
     ln -sfT ${opencodeMcpConfig} "${config.devenv.root}/opencode.json"
+
+    # Mirror ${skillsDir} into .claude/skills — one relative symlink per skill,
+    # dangling ones pruned. A skill added after entering the shell needs a
+    # re-entry to show up in Claude Code; OpenCode reads the directory directly.
+    mkdir -p "${config.devenv.root}/.claude/skills"
+    for skill in "${config.devenv.root}/${skillsDir}"/*/; do
+      [ -d "$skill" ] || continue
+      name=$(basename "$skill")
+      ln -sfn "../../${skillsDir}/$name" "${config.devenv.root}/.claude/skills/$name"
+    done
+    for link in "${config.devenv.root}/.claude/skills"/*; do
+      if [ -L "$link" ] && [ ! -e "$link" ]; then rm -f "$link"; fi
+    done
+
     echo "✦ SvelteKit dev environment ready"
     echo "  dev   – start dev server"
     echo "  build – build for production"
@@ -124,5 +153,5 @@ in
     echo "  audit-samples / repair-samples – drum sample health"
   '';
 
-  processes.dev.exec = "pnpm dev --host";
+  processes.dev.exec = "NODE_OPTIONS=--max-old-space-size=8192 pnpm dev --host";
 }
