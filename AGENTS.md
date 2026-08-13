@@ -432,6 +432,13 @@ and only then commit, push and announce. Never tag, push or toot without asking.
    the post's URL; the news page carries the detail. Link the permalink, not the
    root, so the toot stays accurate after the next release.
 
+**The version number never appears in an announcement.** Not in the toot, not in
+the news post, not in its title or summary. A version tells a drummer nothing —
+"Bring your kit" is the news, "v0.0.4" is bookkeeping — and leading with it
+buries the change behind a number that only means something to whoever cut the
+release. The version is internal: it lives in the annotated tag and in
+`CHANGELOG.md`, which are the release's own record, and nowhere a reader looks.
+
 ### News posts
 
 - One entry per release in `NEWS` in `src/lib/news/index.ts`, newest first, with
