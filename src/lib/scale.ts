@@ -27,6 +27,15 @@ export async function unlockAudio() {
 }
 
 /**
+ * The context these tones play on, so a caller that wants real samples rather
+ * than a scale tone (the wizard's drum-kit path, where hearing your own snare
+ * is the point) can share it instead of opening a second one.
+ */
+export function audioContext(): AudioContext | null {
+  return audio();
+}
+
+/**
  * Play the scale degree for pad `index` within a grid of `total` pads.
  * The scale is stretched/clamped so it always descends across the whole grid.
  */

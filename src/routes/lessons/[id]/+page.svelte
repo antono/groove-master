@@ -7,14 +7,14 @@
 	import { parseMidi, COUNT_IN_BEATS, type ParsedMidi, type BackingTrack, type MidiNote } from '$lib/midi';
 	import { DrumPlayer, drumUrl, warmUrls } from '$lib/drums';
 	import { Sampler, sampleUrl } from '$lib/sampler';
-	import { asBinding, parseControl, sameControl, type TransportBinding } from '$lib/transport-control';
+	import { Controller, type ControllerSummary } from '$lib/controller.svelte';
 	import { dayKey, recordSession } from '$lib/stats';
 	import { queueReconcile } from '$lib/sync';
 	import { lessonFinished, lessonStarted } from '$lib/analytics';
 	import { BPM_STEP, isCleanRun } from '$lib/progress';
 	import PageMeta from '$lib/page-meta.svelte';
 	import LessonChart from '$lib/lesson-chart.svelte';
-	import ControllerMap from '$lib/controller-map.svelte';
+	import ControllerPreview from '$lib/controller-preview.svelte';
 	import QuoteOfTheDay from '$lib/quote-of-the-day.svelte';
 	import { isQuotesOff } from '$lib/quote-store';
 	import { laneColor } from '$lib/drum-colors';
@@ -75,25 +75,19 @@
 	let guide: MidiNote[] = $state([]);
 	let guideCursor = 0;
 
-	// MIDI + the device's saved pad->drum mapping (from the Settings page).
+	// MIDI, plus the student's instrument. Everything the page used to keep about
+	// the device by hand — a note map, a transport binding, a grid size, the drum
+	// each pad triggers, the saved name, the kit — is the Controller's now, and it
+	// is loaded once per device rather than reassembled here.
 	let midiAccess: MIDIAccess | null = $state(null);
 	let inputs: { id: string; name: string | null }[] = $state([]);
 	let selectedId: string | null = $state(null);
 	let currentInput: MIDIInput | null = null;
-	let ctrlMap: Map<number, number> = $state(new Map()); // controller note -> GM drum
-	// Name stored with the device mapping, kept so a finished run can be filed
-	// against a controller even when the port has since gone away.
-	let savedDeviceName: string | null = $state(null);
-	let kit = $state(1);
-	// Play / Stop buttons on the controller, captured by the setup wizard.
-	let transport: TransportBinding = $state({ start: null, stop: null });
+	let controller = $state<Controller | null>(null);
+	/** configured controllers on this machine, so the chooser can name them */
+	let known = $state(new Map<string, ControllerSummary>());
 
-	// The physical shape of the pad grid, plus the drum each pad triggers in that
-	// same order. Only the preview uses it — playing goes through ctrlMap — but it
-	// is what lets the resting page show the pattern *on the student's own device*.
-	let padCols = $state(0);
-	let padRows = $state(0);
-	let padDrums: (number | null)[] = $state([]);
+	const kit = $derived(controller?.kitId ?? 1);
 
 	let lessons: Lesson[] = $state([]);
 	let selected: Lesson | null = $state(null);
@@ -235,9 +229,28 @@
 		...countIn.map((n) => n.note),
 		...guide.map((n) => n.note)
 	]);
-	const hasMapping = $derived(ctrlMap.size > 0);
+	const hasMapping = $derived((controller?.pads.length ?? 0) > 0);
 	// Nothing to draw for a student who has never run the setup wizard.
-	const hasPadLayout = $derived(padCols > 0 && padRows > 0 && padDrums.length > 0);
+	const hasPadLayout = $derived(!!controller && controller.pads.some((p) => p.note != null));
+
+	// Which hi-hat voices this lesson actually asks for. If it is exactly one, the
+	// lesson is not teaching pedal technique — it is teaching the pattern — so the
+	// hat is pinned to that voice and every way of striking it counts. Only a
+	// lesson using both voices leaves the pedal in charge.
+	//
+	// Without this, a kit whose pedal is at rest resolves every hat to *open*,
+	// which is correct for a drummer and useless here: a closed-hat lesson scores
+	// nothing while the preview still lights, so the hits look like they landed.
+	$effect(() => {
+		const c = controller;
+		if (!c) return;
+		const hats = [c.hihat.closed, c.hihat.open].filter((n) => lanes.includes(n));
+		c.hihatPreference = hats.length === 1 ? hats[0] : null;
+	});
+
+	// Drums this lesson calls for that the instrument cannot produce. Said here,
+	// before the run, rather than left to surface as misses nobody can explain.
+	const unplayable = $derived(controller && lanes.length ? controller.missing(lanes) : []);
 
 	// A "session" spans from play until the result screen is dismissed. The highway
 	// stays fullscreen for the whole span — including while the report is shown — so
@@ -266,6 +279,27 @@
 			: LANE_H
 	);
 	const viewLabel = $derived(view[0].toUpperCase() + view.slice(1));
+
+	// The preview during a run takes whatever the highway left, and is dropped when
+	// that is nothing. While playing the highway is a fixed full-viewport field
+	// with the lanes as a band centred in it, so the room is the empty half below
+	// that band — not space in the flow, of which there is none.
+	//
+	// `laneH` above knows nothing about any of this, which is the point: the
+	// highway is sized first and the reference can never squeeze the lesson. In
+	// the full view, defined as filling the viewport, there is never room at all.
+	const runRoom = $derived(Math.max(0, (winH - lanes.length * laneH) / 2) - 28);
+	const runPreview = $derived(
+		view === 'full'
+			? null
+			: runRoom >= 360
+				? 'lg'
+				: runRoom >= 260
+					? 'md'
+					: runRoom >= 180
+						? 'sm'
+						: null
+	);
 
 	// ---- boot / loading -------------------------------------------------
 
@@ -321,6 +355,7 @@
 			midiAccess = await navigator.requestMIDIAccess({ sysex: false });
 			refreshInputs();
 			midiAccess.onstatechange = refreshInputs;
+			known = new Map(Controller.list().map((c) => [c.deviceId, c]));
 			const saved = localStorage.getItem(STORAGE_PREFIX + 'selectedDevice');
 			if (saved && inputs.some((i) => i.id === saved)) selectedId = saved;
 			else if (inputs.length) selectedId = inputs[0].id;
@@ -335,35 +370,7 @@
 	}
 
 	function loadDeviceMapping(deviceId: string) {
-		ctrlMap = new Map();
-		transport = { start: null, stop: null };
-		savedDeviceName = null;
-		padCols = 0;
-		padRows = 0;
-		padDrums = [];
-		try {
-			const raw = localStorage.getItem(STORAGE_PREFIX + deviceId);
-			if (!raw) return;
-			const cfg = JSON.parse(raw);
-			if (typeof cfg.deviceName === 'string') savedDeviceName = cfg.deviceName;
-			transport = asBinding(cfg.transport);
-			if (Array.isArray(cfg.notes) && Array.isArray(cfg.soundNotes)) {
-				const m = new Map<number, number>();
-				cfg.notes.forEach((cn: number, i: number) => m.set(cn, cfg.soundNotes[i]));
-				ctrlMap = m;
-				// Grids written before the wizard stored their shape still map fine;
-				// they just have no layout to draw, so the schematic stays away.
-				if (typeof cfg.cols === 'number' && typeof cfg.rows === 'number') {
-					padCols = cfg.cols;
-					padRows = cfg.rows;
-					padDrums = Array.from(
-						{ length: cfg.cols * cfg.rows },
-						(_, i) => cfg.soundNotes[i] ?? null
-					);
-				}
-			}
-			if (typeof cfg.kit === 'number') kit = cfg.kit;
-		} catch {}
+		controller = Controller.load(deviceId);
 	}
 
 	$effect(() => {
@@ -481,37 +488,21 @@
 		else stop();
 	}
 
-	// Returns true when the message was a transport press and has been consumed.
-	function routeTransport(data: Uint8Array): boolean {
-		if (!transport.start && !transport.stop) return false;
-		const hit = parseControl(data);
-		if (!hit || !hit.pressed) return false;
-		// A pad always plays its drum, even if a stale config also bound it here.
-		if (hit.control.kind === 'note' && ctrlMap.has(hit.control.data1)) return false;
-		if (sameControl(hit.control, transport.start)) {
-			handleTransport('start');
-			return true;
-		}
-		if (sameControl(hit.control, transport.stop)) {
-			handleTransport('stop');
-			return true;
-		}
-		return false;
-	}
-
 	function handleMidi(event: MIDIMessageEvent) {
 		// A hidden tab is deaf: ignore every message so nothing sounds or scores
 		// while the page is in the background (see handleVisibility).
 		if (typeof document !== 'undefined' && document.hidden) return;
-		if (!event.data || event.data.length === 0) return;
-		if (routeTransport(event.data)) return;
+		if (!event.data || !controller) return;
 
-		if (event.data.length < 3) return;
-		const [statusByte, note, velocity] = event.data;
-		if ((statusByte & 0xf0) !== 0x90 || velocity === 0) return;
+		// One call, and the page reacts to meaning rather than to bytes. Note
+		// mapping, hi-hat pedal state and transport matching all happen in there;
+		// by the time a hit arrives its GM note is already unambiguous.
+		const ev = controller.handle(event.data);
+		if (ev.kind === 'transport') return handleTransport(ev.which);
+		// Pedals and unmapped notes fall out here: they never sound and never score.
+		if (ev.kind !== 'hit') return;
 
-		const gm = ctrlMap.get(note);
-		if (gm == null) return; // not a mapped pad
+		const gm = ev.note;
 		player?.play(kit, gm); // the ONLY sound source — the user's own playing
 		flash(gm);
 		// Sample the beat straight from the audio clock at the moment of the hit, so
@@ -888,7 +879,7 @@
 			lesson: selected.id,
 			lessonName: selected.name,
 			bpm,
-			device: inputs.find((i) => i.id === selectedId)?.name ?? savedDeviceName,
+			device: inputs.find((i) => i.id === selectedId)?.name ?? controller?.name ?? null,
 			deviceId: selectedId,
 			total: r.total,
 			hits: r.hits,
@@ -1176,15 +1167,8 @@
 
 {#if parsed && !inSession}
 	<div class="chart-frame" class:with-pads={hasPadLayout}>
-		{#if hasPadLayout}
-			<ControllerMap
-				cols={padCols}
-				rows={padRows}
-				drums={padDrums}
-				{lanes}
-				lit={flashing}
-				{laneName}
-			/>
+		{#if hasPadLayout && controller}
+			<ControllerPreview {controller} mode="map" {lanes} lit={flashing} {laneName} />
 		{/if}
 		<LessonChart
 			notes={parsed.notes}
@@ -1204,6 +1188,15 @@
 			</span>
 		</div>
 	</div>
+{/if}
+
+{#if unplayable.length && !inSession}
+	<p class="cant-play">
+		Your {controller?.kind === 'edrum' ? 'kit' : 'controller'} has no
+		{unplayable.map(laneName).join(' or ')} mapped, so
+		{unplayable.length === 1 ? 'that note' : 'those notes'} can't be hit. The lesson still plays —
+		<a href="{base}/onboarding">set it up</a> if your kit does have one.
+	</p>
 {/if}
 
 {#if selected?.hints?.length && !inSession}
@@ -1300,8 +1293,20 @@
 
 	{#if audioCtx && !hasMapping}
 		<p class="warn">
-			No pad mapping for this device. Set one up on the
-			<a href="{base}/onboarding">Setup</a> page so your hits make sound and get scored.
+			{#if known.size}
+				Nothing set up for this device yet — you have
+				{[...known.values()].map((c) => c.name).join(', ')} configured, but that isn't what's
+				plugged in. Map this one on the <a href="{base}/onboarding">Setup</a> page.
+			{:else}
+				No pad mapping for this device. Set one up on the
+				<a href="{base}/onboarding">Setup</a> page so your hits make sound and get scored.
+			{/if}
+		</p>
+	{:else if controller && hasMapping}
+		<p class="device-line">
+			Playing on <strong>{controller.name || 'your controller'}</strong> ·
+			{controller.pads.filter((p) => p.note != null).length}
+			{controller.kind === 'edrum' ? 'drums' : 'pads'}
 		</p>
 	{/if}
 {/if}
@@ -1359,6 +1364,19 @@
 					{/each}
 				</div>
 			</div>
+		</div>
+	{/if}
+
+	{#if playing && runPreview && hasPadLayout && controller}
+		<div class="run-preview">
+			<ControllerPreview
+				{controller}
+				mode="play"
+				size={runPreview}
+				{lanes}
+				lit={flashing}
+				{laneName}
+			/>
 		</div>
 	{/if}
 
@@ -1500,6 +1518,39 @@
 		color: var(--text-faint);
 	}
 
+	/* A gap between the kit and the lesson, said plainly and once. Not an alarm:
+	   the lesson is still playable and the wording says so. */
+	.cant-play {
+		margin: 0 0 1.25rem;
+		padding: 0.6rem 0.9rem;
+		border: 1px solid var(--gold-dim);
+		border-radius: var(--radius-sm);
+		background: rgba(240, 192, 64, 0.07);
+		color: var(--text-muted);
+		font-size: 0.88rem;
+	}
+
+	.device-line {
+		margin: 0.5rem 0 0;
+		color: var(--text-faint);
+		font-size: 0.82rem;
+	}
+
+	/* Reference, not lesson. The playing highway is a fixed field with the lanes
+	   banded across its middle, so this sits in the empty half below them —
+	   over the field, never displacing it, and absent when there is no room. */
+	.run-preview {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 1.25rem;
+		z-index: 55;
+		display: flex;
+		justify-content: center;
+		pointer-events: none;
+		opacity: 0.9;
+	}
+
 	.hints {
 		margin: 0 0 1.25rem;
 		padding-left: 1.1rem;
@@ -1567,7 +1618,7 @@
 	@media (max-width: 46rem) {
 		/* The controller keeps its place beside the chart on a phone — the two only
 		   make sense read together — so only the gap between them gives way here;
-		   the pads shrink themselves (see controller-map.svelte). */
+		   the pads shrink themselves (see controller-preview.svelte). */
 		.chart-frame.with-pads {
 			column-gap: 0.55rem;
 		}

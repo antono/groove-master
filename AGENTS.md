@@ -1,8 +1,12 @@
 # Groove Academy
 
-A browser-based finger drumming trainer. Play along with interactive lessons to
-build finger drumming skills, all in HTML — no native app required. Only finger
-drumming is supported.
+A browser-based drumming trainer. Play along with interactive lessons to build
+drumming skills, all in HTML — no native app required.
+
+**The curriculum is written for finger drumming**, and that is what every lesson
+teaches. But the instrument is not assumed: a pad grid and an electronic drum
+kit are both first-class, and which one a student has is a property of their
+**Controller** (see below), never a fork in the lessons.
 
 ## Stack
 
@@ -48,6 +52,121 @@ drumming is supported.
     the button emitted (`src/lib/transport-control.ts`) and `MidiHub.onMessage()`
     exposes the raw stream alongside `onNote()`. On `/lessons/[id]`, Start also
     resumes; Stop pauses, and ends the run on a second press.
+  - **The wizard has three paths**, sharing their first two steps and branching
+    once a device is chosen. `matchDevice()` in `$lib/presets.ts` decides between
+    the last two, and the student can override it from the kit step. Past five
+    steps the rail shows dots and names only the step you are on.
+    - `connect · device · test` — a controller this machine already knows. It
+      needs **proving, not re-mapping**: the stored mapping loads and the check
+      names the pad _and_ the drum it plays, and sounds it. Re-map is one button
+      from there and keeps everything but the notes.
+    - `connect · device · grid · map · transport` — a pad grid.
+    - `connect · device · kit · map drums · pedals · test · transport` — a kit.
+  - **Feet are not asked for by hand.** Pads flagged `pedal` are excluded from the
+    drum-capture loop — that loop says "hit the drum lit on the picture", which a
+    foot does not do — and are captured on the pedals step instead. Bass pedal
+    first, then the hi-hat's three gestures. **Each pedal is skippable on its own
+    and the step as a whole is skippable**; owning the module without the
+    footswitches is ordinary. What was skipped is stated, so a kick that will
+    never sound is known before a lesson rather than during one.
+
+## The Controller
+
+**`$lib/controller.svelte.ts` is the student's instrument, and the facade over
+everything it means.** No page parses a stored device config, and none of them
+interpret raw MIDI. Read it before touching setup, scoring input, or the preview.
+
+- One call does the interpreting: `handle(data)` returns a **hit** (with the GM
+  note already resolved), a **pedal** movement, a **transport** press, an
+  **unmapped** note, or **none**. `/lessons/[id]` is four lines and a switch.
+- **Ordering inside `handle()` is load-bearing.** Pads are matched before
+  transport, so a note bound to both still plays its drum; the pedal is matched
+  after pads, so tapping the hat can't bind the hi-hat as its own pedal.
+- It deliberately **does not debounce**. Pads bounce a note-on during _capture_,
+  where the wizard filters them, but a run needs every hit — a 160 ms window
+  would swallow 16ths at 120 BPM and quietly cost a roll.
+- **Both kinds share one internal shape.** A grid's pads are synthesised with
+  positional labels, so `kind` is consulted when _building_ a controller and
+  essentially nowhere afterwards. Only `geometry` differs.
+- **The pads are the source of truth**, and `notes` / `soundNotes` are
+  regenerated from them on every save, so a reader that never learned this class
+  still gets a working map. A stored config with no `kind` is a pad grid saved
+  before the class existed and is read exactly as it always was — no migration,
+  and nothing is rewritten on read.
+- `canPlay()` / `missing()` are how `/lessons/[id]` says "your kit can't play
+  this" _before_ a run, rather than letting open-hat notes surface as misses
+  nobody can explain.
+- `Controller.list()` names the controllers configured on this machine, so a
+  chooser can describe one instead of repeating a MIDI port name.
+
+### The hi-hat
+
+A hi-hat is one drum with two voices, and kits disagree about how they say so —
+which is why the pedals step **discovers** it from three gestures instead of
+asking or assuming. Two notes is preferred wherever it is observed, because it
+needs no state to be correct.
+
+- `two-note` — open and closed send different notes. Both live on the _one_ pad
+  (`note` / `altNote`), so the schematic still lights a single hi-hat.
+- `stateful` — one note, and the pedal speaks for itself. Its position is
+  tracked and the note resolves to closed (42) or open (46) at hit time.
+- `none` — no usable pedal. One voice, and `canPlay` reports the gap.
+
+Pedal traffic is **control, not performance**: it never sounds and never scores,
+or every close would bank an extra note.
+
+**A pedal at rest is open, and that is the trap.** Physically right, useless
+here: the curriculum is overwhelmingly closed hats, so a student who just plays
+scores nothing until they hold a footswitch down for a whole lesson — and it
+fails _silently_, because the preview lights the hi-hat for either voice, so the
+hits look like they landed. Hence `hihatPreference`: `/lessons/[id]` pins the hat
+to whichever voice the lesson uses when it uses exactly one, and only the lessons
+using both (`disco-open-hats`, `checkpoint-2`) leave the pedal in charge. The pin
+is a bare GM note, so the Controller still knows nothing about lessons.
+
+### The preview
+
+`$lib/controller-preview.svelte` is the only thing that draws pads. It absorbed
+`controller-map.svelte` and `pad-grid.svelte`, which drew the same pads without
+knowing whose they were. Geometry comes from `controller.geometry` — a grid, a
+profiled kit's schematic, or the neutral arrangement — so the caller never picks
+a renderer, and three modes sit over that same geometry: **capture** (wizard),
+**map** (beside the lesson chart), **play** (during a run).
+
+- During a run the highway is `position: fixed; inset: 0` with the lanes banded
+  across its middle, so the preview's room is the empty half _below the band_,
+  not space in the flow — of which there is none. `laneH` knows nothing about
+  the preview, which is what makes "the highway is sized first" true rather than
+  merely intended. In the full view there is never room.
+- Animation is decoration over state that colour already carries, so all of it
+  stops under `prefers-reduced-motion` and nothing becomes unreadable.
+
+### Kit profiles
+
+`KIT_PROFILES` in `$lib/presets.ts` describes a _model_; a Controller describes a
+_student's instrument_. A profile therefore carries geometry, drum roles and
+suggested sounds — and **never a MIDI note**, because a module's pads are
+reassignable from its own front panel.
+
+- Each profile points at `static/kits/<id>.svg`, whose drums are `<g id>`s
+  matching its pad ids. The asset is **geometry only** — no fills or strokes —
+  and the preview owns every bit of appearance, so it reads the same in either
+  theme.
+- The preview **inlines** that SVG to mark drums by id, so only first-party files
+  under `static/kits/` are ever loaded this way. A submitted layout never
+  becomes one.
+- `scripts/check-kits.py` fails the build if a pad id has no drum in the
+  schematic, or a drum has no pad. It runs from `pnpm check` and `pnpm build` —
+  drift there breaks the wizard and the lesson page at once, and silently.
+
+### Sharing a layout
+
+After a **generic** setup (a kit with no profile), the student may send the
+layout so it can become a shipped profile. Opt-in, one shot, works signed out,
+and the setup is saved either way. It goes to `device_layouts`, which is
+**insert-only with no select policy for anyone** — a write-only mailbox emptied
+by hand, not a catalogue the app reads back. Not offered when no Supabase is
+configured.
 
 ## Drum samples
 
@@ -78,7 +197,10 @@ drumming is supported.
   - `--level` refuses a trim that would clip (peak + gain > -0.5 dBFS).
 - The grid uses two mappings: **controller note → cell** (Capture) and
   **cell → GM drum note** (per-cell dropdown). Both are saved per device in
-  `localStorage`.
+  `localStorage`, through the Controller.
+- `/debug/settings` hard-codes sixteen cells, so it **refuses a drum kit** rather
+  than flattening one into a 4×4 grid on save. Editing a kit lives in the wizard,
+  which knows what the drums are.
 
 ## Sample caching
 

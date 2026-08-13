@@ -43,6 +43,8 @@
 
 	let savedHint = $state('');
 	let hasSaved = $state(false);
+	/** set when the selected device is a drum kit — this page won't touch one */
+	let kitConfig = $state<{ name: string; drums: number } | null>(null);
 
 	const cells = Array.from({ length: TOTAL }, (_, i) => i);
 
@@ -108,9 +110,32 @@
 		return null;
 	}
 
+	/**
+	 * An electronic kit is not sixteen cells in a rectangle. This page assumes it
+	 * is, from `TOTAL` down, so rather than half-render one it declines: saving
+	 * would overwrite a kit's mirror arrays with a grid the kit does not have.
+	 * Editing a kit lives in the wizard, which knows what the drums are.
+	 */
+	function readKitConfig(deviceId: string): { name: string; drums: number } | null {
+		try {
+			const raw = localStorage.getItem(STORAGE_PREFIX + deviceId);
+			if (!raw) return null;
+			const cfg = JSON.parse(raw);
+			if (cfg?.kind !== 'edrum') return null;
+			return {
+				name: typeof cfg.deviceName === 'string' ? cfg.deviceName : deviceId,
+				drums: Array.isArray(cfg.pads)
+					? cfg.pads.filter((p: { note?: number | null }) => p?.note != null).length
+					: 0
+			};
+		} catch {
+			return null;
+		}
+	}
+
 	function saveConfig() {
 		const dev = getCurrentDevice();
-		if (!dev) return;
+		if (!dev || kitConfig) return;
 		if (!assignedNotes.every((n) => n !== null)) return;
 		// Merge over whatever is stored: this page owns the pad mapping only, and
 		// the wizard writes keys it knows nothing about (grid size, the transport
@@ -223,6 +248,7 @@
 	$effect(() => {
 		const id = selectedId;
 		if (!id || !midiAccess) return;
+		kitConfig = readKitConfig(id);
 		connectInput();
 		initDevice();
 		localStorage.setItem(STORAGE_PREFIX + 'selectedDevice', id);
@@ -258,6 +284,7 @@
 	}
 
 	function startCapture() {
+		if (kitConfig) return;
 		assignedNotes = Array(TOTAL).fill(null);
 		captureIndex = 0;
 		capturing = true;
@@ -308,9 +335,9 @@
 		<span class="warming">loading samples…</span>
 	{/if}
 
-	<button onclick={startCapture} disabled={capturing}>Capture pads</button>
+	<button onclick={startCapture} disabled={capturing || !!kitConfig}>Capture pads</button>
 
-	{#if selectedId && hasSavedConfig(selectedId) && !hasSaved}
+	{#if selectedId && !kitConfig && hasSavedConfig(selectedId) && !hasSaved}
 		<button onclick={() => applySaved(selectedId!)}>Load saved</button>
 	{/if}
 
@@ -318,6 +345,14 @@
 		<span class="status">{status}</span>
 	{/if}
 </div>
+
+{#if kitConfig}
+	<p class="kit-notice">
+		<strong>{kitConfig.name}</strong> is set up as a drum kit ({kitConfig.drums} drums), not a
+		4×4 grid. This page can only edit grids, and saving here would overwrite the kit's layout —
+		so it won't. Edit it on the <a href="{base}/onboarding">Setup</a> page.
+	</p>
+{/if}
 
 {#if savedHint}
 	<div class="savebar">
@@ -385,6 +420,16 @@
 	.status {
 		font-size: 0.9rem;
 		color: var(--text-muted);
+	}
+
+	.kit-notice {
+		margin: 0 0 1rem;
+		padding: 0.65rem 0.9rem;
+		border: 1px solid var(--gold-dim);
+		border-radius: var(--radius-sm);
+		background: rgba(240, 192, 64, 0.07);
+		color: var(--text-muted);
+		font-size: 0.88rem;
 	}
 
 	.warming {

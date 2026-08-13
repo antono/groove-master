@@ -1,0 +1,74 @@
+<!--
+  Millenium MD-90, seen from above.
+
+  Geometry only — no fills, strokes or colours. controller-preview.svelte owns
+  every bit of appearance, so this file reads the same in either theme and a
+  drum can be marked pending/captured/lit without touching the asset.
+
+  Contract: every drum is a `<g class="drum">` whose id matches a KitPad id in
+  the millenium-md-90 profile (see presets.ts), and carries an empty
+  `<text class="label">` the preview fills in. Adding a shape here without a
+  matching pad — or renaming one — fails the check in scripts/check-kits.py.
+
+  The hi-hat sits to the right of the snare rather than out to the side. That is
+  where it really is on this unit, and drawing it anywhere else would make the
+  picture useless for finding it.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 330" class="kit-svg">
+  <g class="body">
+    <rect x="8" y="16" width="404" height="268" rx="30" />
+    <path class="panel" d="M170 34 h80 l14 44 h-108 z" />
+    <rect class="grille" x="26" y="196" width="30" height="66" rx="12" />
+    <rect class="grille" x="364" y="196" width="30" height="66" rx="12" />
+  </g>
+
+  <!-- rear: the two raised cymbal pads -->
+  <g id="crash" class="drum">
+    <ellipse class="rim" cx="74" cy="78" rx="52" ry="38" />
+    <ellipse class="head" cx="74" cy="78" rx="43" ry="30" />
+    <text class="label" x="74" y="82"></text>
+  </g>
+  <g id="ride" class="drum">
+    <ellipse class="rim" cx="346" cy="78" rx="52" ry="38" />
+    <ellipse class="head" cx="346" cy="78" rx="43" ry="30" />
+    <text class="label" x="346" y="82"></text>
+  </g>
+
+  <!-- middle row -->
+  <g id="tom-1" class="drum">
+    <ellipse class="rim" cx="150" cy="152" rx="50" ry="36" />
+    <ellipse class="head" cx="150" cy="152" rx="41" ry="28" />
+    <text class="label" x="150" y="156"></text>
+  </g>
+  <g id="tom-2" class="drum">
+    <ellipse class="rim" cx="270" cy="152" rx="50" ry="36" />
+    <ellipse class="head" cx="270" cy="152" rx="41" ry="28" />
+    <text class="label" x="270" y="156"></text>
+  </g>
+
+  <!-- front row: snare, the odd little hi-hat, floor tom -->
+  <g id="snare" class="drum">
+    <ellipse class="rim" cx="88" cy="228" rx="56" ry="40" />
+    <ellipse class="head" cx="88" cy="228" rx="47" ry="32" />
+    <text class="label" x="88" y="232"></text>
+  </g>
+  <g id="hihat" class="drum">
+    <ellipse class="rim" cx="210" cy="232" rx="42" ry="30" />
+    <ellipse class="head" cx="210" cy="232" rx="34" ry="23" />
+    <!-- lifts away from the head when the pedal is up; see the .open rule -->
+    <ellipse class="hat-top" cx="210" cy="232" rx="34" ry="23" />
+    <text class="label" x="210" y="236"></text>
+  </g>
+  <g id="tom-3" class="drum">
+    <ellipse class="rim" cx="332" cy="228" rx="56" ry="40" />
+    <ellipse class="head" cx="332" cy="228" rx="47" ry="32" />
+    <text class="label" x="332" y="232"></text>
+  </g>
+
+  <!-- the kick footswitch, off the body -->
+  <g id="kick" class="drum pedal">
+    <rect class="rim" x="158" y="292" width="104" height="30" rx="12" />
+    <rect class="head" x="166" y="298" width="88" height="18" rx="8" />
+    <text class="label" x="210" y="311"></text>
+  </g>
+</svg>
