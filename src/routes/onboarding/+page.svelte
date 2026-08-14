@@ -28,7 +28,8 @@
 		VIRTUAL_KEYBOARD_ID,
 		VIRTUAL_TOUCH_ID,
 		loadVirtualController,
-		keyLabelFor
+		keyLabelFor,
+		keyboardIndexFor
 	} from '$lib/virtual-input';
 	import { DrumPlayer } from '$lib/drums';
 	import PageMeta from '$lib/page-meta.svelte';
@@ -267,10 +268,12 @@
 			.catch(() => {});
 		const off = midi.onNote(handleNote);
 		const offRaw = midi.onMessage(handleMessage);
+		window.addEventListener('keydown', soundsKeydown);
 		return () => {
 			off();
 			offRaw();
 			midi.stop();
+			window.removeEventListener('keydown', soundsKeydown);
 			clearTimeout(hitTimer);
 		};
 	});
@@ -682,6 +685,22 @@
 		void unlockAudio();
 		const pad = controller?.pads[i];
 		if (pad && controller) drums()?.play(controller.kitId, pad.sound);
+		flashHit(i); // light the pad, however it was struck — tap or key
+	}
+
+	// While mapping the keyboard's sounds, a physical key does what it will do in a
+	// lesson: light its pad and play the drum it is set to, so the student hears and
+	// sees the mapping they are editing.
+	function soundsKeydown(e: KeyboardEvent) {
+		if (step !== 'sounds' || deviceId !== VIRTUAL_KEYBOARD_ID) return;
+		const el = e.target as HTMLElement | null;
+		if (el && (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA'))
+			return;
+		if (e.repeat) return;
+		const i = keyboardIndexFor(e.code);
+		if (i === -1 || i >= (controller?.pads.length ?? 0)) return;
+		e.preventDefault();
+		previewVirtual(i);
 	}
 
 	function buildCustomPads(n: number): Pad[] {
@@ -1153,7 +1172,7 @@
 
 			<div class="sound-grid">
 				{#each controller.pads as pad, i (pad.id)}
-					<div class="sound-cell">
+					<div class="sound-cell" class:hit={hitIndex === i}>
 						<div class="sound-head">
 							{#if deviceId === VIRTUAL_KEYBOARD_ID && keyLabelFor(i)}
 								<kbd class="key">{keyLabelFor(i)}</kbd>
@@ -2117,8 +2136,14 @@
 
 	.sound-grid {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(3, 1fr);
 		gap: 0.6rem;
+	}
+
+	@media (max-width: 30rem) {
+		.sound-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
 	}
 
 	.sound-cell {
@@ -2129,6 +2154,16 @@
 		border: 1px solid var(--border, #333);
 		border-radius: var(--radius-sm, 0.5rem);
 		background: var(--surface-2, #1a1a2e);
+		transition:
+			border-color 0.06s ease,
+			background 0.06s ease;
+	}
+
+	/* Struck — the pad lights while its key (or Hear-it) is pressed, so the student
+	   sees which pad answered. */
+	.sound-cell.hit {
+		border-color: var(--accent, #6cf);
+		background: color-mix(in srgb, var(--accent, #6cf) 22%, var(--surface-2, #1a1a2e));
 	}
 
 	.sound-head {

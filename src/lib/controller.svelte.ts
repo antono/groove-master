@@ -255,7 +255,12 @@ export class Controller {
    * so that synthetic note is never matched against a real message.
    */
   static virtual(deviceId: string, name: string, pads: Pad[]): Controller {
-    const c = new Controller({ deviceId, kind: "grid", profile: "virtual", name });
+    const c = new Controller({
+      deviceId,
+      kind: "grid",
+      profile: "virtual",
+      name,
+    });
     c.setPads(
       pads.map((p, i) => ({ ...p, note: p.note ?? SYNTHETIC_NOTE_BASE + i })),
     );

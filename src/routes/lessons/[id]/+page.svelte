@@ -45,7 +45,12 @@
 	};
 	type Status = 'pending' | 'perfect' | 'good' | 'off' | 'miss';
 
-	const PX_PER_BEAT = 280;
+	// Pixels per beat on the highway — display only (scoring reads the audio clock,
+	// never pixels). On a narrow screen it shrinks so more beats fit before the hit
+	// line: the notes arrive from further off and slower, giving room to prepare
+	// instead of appearing a beat away. See the reactive `PX_PER_BEAT` below.
+	const PX_PER_BEAT_WIDE = 110;
+	const PX_PER_BEAT_NARROW = 110;
 	const LANE_H = 56; // resting lane height; grows to fill the viewport while playing
 	const BEATS_PER_BAR = 4;
 	// One bar of lead-in before the pattern. It is no longer empty: the lesson MIDI
@@ -53,6 +58,9 @@
 	// constant is shared with the parser that shifts them onto the beat axis.
 	const COUNT_IN = COUNT_IN_BEATS;
 	const MATCH_WINDOW_BEATS = 0.4; // how far a hit may be from a target to count at all
+	// How far ahead a pad lights its "play me next" border as its note nears the hit
+	// line — enough warning to move a finger, not so much that half the pads glow.
+	const CUE_LOOKAHEAD_BEATS = 1;
 	// Beginner-friendly timing grades (|error| in ms):
 	const PERFECT_MS = 25; // exact  -> green, pops
 	const GOOD_MS = 60; // precise -> green
@@ -287,6 +295,12 @@
 
 	const NOTE = 26; // note block size (px)
 	let winH = $state(0); // viewport height, for the full view; refreshed on resize
+	let winW = $state(0); // viewport width, to widen the highway's perspective on a phone
+	const PX_PER_BEAT = $derived(winW > 0 && winW <= 640 ? PX_PER_BEAT_NARROW : PX_PER_BEAT_WIDE);
+
+	// GM notes whose targets are approaching the hit line right now — the pads that
+	// should light a "get ready" border, refreshed each frame while the run plays.
+	let cueSounds = $state<Set<number>>(new Set());
 
 	// Three ways to run a lesson, cycled from the HUD and remembered across lessons:
 	//  - compact (default): rows two note-heights apart — a thin strip centred in a
@@ -423,6 +437,41 @@
 		} catch {
 			/* private mode — the session still plays, it just isn't remembered */
 		}
+	});
+
+	// The "play me next" cue: while a run is live, each frame collects the notes whose
+	// targets are within a beat of the hit line and lights their pads. currentBeat()
+	// is read off the audio clock (not reactive), so the rAF loop drives it; the state
+	// is only reassigned when the set actually changes, to keep the pads from churning.
+	$effect(() => {
+		// Only the on-screen pads show the cue, so only a touch run pays for the loop —
+		// a keyboard or MIDI run has no overlay to light and does no per-frame work.
+		if (!playing || paused || !parsed || selectedId !== VIRTUAL_TOUCH_ID) {
+			cueSounds = new Set();
+			return;
+		}
+		const notes = parsed.notes;
+		let raf = 0;
+		// Tracked locally, NOT by reading cueSounds — reading the state we write would
+		// make this effect its own dependency and restart the loop every frame.
+		let prevKey = '';
+		const loop = () => {
+			const b = currentBeat();
+			const next: number[] = [];
+			for (const n of notes) {
+				const d = n.beat - b;
+				if (d > -MATCH_WINDOW_BEATS && d <= CUE_LOOKAHEAD_BEATS && !next.includes(n.note))
+					next.push(n.note);
+			}
+			const key = next.sort((a, z) => a - z).join(',');
+			if (key !== prevKey) {
+				prevKey = key;
+				cueSounds = new Set(next);
+			}
+			raf = requestAnimationFrame(loop);
+		};
+		raf = requestAnimationFrame(loop);
+		return () => cancelAnimationFrame(raf);
 	});
 
 	async function selectLesson(lesson: Lesson) {
@@ -1212,6 +1261,7 @@
 	onMount(() => {
 		const measure = () => {
 			winH = window.innerHeight;
+			winW = window.innerWidth;
 			dpr = window.devicePixelRatio || 1;
 		};
 		measure();
@@ -1267,9 +1317,23 @@
 {/if}
 
 {#if parsed && !inSession}
-	<div class="chart-frame" class:with-pads={hasPadLayout && !isVirtual}>
-		{#if hasPadLayout && controller && !isVirtual}
-			<ControllerPreview {controller} mode="map" {lanes} lit={flashing} {laneName} />
+	<div class="chart-frame" class:with-pads={hasPadLayout}>
+		{#if hasPadLayout && controller}
+			{#if isVirtual}
+				<!-- A virtual source shows its pads here, beside the chart, exactly where a
+				     drum controller's schematic sits — coloured, named, the lesson's pads
+				     lit, and tappable to audition. -->
+				<VirtualPads
+					{controller}
+					compact
+					lit={flashing}
+					onhit={virtualHit}
+					keys={selectedId === VIRTUAL_KEYBOARD_ID}
+					{lanes}
+				/>
+			{:else}
+				<ControllerPreview {controller} mode="map" {lanes} lit={flashing} {laneName} />
+			{/if}
 		{/if}
 		<LessonChart
 			notes={parsed.notes}
@@ -1425,25 +1489,13 @@
 		</p>
 	{/if}
 
-	<!-- A virtual source shows its instrument at rest: the on-screen pads to tap,
-	     the keyboard as a tappable legend of which key plays which drum. Tapping
-	     here just sounds a pad — nothing is scored until a run is under way. -->
-	{#if isVirtualId(selectedId) && controller}
-		{#if selectedId === VIRTUAL_KEYBOARD_ID}
-			<p class="device-line kbd-hint">
-				Play with the highlighted keys · <kbd>Space</kbd> start/resume ·
-				<kbd>Esc</kbd> stop
-			</p>
-		{/if}
-		<div class="virtual-rest">
-			<VirtualPads
-				{controller}
-				lit={flashing}
-				onhit={virtualHit}
-				keys={selectedId === VIRTUAL_KEYBOARD_ID}
-				{lanes}
-			/>
-		</div>
+	<!-- The keyboard's own reminder: its pads sit up in the Listen block, this
+	     points at them and names the transport keys. -->
+	{#if selectedId === VIRTUAL_KEYBOARD_ID && controller}
+		<p class="device-line kbd-hint">
+			Play with the highlighted keys above · <kbd>Space</kbd> start/resume ·
+			<kbd>Esc</kbd> stop
+		</p>
 	{/if}
 {/if}
 
@@ -1520,7 +1572,7 @@
 	     highway so the scrolling notes stay visible. The keyboard needs no overlay —
 	     it plays from the keys, and the HUD already carries start/pause. -->
 	{#if playing && selectedId === VIRTUAL_TOUCH_ID && controller}
-		<VirtualPads {controller} lit={flashing} onhit={virtualHit} overlay />
+		<VirtualPads {controller} lit={flashing} cue={cueSounds} onhit={virtualHit} overlay />
 	{/if}
 
 	{#if report}
@@ -1707,11 +1759,6 @@
 		border-radius: 0.3rem;
 		background: var(--surface-2, #26262b);
 		font-size: 0.78em;
-	}
-
-	.virtual-rest {
-		margin: 0.75rem 0 0;
-		max-width: 32rem;
 	}
 
 	/* Reference, not lesson. The playing highway is a fixed field with the lanes
@@ -2125,6 +2172,20 @@
 	.highway.banded.full .track {
 		border-top: 1px solid #333;
 		border-bottom: 1px solid #333;
+	}
+
+	/* A tall screen — a phone held upright. The strip moves into the upper third and
+	   the drum-name column is dropped, so the notes get the full width and the lower
+	   half of the screen is free for the on-screen pads to sit under the thumbs. */
+	@media (orientation: portrait) {
+		.highway.full {
+			align-items: flex-start;
+			padding-top: 11vh;
+		}
+
+		.highway.full .labels {
+			display: none;
+		}
 	}
 
 	/* Transport controls over the fullscreen highway, tempo readout included so the
