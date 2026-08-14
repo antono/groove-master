@@ -2,7 +2,15 @@ import adapter from "@sveltejs/adapter-vercel";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 
+// Machines this dev server is reached from over the LAN. Vite rejects a
+// Host header it doesn't know, so a bare `pnpm dev` is only reachable as
+// localhost without these.
+const allowedHosts = ["therion", "beast", "pomo"];
+
 export default defineConfig({
+  server: { allowedHosts },
+  preview: { allowedHosts },
+
   plugins: [
     sveltekit({
       serviceWorker: {

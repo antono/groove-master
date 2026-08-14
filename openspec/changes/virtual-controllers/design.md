@@ -71,10 +71,19 @@ with no special-casing — the id is the `deviceId`, and the display name
 
 Virtual sources store their pad→GM mapping in the same `localStorage` grid store,
 keyed by their reserved id. The controller-note→cell half is simply absent. Ship
-a built-in default mapping for each so first use needs no setup, and let the
-existing per-cell GM dropdown edit it. The keyboard adds one layer on top —
-`event.code`→pad — so the physical key positions are fixed while which drum each
-pad triggers stays editable like any other source.
+a built-in default mapping for each so first use needs no setup, and edit it with
+a per-pad GM dropdown. The keyboard adds one layer on top — `event.code`→pad — so
+the physical key positions are fixed while which drum each pad triggers stays
+editable like any other source.
+
+Editing lives in the **onboarding / setup wizard**, not `/debug/settings`. The
+settings page is a fixed 16-cell, hardware-note-capture editor (it rejects any
+config whose `notes` array isn't length 16) and is debug-gated, so it can host
+neither an 8-pad, note-less virtual source nor the touch-only student who most
+needs it. The wizard already owns "map this instrument", so the virtual sources
+enter there as a short path — pick keyboard or on-screen pads, choose each pad's
+drum, save — and the lesson page carries an input picker to select between them
+and any connected MIDI port.
 
 - Keyboard uses `event.code` (physical position), not `event.key`, so the default
   layout is the same shape on QWERTY/AZERTY/Dvorak and doesn't depend on the OS

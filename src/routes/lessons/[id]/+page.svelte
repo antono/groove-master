@@ -8,6 +8,17 @@
 	import { DrumPlayer, drumUrl, warmUrls } from '$lib/drums';
 	import { Sampler, sampleUrl } from '$lib/sampler';
 	import { Controller, type ControllerSummary } from '$lib/controller.svelte';
+	import {
+		VIRTUAL_INPUTS,
+		VIRTUAL_KEYBOARD_ID,
+		VIRTUAL_TOUCH_ID,
+		isVirtualId,
+		loadVirtualController,
+		keyboardGm,
+		TRANSPORT_START_CODE,
+		TRANSPORT_STOP_CODE
+	} from '$lib/virtual-input';
+	import VirtualPads from '$lib/virtual-pads.svelte';
 	import { dayKey, recordSession } from '$lib/stats';
 	import { queueReconcile } from '$lib/sync';
 	import { lessonFinished, lessonStarted } from '$lib/analytics';
@@ -80,7 +91,14 @@
 	// each pad triggers, the saved name, the kit — is the Controller's now, and it
 	// is loaded once per device rather than reassembled here.
 	let midiAccess: MIDIAccess | null = $state(null);
-	let inputs: { id: string; name: string | null }[] = $state([]);
+	let midiInputs: { id: string; name: string | null }[] = $state([]);
+	// The keyboard and on-screen pads are always-present sources, so a lesson is
+	// playable with no MIDI hardware and on a touchscreen that has no Web MIDI at
+	// all. They sit after any real port, so a connected device is preferred.
+	const inputs = $derived<{ id: string; name: string | null }[]>([
+		...midiInputs,
+		...VIRTUAL_INPUTS
+	]);
 	let selectedId: string | null = $state(null);
 	let currentInput: MIDIInput | null = null;
 	let controller = $state<Controller | null>(null);
@@ -224,14 +242,24 @@
 	// Everything the drum player needs decoded before a run: the lesson's own pads
 	// plus the count-in click and the guide hat, neither of which is a lane and so
 	// neither of which ever appears in `lanes`.
+	// Everything that might need a sample warm before a run: the lesson's own lanes,
+	// the count-in and guide — and every drum the *active controller* can produce.
+	// A virtual controller (and any kit) has pads the lesson never uses, and hitting
+	// one cold triggers a fetch+decode mid-run, which lands late and reads as jitter.
+	// Preloading the controller's full drum set keeps every pad instant.
 	const kitNotes = $derived([
 		...lanes,
 		...countIn.map((n) => n.note),
-		...guide.map((n) => n.note)
+		...guide.map((n) => n.note),
+		...(controller?.drums ?? [])
 	]);
 	const hasMapping = $derived((controller?.pads.length ?? 0) > 0);
 	// Nothing to draw for a student who has never run the setup wizard.
 	const hasPadLayout = $derived(!!controller && controller.pads.some((p) => p.note != null));
+	// A virtual source draws its own pad grid (VirtualPads: named, coloured, keyed),
+	// so the generic ControllerPreview schematic — blank for it but for the one lane
+	// the lesson uses — is redundant and suppressed.
+	const isVirtual = $derived(isVirtualId(selectedId));
 
 	// Which hi-hat voices this lesson actually asks for. If it is exactly one, the
 	// lesson is not teaching pedal technique — it is teaching the pattern — so the
@@ -347,40 +375,54 @@
 	}
 
 	async function initMidi() {
-		if (!navigator.requestMIDIAccess) {
-			status = 'Web MIDI not supported — hits cannot be captured';
-			return;
-		}
+		// No Web MIDI at all (or it's blocked) is no longer a dead end: the keyboard
+		// and on-screen pads are always available, so there's nothing to warn about.
+		if (!navigator.requestMIDIAccess) return;
 		try {
 			midiAccess = await navigator.requestMIDIAccess({ sysex: false });
 			refreshInputs();
 			midiAccess.onstatechange = refreshInputs;
 			known = new Map(Controller.list().map((c) => [c.deviceId, c]));
 			const saved = localStorage.getItem(STORAGE_PREFIX + 'selectedDevice');
+			// A real port that just appeared takes precedence over the virtual default
+			// picked before MIDI was granted, but only if nothing is chosen yet.
 			if (saved && inputs.some((i) => i.id === saved)) selectedId = saved;
-			else if (inputs.length) selectedId = inputs[0].id;
+			else if (!selectedId && midiInputs.length) selectedId = midiInputs[0].id;
 		} catch {
-			status = 'MIDI access denied — hits cannot be captured';
+			status = 'MIDI access denied — keyboard and on-screen pads still play';
 		}
 	}
 
 	function refreshInputs() {
 		if (!midiAccess) return;
-		inputs = [...midiAccess.inputs.values()].map((i) => ({ id: i.id, name: i.name }));
+		midiInputs = [...midiAccess.inputs.values()].map((i) => ({ id: i.id, name: i.name }));
 	}
 
 	function loadDeviceMapping(deviceId: string) {
-		controller = Controller.load(deviceId);
+		controller = isVirtualId(deviceId)
+			? loadVirtualController(deviceId)
+			: Controller.load(deviceId);
 	}
 
 	$effect(() => {
 		const id = selectedId;
-		if (!id || !midiAccess) return;
-		if (currentInput) currentInput.onmidimessage = null;
-		currentInput = midiAccess.inputs.get(id) ?? null;
-		if (currentInput) currentInput.onmidimessage = handleMidi;
+		if (!id) return;
+		// A source change detaches the previous MIDI port; a virtual source has none
+		// to wire — its capture (keyboard listener, on-screen pads) reads selectedId.
+		if (currentInput) {
+			currentInput.onmidimessage = null;
+			currentInput = null;
+		}
+		if (!isVirtualId(id) && midiAccess) {
+			currentInput = midiAccess.inputs.get(id) ?? null;
+			if (currentInput) currentInput.onmidimessage = handleMidi;
+		}
 		loadDeviceMapping(id);
-		localStorage.setItem(STORAGE_PREFIX + 'selectedDevice', id);
+		try {
+			localStorage.setItem(STORAGE_PREFIX + 'selectedDevice', id);
+		} catch {
+			/* private mode — the session still plays, it just isn't remembered */
+		}
 	});
 
 	async function selectLesson(lesson: Lesson) {
@@ -488,21 +530,15 @@
 		else stop();
 	}
 
-	function handleMidi(event: MIDIMessageEvent) {
-		// A hidden tab is deaf: ignore every message so nothing sounds or scores
-		// while the page is in the background (see handleVisibility).
+	// The one place a resolved drum hit turns into sound, light and a score,
+	// whatever produced it — a MIDI pad, a keyboard key or an on-screen tap all
+	// arrive here already carrying an unambiguous GM note. Everything a source
+	// shares lives here so no source can drift: the hidden-tab guard, the sample,
+	// the flash and the scoring window are decided once.
+	function dispatchHit(gm: number) {
+		// A hidden tab is deaf: ignore every hit so nothing sounds or scores while
+		// the page is in the background (see handleVisibility).
 		if (typeof document !== 'undefined' && document.hidden) return;
-		if (!event.data || !controller) return;
-
-		// One call, and the page reacts to meaning rather than to bytes. Note
-		// mapping, hi-hat pedal state and transport matching all happen in there;
-		// by the time a hit arrives its GM note is already unambiguous.
-		const ev = controller.handle(event.data);
-		if (ev.kind === 'transport') return handleTransport(ev.which);
-		// Pedals and unmapped notes fall out here: they never sound and never score.
-		if (ev.kind !== 'hit') return;
-
-		const gm = ev.note;
 		player?.play(kit, gm); // the ONLY sound source — the user's own playing
 		flash(gm);
 		// Sample the beat straight from the audio clock at the moment of the hit, so
@@ -519,6 +555,65 @@
 			const hitBeat = currentBeat();
 			if (hitBeat >= -MATCH_WINDOW_BEATS) registerHit(gm, hitBeat);
 		}
+	}
+
+	// A hit from a virtual source (keyboard key or on-screen tap). Unlike a MIDI
+	// port — which only comes up inside ensureAudio, so the player already exists by
+	// the time a message arrives — the keyboard listener and the pads are live on the
+	// resting page before any Play/Listen gesture. That tap IS the gesture, so it has
+	// to bring audio up itself; without this the first taps are silent (no player yet)
+	// and only start sounding once the student happens to press Play.
+	function virtualHit(gm: number) {
+		// enableAudio() creates the AudioContext and player synchronously, before its
+		// first await, so by the next line the player exists and the tapped sample
+		// loads on demand — the first hit sounds without waiting on the full preload.
+		if (!audioCtx) void enableAudio();
+		dispatchHit(gm);
+	}
+
+	function handleMidi(event: MIDIMessageEvent) {
+		// A hidden tab is deaf, transport included: ignore every message while the
+		// page is in the background (see handleVisibility). dispatchHit guards the
+		// hit itself for the sources that don't pass through here.
+		if (typeof document !== 'undefined' && document.hidden) return;
+		if (!event.data || !controller) return;
+
+		// One call, and the page reacts to meaning rather than to bytes. Note
+		// mapping, hi-hat pedal state and transport matching all happen in there;
+		// by the time a hit arrives its GM note is already unambiguous.
+		const ev = controller.handle(event.data);
+		if (ev.kind === 'transport') return handleTransport(ev.which);
+		// Pedals and unmapped notes fall out here: they never sound and never score.
+		if (ev.kind !== 'hit') return;
+		dispatchHit(ev.note);
+	}
+
+	// The keyboard source. Active only while it's the selected input; a held key is
+	// one hit (not a roll), the reserved transport keys drive Start/Stop the way a
+	// hardware transport button would, and any other key resolves through the
+	// physical-position layout to a GM note or is ignored.
+	function handleKeydown(e: KeyboardEvent) {
+		if (selectedId !== VIRTUAL_KEYBOARD_ID) return;
+		// Don't turn typing into drum hits — there are no fields on this page today,
+		// but a future dialog or input shouldn't be swallowed.
+		const el = e.target as HTMLElement | null;
+		if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable))
+			return;
+		if (e.repeat) return; // a held key yields exactly one hit
+		if (e.code === TRANSPORT_START_CODE) {
+			e.preventDefault();
+			handleTransport('start');
+			return;
+		}
+		if (e.code === TRANSPORT_STOP_CODE) {
+			e.preventDefault();
+			handleTransport('stop');
+			return;
+		}
+		const gm = keyboardGm(controller, e.code);
+		if (gm == null) return; // unmapped key — no sound, no score
+		e.preventDefault();
+		virtualHit(gm);
 	}
 
 	function flash(note: number) {
@@ -1125,16 +1220,22 @@
 		const savedView = localStorage.getItem(STORAGE_PREFIX + 'highwayView');
 		if (savedView && (VIEWS as readonly string[]).includes(savedView)) view = savedView as View;
 		unlockedLessons = readUnlockedLessons();
-		// Read the saved controller up front, before (and whether or not) MIDI is
-		// granted: the schematic is part of the resting page, not of a live session.
-		// Connecting a device re-runs this through the port effect below.
+		// Choose an input up front, before (and whether or not) MIDI is granted, so
+		// the schematic and a playable source are on the resting page from the start.
+		// The saved choice wins; otherwise a touchscreen defaults to the on-screen
+		// pads and everything else to the keyboard. Selecting it loads its mapping
+		// through the port effect; connecting a real device can still take over there.
 		const savedDevice = localStorage.getItem(STORAGE_PREFIX + 'selectedDevice');
-		if (savedDevice) loadDeviceMapping(savedDevice);
+		const coarse =
+			typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+		selectedId = savedDevice ?? (coarse ? VIRTUAL_TOUCH_ID : VIRTUAL_KEYBOARD_ID);
 		window.addEventListener('resize', measure);
+		window.addEventListener('keydown', handleKeydown);
 		document.addEventListener('visibilitychange', handleVisibility);
 		void loadCatalogue();
 		return () => {
 			window.removeEventListener('resize', measure);
+			window.removeEventListener('keydown', handleKeydown);
 			document.removeEventListener('visibilitychange', handleVisibility);
 		};
 	});
@@ -1166,8 +1267,8 @@
 {/if}
 
 {#if parsed && !inSession}
-	<div class="chart-frame" class:with-pads={hasPadLayout}>
-		{#if hasPadLayout && controller}
+	<div class="chart-frame" class:with-pads={hasPadLayout && !isVirtual}>
+		{#if hasPadLayout && controller && !isVirtual}
 			<ControllerPreview {controller} mode="map" {lanes} lit={flashing} {laneName} />
 		{/if}
 		<LessonChart
@@ -1291,6 +1392,20 @@
 
 	{#if status}<p class="warn">{status}</p>{/if}
 
+	<!-- Which input plays the lesson: any connected MIDI port, or the always-present
+	     keyboard and on-screen pads. Choosing one loads its mapping and is
+	     remembered, exactly as a hardware device is. -->
+	<div class="source-picker">
+		<label>
+			<span>Input</span>
+			<select bind:value={selectedId}>
+				{#each inputs as input (input.id)}
+					<option value={input.id}>{input.name ?? 'Unknown device'}</option>
+				{/each}
+			</select>
+		</label>
+	</div>
+
 	{#if audioCtx && !hasMapping}
 		<p class="warn">
 			{#if known.size}
@@ -1308,6 +1423,27 @@
 			{controller.pads.filter((p) => p.note != null).length}
 			{controller.kind === 'edrum' ? 'drums' : 'pads'}
 		</p>
+	{/if}
+
+	<!-- A virtual source shows its instrument at rest: the on-screen pads to tap,
+	     the keyboard as a tappable legend of which key plays which drum. Tapping
+	     here just sounds a pad — nothing is scored until a run is under way. -->
+	{#if isVirtualId(selectedId) && controller}
+		{#if selectedId === VIRTUAL_KEYBOARD_ID}
+			<p class="device-line kbd-hint">
+				Play with the highlighted keys · <kbd>Space</kbd> start/resume ·
+				<kbd>Esc</kbd> stop
+			</p>
+		{/if}
+		<div class="virtual-rest">
+			<VirtualPads
+				{controller}
+				lit={flashing}
+				onhit={virtualHit}
+				keys={selectedId === VIRTUAL_KEYBOARD_ID}
+				{lanes}
+			/>
+		</div>
 	{/if}
 {/if}
 
@@ -1367,7 +1503,7 @@
 		</div>
 	{/if}
 
-	{#if playing && runPreview && hasPadLayout && controller}
+	{#if playing && runPreview && hasPadLayout && controller && !isVirtual}
 		<div class="run-preview">
 			<ControllerPreview
 				{controller}
@@ -1378,6 +1514,13 @@
 				{laneName}
 			/>
 		</div>
+	{/if}
+
+	<!-- The touch source taps its pads during the run too: they float low over the
+	     highway so the scrolling notes stay visible. The keyboard needs no overlay —
+	     it plays from the keys, and the HUD already carries start/pause. -->
+	{#if playing && selectedId === VIRTUAL_TOUCH_ID && controller}
+		<VirtualPads {controller} lit={flashing} onhit={virtualHit} overlay />
 	{/if}
 
 	{#if report}
@@ -1534,6 +1677,41 @@
 		margin: 0.5rem 0 0;
 		color: var(--text-faint);
 		font-size: 0.82rem;
+	}
+
+	.source-picker {
+		margin: 0.75rem 0 0;
+		font-size: 0.85rem;
+	}
+
+	.source-picker label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--text-muted);
+	}
+
+	.source-picker select {
+		font: inherit;
+		padding: 0.3rem 0.5rem;
+		border: 1px solid var(--border, #3a3a3a);
+		border-radius: var(--radius-sm);
+		background: var(--surface-2, #26262b);
+		color: var(--text);
+	}
+
+	.kbd-hint kbd {
+		display: inline-block;
+		padding: 0.05rem 0.35rem;
+		border: 1px solid var(--border, #3a3a3a);
+		border-radius: 0.3rem;
+		background: var(--surface-2, #26262b);
+		font-size: 0.78em;
+	}
+
+	.virtual-rest {
+		margin: 0.75rem 0 0;
+		max-width: 32rem;
 	}
 
 	/* Reference, not lesson. The playing highway is a fixed field with the lanes

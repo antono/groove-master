@@ -24,6 +24,12 @@
 		type Pad
 	} from '$lib/controller.svelte';
 	import ControllerPreview from '$lib/controller-preview.svelte';
+	import {
+		VIRTUAL_KEYBOARD_ID,
+		VIRTUAL_TOUCH_ID,
+		loadVirtualController,
+		keyLabelFor
+	} from '$lib/virtual-input';
 	import { DrumPlayer } from '$lib/drums';
 	import PageMeta from '$lib/page-meta.svelte';
 	import { canShareLayouts, shareLayout } from '$lib/layout-share';
@@ -43,6 +49,7 @@
 		| 'grid'
 		| 'kit'
 		| 'map'
+		| 'sounds'
 		| 'pedals'
 		| 'test'
 		| 'transport'
@@ -59,8 +66,14 @@
 	 * the test — and re-mapping is one button away from there if it turns out to
 	 * be wrong.
 	 */
-	type Path = 'grid' | 'edrum' | 'known';
+	type Path = 'grid' | 'edrum' | 'known' | 'virtual';
 	const PATHS: Record<Path, { id: Step; label: string }[]> = {
+		// The virtual path has no device to connect and no note to capture: pick the
+		// keyboard or the on-screen pads, then choose which drum each pad plays.
+		virtual: [
+			{ id: 'connect', label: 'Source' },
+			{ id: 'sounds', label: 'Pads' }
+		],
 		known: [
 			{ id: 'connect', label: 'Connect' },
 			{ id: 'device', label: 'Device' },
@@ -166,6 +179,8 @@
 	let testUnmapped = $state<number | null>(null);
 	/** GM note -> drum name, from the render manifest; empty until it loads. */
 	let drumNames = $state(new Map<number, string>());
+	/** The drum catalogue as an ordered list, for the virtual pad dropdowns. */
+	const drumOptions = $derived([...drumNames.entries()].map(([note, name]) => ({ note, name })));
 
 	// Generic path
 	let customName = $state('');
@@ -639,6 +654,36 @@
 		step = 'kit';
 	}
 
+	/**
+	 * The virtual path: a computer keyboard or the on-screen pads. There is no
+	 * device to connect and no note to capture, so this jumps straight to choosing
+	 * which drum each pad plays, seeded from the source's saved (or default)
+	 * mapping. The keyboard's key positions are fixed; only the drums are editable.
+	 */
+	function useVirtual(id: string) {
+		void unlockAudio();
+		path = 'virtual';
+		deviceId = id;
+		controller = loadVirtualController(id);
+		deviceName = controller.name;
+		startCtrl = null;
+		stopCtrl = null;
+		saved = false;
+		shareState = 'idle';
+		step = 'sounds';
+	}
+
+	function setVirtualSound(i: number, sound: number) {
+		controller?.setPadSound(i, sound);
+		saved = false;
+	}
+
+	function previewVirtual(i: number) {
+		void unlockAudio();
+		const pad = controller?.pads[i];
+		if (pad && controller) drums()?.play(controller.kitId, pad.sound);
+	}
+
 	function buildCustomPads(n: number): Pad[] {
 		const shape: { label: string; role: DrumRole; sound: number }[] = [
 			{ label: 'Kick', role: 'kick', sound: 36 },
@@ -845,6 +890,15 @@
 					Your browser will ask permission to use MIDI devices.
 				{/if}
 			</p>
+			<!-- No controller, or a phone with no Web MIDI at all: the keyboard and the
+			     on-screen pads play a lesson on their own. -->
+			<div class="virtual-entry">
+				<span class="virtual-or">No controller?</span>
+				<span class="btn-group">
+					<button onclick={() => useVirtual(VIRTUAL_KEYBOARD_ID)}>Use your keyboard</button>
+					<button onclick={() => useVirtual(VIRTUAL_TOUCH_ID)}>Use on-screen pads</button>
+				</span>
+			</div>
 		{:else if step === 'device'}
 			<header class="card-head">
 				<h2>Choose your device</h2>
@@ -1081,6 +1135,57 @@
 					<button onclick={startCapture}>Restart</button>
 					{#if isKit && mappedCount > 0}
 						<button class="primary" onclick={finish}>Done →</button>
+					{/if}
+				</span>
+			</footer>
+		{:else if step === 'sounds' && controller}
+			<header class="card-head">
+				<h2>{deviceId === VIRTUAL_KEYBOARD_ID ? 'Your keyboard pads' : 'Your on-screen pads'}</h2>
+				<p class="sub">
+					{#if deviceId === VIRTUAL_KEYBOARD_ID}
+						The keys are fixed — pick the drum each one plays. <kbd>Space</kbd> starts and
+						resumes a lesson, <kbd>Esc</kbd> pauses and stops.
+					{:else}
+						Pick the drum each pad plays. Tap a pad in a lesson to hit it.
+					{/if}
+				</p>
+			</header>
+
+			<div class="sound-grid">
+				{#each controller.pads as pad, i (pad.id)}
+					<div class="sound-cell">
+						<div class="sound-head">
+							{#if deviceId === VIRTUAL_KEYBOARD_ID && keyLabelFor(i)}
+								<kbd class="key">{keyLabelFor(i)}</kbd>
+							{:else}
+								<span class="pad-num">{i + 1}</span>
+							{/if}
+							<button class="preview" onclick={() => previewVirtual(i)} title="Hear it">
+								{drumNames.get(pad.sound) ?? pad.sound}
+							</button>
+						</div>
+						<select
+							class="drum-select"
+							value={pad.sound}
+							onchange={(e) => setVirtualSound(i, Number(e.currentTarget.value))}
+							aria-label={'Drum for pad ' + (i + 1)}
+						>
+							{#each drumOptions as d (d.note)}
+								<option value={d.note}>{d.name}</option>
+							{/each}
+						</select>
+					</div>
+				{/each}
+			</div>
+
+			<footer class="card-foot">
+				<button class="ghost" onclick={() => (step = 'connect')}>← Back</button>
+				<span class="btn-group">
+					{#if saved}
+						<span class="saved-note">Saved ✓</span>
+						<a class="cta" href="{base}/lessons">Start practicing →</a>
+					{:else}
+						<button class="primary" onclick={save}>Save</button>
 					{/if}
 				</span>
 			</footer>
@@ -1991,5 +2096,86 @@
 		color: var(--green);
 		font-size: 1.4rem;
 		font-weight: 700;
+	}
+
+	/* --- virtual controllers --- */
+
+	.virtual-entry {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 1.25rem;
+		padding-top: 1.25rem;
+		border-top: 1px solid var(--border, #333);
+	}
+
+	.virtual-or {
+		font-size: 0.85rem;
+		color: var(--text-muted);
+	}
+
+	.sound-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 0.6rem;
+	}
+
+	.sound-cell {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		padding: 0.5rem;
+		border: 1px solid var(--border, #333);
+		border-radius: var(--radius-sm, 0.5rem);
+		background: var(--surface-2, #1a1a2e);
+	}
+
+	.sound-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.4rem;
+	}
+
+	.pad-num {
+		font-size: 0.85rem;
+		color: var(--text-faint);
+	}
+
+	.sound-cell kbd.key {
+		display: inline-block;
+		padding: 0.05rem 0.4rem;
+		border: 1px solid var(--border, #444);
+		border-radius: 0.3rem;
+		background: var(--surface, #24243e);
+		font-size: 0.8rem;
+		font-variant: small-caps;
+	}
+
+	.sound-cell .preview {
+		flex: 1;
+		padding: 0.35rem 0.3rem;
+		font-size: 0.8rem;
+		color: var(--text);
+		background: var(--surface, #24243e);
+		border: 1px solid var(--border, #3a3a5a);
+		border-radius: 0.35rem;
+		cursor: pointer;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.sound-cell .drum-select {
+		width: 100%;
+		padding: 0.25em;
+		font-size: 0.8rem;
+	}
+
+	.saved-note {
+		align-self: center;
+		color: var(--green);
+		font-size: 0.9rem;
 	}
 </style>

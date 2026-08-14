@@ -41,6 +41,13 @@ import {
 export const CLOSED_HAT = 42;
 export const OPEN_HAT = 46;
 
+/**
+ * First synthetic pad note for a virtual controller (keyboard / on-screen pads).
+ * Above the 0-127 MIDI range so it can never collide with a real captured note;
+ * see `Controller.virtual`.
+ */
+export const SYNTHETIC_NOTE_BASE = 128;
+
 export type ControllerKind = "grid" | "edrum";
 
 export type Pad = {
@@ -236,6 +243,24 @@ export class Controller {
     });
     c.setPads(pads);
     c.geometry = { kind: "neutral" };
+    return c;
+  }
+
+  /**
+   * A virtual controller — a computer keyboard or an on-screen pad grid. It has
+   * no MIDI port and captures no controller note, so its pads carry a *synthetic*
+   * note (>= 128, out of MIDI range) purely so the rest of the app — `drums`,
+   * `canPlay`, the schematic, the device line — reads them as mapped. Hits from a
+   * virtual source resolve pad -> GM directly and never pass through `handle()`,
+   * so that synthetic note is never matched against a real message.
+   */
+  static virtual(deviceId: string, name: string, pads: Pad[]): Controller {
+    const c = new Controller({ deviceId, kind: "grid", profile: "virtual", name });
+    c.setPads(
+      pads.map((p, i) => ({ ...p, note: p.note ?? SYNTHETIC_NOTE_BASE + i })),
+    );
+    const cols = Math.min(4, pads.length);
+    c.geometry = { kind: "grid", cols, rows: Math.ceil(pads.length / cols) };
     return c;
   }
 
