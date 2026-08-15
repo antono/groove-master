@@ -121,12 +121,11 @@
             {current.author}
           </button>
           {#if showTestimonial && current.testimonial}
-            <!-- In the flow, directly under the author: it pushes what is below
-                 it down and so can never cover the quote, whatever its length.
-                 Safe from the hover flicker it used to cause because the column
-                 is top-anchored — growing it does not move the author out from
-                 under the cursor. pointer-events:none keeps it from intercepting
-                 the mouse as well. -->
+            <!-- A true tooltip: absolutely positioned below the author, out of the
+                 flow, so revealing it moves nothing — the quote and the Like/Dislike
+                 buttons stay put. It floats over the space beneath the author (never
+                 over the quote above it), and pointer-events:none lets clicks fall
+                 through to whatever it overlaps. Shown on hover, focus, click or tap. -->
             <span class="testimonial" role="tooltip">{current.testimonial}</span>
           {/if}
         </span>
@@ -228,15 +227,22 @@
     display: inline-flex;
     flex-direction: column;
     align-items: center;
+    /* Anchor for the absolutely-positioned tooltip below. */
+    position: relative;
   }
 
-  /* Who the author is, under their name. Floating this above the author was the
-     old bug: directly above the author is the last line of the citation, so a
-     long testimonial covered the quote it belonged to. In the flow it can only
-     push the buttons down. */
+  /* Who the author is — a tooltip below their name. Absolutely positioned so it is
+     out of the flow: showing it never moves the quote above or the buttons below.
+     Below, not above, because above the author is the last line of the citation and
+     a long testimonial would cover the quote it belongs to. */
   .testimonial {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: max-content;
     max-width: min(34rem, 85vw);
-    margin: 0.6rem 0 0;
     padding: 0.7rem 0.95rem;
     border-radius: 0.6rem;
     background: var(--surface-2);
