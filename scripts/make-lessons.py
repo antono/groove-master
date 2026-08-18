@@ -188,10 +188,10 @@ def check(entries):
     dupes = {s for s in slugs if slugs.count(s) > 1}
     if dupes:
         raise SystemExit(f"duplicate lesson slugs: {sorted(dupes)}")
-    # `tier` and `stage` name the catalogue's navigation routes
-    # (/lessons/tier/…, /lessons/stage/…); a lesson at /lessons/<slug> must
-    # never be able to shadow them.
-    reserved = {"tier", "stage"} & set(slugs)
+    # `tier`, `stage` and `continue` name the catalogue's navigation routes
+    # (/lessons/tier/…, /lessons/stage/…, /lessons/continue); a lesson at
+    # /lessons/<slug> must never be able to shadow them.
+    reserved = {"tier", "stage", "continue"} & set(slugs)
     if reserved:
         raise SystemExit(f"reserved lesson slugs: {sorted(reserved)}")
     known = set(slugs)

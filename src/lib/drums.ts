@@ -45,15 +45,20 @@ export async function whenCaching(timeoutMs = 5000): Promise<void> {
 export async function warmUrls(
   urls: Iterable<string>,
   concurrency = 6,
+  onProgress?: (done: number, total: number) => void,
 ): Promise<void> {
   await whenCaching();
   const queue = [...urls];
+  const total = queue.length;
+  let done = 0;
   const canCheck = typeof caches !== "undefined";
   const worker = async () => {
     for (let url = queue.pop(); url !== undefined; url = queue.pop()) {
       try {
         // Only fetch what isn't stored yet, so a repeat visit does no work at
         // all. caches.match searches every cache, so this needs no cache name.
+        // This is also what makes an interrupted warm resumable: re-running it
+        // fetches the remainder rather than starting over.
         if (canCheck && (await caches.match(url))) continue;
         const res = await fetch(url);
         // Read the body out: an unread response can be cancelled before the
@@ -61,10 +66,22 @@ export async function warmUrls(
         await res.arrayBuffer();
       } catch {
         // Offline or 404 — nothing to warm, the normal load path still tries.
+      } finally {
+        // Counted whether or not it worked: this drives a progress readout, and
+        // a warm that hits a 404 must not leave the bar stuck short of the end.
+        done++;
+        onProgress?.(done, total);
       }
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
+}
+
+/** Whether every one of these URLs is already in a cache. */
+export async function allCached(urls: Iterable<string>): Promise<boolean> {
+  if (typeof caches === "undefined") return false;
+  for (const url of urls) if (!(await caches.match(url))) return false;
+  return true;
 }
 
 /** Pull a whole kit into the service-worker cache (~700 KB). */

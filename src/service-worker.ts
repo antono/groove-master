@@ -109,5 +109,68 @@ sw.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else — page navigations included — is left to the browser.
+  // Page documents: network-first, keeping a copy as the offline fallback.
+  //
+  // Network-first because a cached page is a snapshot of server-rendered HTML —
+  // cache-first would pin the catalogue to whatever it looked like on the first
+  // visit. Offline, the exact page is served if it has been seen or precached,
+  // and /offline if not.
+  //
+  // The tidier-sounding alternative — one app shell for every route, rendered
+  // client-side — is not available: adapter-vercel emits no SPA fallback
+  // document, and serving /lessons' HTML for /stats would hydrate a mismatched
+  // route. Precaching the real pages sidesteps it (see $lib/offline-set).
+  //
+  // Matched on the *path*, not on request.mode: the offline set is warmed with
+  // ordinary fetch() calls, whose mode is "cors", so keying off "navigate" would
+  // let every warmed page fall straight through here and cache nothing — the
+  // precache would appear to work and the app would still be blank offline.
+  if (isPage(url.pathname)) {
+    event.respondWith(pageNetworkFirst(event.request, url));
+    return;
+  }
+
+  // Everything else is left to the browser.
 });
+
+/**
+ * A path that names a page rather than a file.
+ *
+ * Extensionless, which every route here is, and no built asset is. `/auth/confirm`
+ * is the one extensionless endpoint that is not a page — it is a redirect that
+ * consumes a single-use token, so caching it would be actively wrong.
+ */
+function isPage(pathname: string): boolean {
+  if (pathname.startsWith("/auth/")) return false;
+  return !/\.[a-z0-9]+$/i.test(pathname);
+}
+
+/**
+ * Cache key for a page: origin + path, with the query dropped.
+ *
+ * `/lessons/1.2?bpm=90` is the same document as `/lessons/1.2` — the tempo is
+ * read from the URL after hydration — so keying on the query would store a copy
+ * per tempo and miss on the one navigation that mattered.
+ */
+const pageKey = (url: URL) => url.origin + url.pathname;
+
+async function pageNetworkFirst(request: Request, url: URL): Promise<Response> {
+  const cache = await caches.open(CACHE);
+  const key = pageKey(url);
+  try {
+    const res = await fetch(request);
+    if (res.status === 200) await cache.put(key, res.clone());
+    return res;
+  } catch {
+    const hit = await cache.match(key);
+    if (hit) return hit;
+    const fallback = await cache.match(new URL("/offline", url.origin).href);
+    if (fallback) return fallback;
+    // Nothing cached at all — a first visit that went offline mid-flight. Say so
+    // rather than throwing, which surfaces as the browser's own error page.
+    return new Response(
+      "<!doctype html><meta charset=utf-8><title>Offline</title><p>You are offline.",
+      { status: 503, headers: { "content-type": "text/html; charset=utf-8" } },
+    );
+  }
+}

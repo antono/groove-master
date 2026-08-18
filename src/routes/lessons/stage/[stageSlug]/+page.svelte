@@ -88,7 +88,7 @@
 			<span class="number">{slot.number}</span>
 			<h3>
 				{#if lesson}
-					<a href="{base}/lessons/{slot.id}">{slot.name}</a>
+					<a class="stretch" href="{base}/lessons/{slot.id}">{slot.name}</a>
 				{:else}
 					{slot.name}
 				{/if}
@@ -111,7 +111,9 @@
 				<p class="warn">Could not read {lesson.file}</p>
 			{/if}
 			<div class="card-foot">
-				<a class="cta" href="{base}/lessons/{slot.id}">Practice →</a>
+				<!-- The whole card is the link (see .stretch), so this is an affordance
+					     rather than a second link to the same lesson. -->
+					<span class="cta">Practice →</span>
 				<div class="earned">
 					{#if earned?.cleared}
 						<span class="cleared" title="Runs finished without skipping a note"
@@ -218,10 +220,17 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
+		/* Positioning context for the title link's stretched overlay. */
+		position: relative;
 		padding: 1.1rem 1.25rem 1.25rem;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
+	}
+
+	.card:has(.stretch:hover),
+	.card:has(.stretch:focus-visible) {
+		border-color: var(--border-strong);
 	}
 
 	/* A slot that is designed but not written. Present so the shape of the module
@@ -316,15 +325,21 @@
 		text-decoration: none;
 	}
 
-	.cta:hover {
+	/* The CTA is no longer a link, so it lights from the card's hover rather than
+	   its own — the whole card is the thing being hovered. */
+	.card:has(.stretch:hover) .cta {
 		background: #f6cd5e;
 	}
 
-	/* What the student has to show for this lesson, opposite the way back into it. */
+	/* What the student has to show for this lesson, opposite the way back into it.
+	   The badges carry title attributes worth hovering, so they sit above the
+	   stretched overlay that would otherwise intercept the pointer. */
 	.earned {
 		display: flex;
 		align-items: baseline;
 		gap: 0.6rem;
+		position: relative;
+		z-index: 2;
 	}
 
 	.cleared {

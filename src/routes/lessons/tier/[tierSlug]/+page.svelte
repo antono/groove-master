@@ -49,7 +49,7 @@
 						{#if locked}
 							<h2>{stage.title}</h2>
 						{:else}
-							<h2><a href="{base}/lessons/stage/{stage.slug}">{stage.title}</a></h2>
+							<h2><a class="stretch" href="{base}/lessons/stage/{stage.slug}">{stage.title}</a></h2>
 						{/if}
 					</div>
 					<p class="goal">{stage.goal}</p>
@@ -57,7 +57,9 @@
 						{#if locked}
 							<span class="state">Not yet available</span>
 						{:else}
-							<a class="enter" href="{base}/lessons/stage/{stage.slug}">Open →</a>
+							<!-- The whole card is the link (see .stretch), so this is an
+							     affordance rather than a second link to the same place. -->
+							<span class="enter">Open →</span>
 							<span class="count">{roll.cleared}/{roll.total} cleared</span>
 						{/if}
 					</div>
@@ -104,10 +106,17 @@
 	}
 
 	.stage {
+		/* Positioning context for the heading link's stretched overlay. */
+		position: relative;
 		padding: 1.2rem 1.4rem;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
+	}
+
+	.stage:has(.stretch:hover),
+	.stage:has(.stretch:focus-visible) {
+		border-color: var(--border-strong);
 	}
 
 	.stage.locked {

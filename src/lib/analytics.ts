@@ -47,3 +47,20 @@ export const signinLinkSent = () => track("signin_link_sent");
 
 /** The request for a sign-in link came back with an error. */
 export const signinLinkFailed = () => track("signin_link_failed");
+
+// ---- installing the app ---------------------------------------------------
+//
+// Three events, not one, because `pwa_installed` on its own cannot tell "nobody
+// was ever offered it" apart from "everybody declined". It is still the count of
+// record: it fires however the app was installed, the browser's own menu
+// included, which never goes through our affordance.
+
+/** The in-app install affordance was shown. */
+export const pwaInstallOffered = () => track("pwa_install_offered");
+
+/** The browser's installation prompt was answered. */
+export const pwaInstallPrompt = (outcome: "accepted" | "dismissed") =>
+  track("pwa_install_prompt", { outcome });
+
+/** The app was installed — by any route, ours or the browser's own. */
+export const pwaInstalled = () => track("pwa_installed");

@@ -1266,8 +1266,13 @@
 		margin-bottom: 1rem;
 	}
 
+	/* Wraps rather than overflowing: with the day chip present the row is wider
+	   than a 320px screen, and `justify-content: flex-end` on .scope pushed the
+	   excess off the *left* edge, where the ‹ arrow became unreachable. */
 	.ranges {
 		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
 		gap: 0.2rem;
 	}
 
@@ -1339,9 +1344,13 @@
 		background: var(--surface-2);
 	}
 
+	/* min(19rem, 100%), not 19rem: auto-fit tracks do not shrink below their own
+	   minimum, so on a 320px phone a bare 19rem track is wider than the column it
+	   sits in and pushes the whole page sideways. The min() caps the track at the
+	   space available and changes nothing above 19rem. */
 	.charts {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
 		gap: 0.9rem;
 		margin-bottom: 1.25rem;
 	}

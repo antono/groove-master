@@ -47,7 +47,11 @@
 	<p class="muted">No lessons yet. Run <code>python3 scripts/make-lessons.py</code>.</p>
 {:else}
 	{#if continueId}
-		<a class="continue" href="{base}/lessons/{continueId}">
+		<!-- Points at the resolver rather than the resolved lesson, so the button and
+		     the installed app's Continue shortcut are the same destination. The name
+		     beside it still comes from the target computed here, so the student sees
+		     which lesson they are about to open. -->
+		<a class="continue" href="{base}/lessons/continue">
 			Continue{#if continueName}<span class="continue-name"> — {continueName}</span>{/if} →
 		</a>
 	{/if}
@@ -64,10 +68,12 @@
 							<p class="question">{tier.question}</p>
 							<span class="state">Not yet available</span>
 						{:else}
-							<h2><a href="{base}/lessons/tier/{tier.slug}">{tier.name}</a></h2>
+							<h2><a class="stretch" href="{base}/lessons/tier/{tier.slug}">{tier.name}</a></h2>
 							<p class="question">{tier.question}</p>
 							<div class="foot">
-								<a class="enter" href="{base}/lessons/tier/{tier.slug}">Enter →</a>
+								<!-- The whole card is the link (see .stretch), so this is a visible
+								     affordance rather than a second link to the same place. -->
+								<span class="enter">Enter →</span>
 								<span class="count">{roll.cleared}/{roll.total} cleared</span>
 							</div>
 						{/if}
@@ -78,7 +84,11 @@
 				     grouping of every stage, so the catalogue still works. -->
 				{#each manifest.stages as stage (stage.slug)}
 					<article class="tier">
-						<h2><a href="{base}/lessons/stage/{stage.slug}">Stage {stage.number} · {stage.title}</a></h2>
+						<h2>
+							<a class="stretch" href="{base}/lessons/stage/{stage.slug}"
+								>Stage {stage.number} · {stage.title}</a
+							>
+						</h2>
 						<p class="question">{stage.goal}</p>
 					</article>
 				{/each}
@@ -144,10 +154,20 @@
 	}
 
 	.tier {
+		/* Positioning context for the heading link's stretched overlay (.stretch
+		   in app.css), which is what makes the whole card tappable. */
+		position: relative;
 		padding: 1.25rem 1.4rem;
 		background: var(--surface);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
+	}
+
+	/* Hovering anywhere on the card reads as hovering the card, now that
+	   anywhere on the card is the link. */
+	.tier:has(.stretch:hover),
+	.tier:has(.stretch:focus-visible) {
+		border-color: var(--border-strong);
 	}
 
 	.tier.locked {

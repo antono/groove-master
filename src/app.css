@@ -85,7 +85,9 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
+  /* dvh, not vh: on a mobile browser vh is the height with chrome retracted,
+     so a short page's footer sits below the fold until you scroll for it. */
+  min-height: 100dvh;
   background:
     radial-gradient(80rem 40rem at 50% -14rem, #1b1d31 0%, transparent 60%),
     var(--bg);
@@ -123,6 +125,10 @@ button {
   border-radius: var(--radius-sm);
   padding: 0.45em 1.1em;
   cursor: pointer;
+  /* No double-tap zoom on a button. It matters most on the transport during a
+     run, where a fast second press is a real press and not a gesture; pan and
+     pinch are untouched. */
+  touch-action: manipulation;
   transition:
     background 120ms ease,
     border-color 120ms ease,
@@ -174,4 +180,68 @@ input[type="range"] {
 :focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 2px;
+}
+
+/* --- stretched links ------------------------------------------------------
+ *
+ * A block that stands for exactly one destination — a tier, a stage, a lesson
+ * card, a news entry — should be tappable across its whole face, not only on
+ * its title. The title link keeps its place in the heading and grows an
+ * invisible overlay to the edges of the card, which must be the nearest
+ * positioned ancestor (`position: relative`, set by the card's own styles).
+ *
+ * Not a wrapping <a>: that makes the link's accessible name the card's entire
+ * text — summary, rollup and all — and any link or button inside it becomes
+ * invalid HTML. Not an onclick either: that loses middle-click, open-in-new-tab
+ * and the hover target the URL comes from.
+ *
+ * The overlay does prevent selecting the card's text. That is the accepted
+ * cost; a card is something you go to, not something you quote.
+ */
+.stretch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Anything genuinely interactive inside such a card has to sit above the
+   overlay, or the card swallows it. */
+.above-stretch {
+  position: relative;
+  z-index: 2;
+}
+
+/* --- touch targets -------------------------------------------------------
+ *
+ * A finger needs 44px; a mouse does not, and forcing every control to 44px on
+ * a desktop would inflate dense UI (the pad grid, the stats range chips) for
+ * no one's benefit. So this applies only where the pointer is actually coarse.
+ *
+ * The target is grown with a centred pseudo-element rather than by padding the
+ * control, so nothing that is drawn changes size — a 20px slider thumb stays a
+ * 20px slider thumb and simply becomes easier to hit.
+ */
+@media (pointer: coarse) {
+  button,
+  select,
+  summary,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="range"] {
+    min-height: 44px;
+  }
+
+  button,
+  select,
+  [role="button"] {
+    min-width: 44px;
+  }
+
+  /* Range inputs are the awkward case: the thumb is the target, not the input,
+     and it cannot be grown without redrawing it. A taller track gives the
+     thumb the vertical half of the 44px and the horizontal half comes free. */
+  input[type="range"] {
+    height: 44px;
+  }
 }

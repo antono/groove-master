@@ -2,7 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- viewport-fit=cover is what makes env(safe-area-inset-*) non-zero. It
+         also lets content slide under a notch, so every edge-to-edge surface
+         (.app, the run overlay, the menu panel, the result sheet) pads itself
+         with those insets. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta name="text-scale" content="scale" />
     <!-- Google tag (gtag.js) -->
     <script

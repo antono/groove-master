@@ -50,7 +50,12 @@
 	// line: the notes arrive from further off and slower, giving room to prepare
 	// instead of appearing a beat away. See the reactive `PX_PER_BEAT` below.
 	const PX_PER_BEAT_WIDE = 110;
-	const PX_PER_BEAT_NARROW = 110;
+	// 78, not 110: on a 320px phone the hit line leaves roughly 270px of lookahead,
+	// which at the wide spacing is about two and a half beats — a note appears and
+	// is on you. At 78 it is three and a half, most of a bar, which is the
+	// difference between reading the pattern and reacting to it. Eighths still sit
+	// 39px apart against a 26px note block, so nothing collides.
+	const PX_PER_BEAT_NARROW = 78;
 	const LANE_H = 56; // resting lane height; grows to fill the viewport while playing
 	const BEATS_PER_BAR = 4;
 	// One bar of lead-in before the pattern. It is no longer empty: the lesson MIDI
@@ -1501,17 +1506,24 @@
 
 {#if inSession}
 	{#if playing}
+		<!-- On a narrow screen the words drop and the glyphs carry the controls, so
+		     the row still fits across the top instead of wrapping down over the
+		     lanes the student is reading. The words stay in the accessible name. -->
 		<div class="hud">
-			<span class="hud-tempo">{bpm} BPM</span>
+			<span class="hud-tempo">{bpm} <span class="hud-word">BPM</span></span>
 			<button
 				class="view-btn"
 				onclick={cycleView}
 				title="Cycle highway size (compact / medium / full)"
 			>
-				⤢ {viewLabel}
+				⤢ <span class="hud-word">{viewLabel}</span>
 			</button>
-			<button class="pause-btn" onclick={togglePause}>{paused ? '▶ Resume' : '❚❚ Pause'}</button>
-			<button class="exit" onclick={stop}>■ Stop</button>
+			<button class="pause-btn" onclick={togglePause}>
+				{#if paused}▶ <span class="hud-word">Resume</span>{:else}❚❚ <span class="hud-word"
+						>Pause</span
+					>{/if}
+			</button>
+			<button class="exit" onclick={stop}>■ <span class="hud-word">Stop</span></button>
 		</div>
 	{/if}
 
@@ -1577,38 +1589,43 @@
 
 	{#if report}
 		<div class="report">
-			<div class="grade-head">
+			<!-- The body scrolls, the actions do not. On a phone the report fills the
+			     screen and the per-pad table is easily taller than it, so without this
+			     "Try again" would be below the fold of a screen-sized dialog. -->
+			<div class="report-body">
+				<div class="grade-head">
 				<span class="grade grade-{report.grade}">{report.grade}</span>
-				<div>
-					<h2>{report.gradeLabel}</h2>
-					<p class="sub">{Math.round(report.accuracy * 100)}% of notes hit</p>
+					<div>
+						<h2>{report.gradeLabel}</h2>
+						<p class="sub">{Math.round(report.accuracy * 100)}% of notes hit</p>
+					</div>
 				</div>
+				<div class="scoreline">
+					<span class="chip perfect">{report.perfect} perfect</span>
+					<span class="chip good">{report.good} good</span>
+					<span class="chip off">{report.off} off</span>
+					<span class="chip miss">{report.miss} missed</span>
+					{#if report.extra}<span class="chip extra">{report.extra} extra</span>{/if}
+				</div>
+				<p class="timing">
+					Avg timing error <strong>{Math.round(report.avgAbsMs)} ms</strong>
+					({report.early} early / {report.late} late) over {report.hits}/{report.total} notes.
+				</p>
+				<table>
+					<thead>
+						<tr><th>Pad</th><th>Hit</th><th>Avg error</th></tr>
+					</thead>
+					<tbody>
+						{#each report.lanes as l (l.note)}
+							<tr>
+								<td>{l.name}</td>
+								<td>{l.hits}/{l.total}</td>
+								<td>{l.hits ? Math.round(l.avgMs) + ' ms' : '—'}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
 			</div>
-			<div class="scoreline">
-				<span class="chip perfect">{report.perfect} perfect</span>
-				<span class="chip good">{report.good} good</span>
-				<span class="chip off">{report.off} off</span>
-				<span class="chip miss">{report.miss} missed</span>
-				{#if report.extra}<span class="chip extra">{report.extra} extra</span>{/if}
-			</div>
-			<p class="timing">
-				Avg timing error <strong>{Math.round(report.avgAbsMs)} ms</strong>
-				({report.early} early / {report.late} late) over {report.hits}/{report.total} notes.
-			</p>
-			<table>
-				<thead>
-					<tr><th>Pad</th><th>Hit</th><th>Avg error</th></tr>
-				</thead>
-				<tbody>
-					{#each report.lanes as l (l.note)}
-						<tr>
-							<td>{l.name}</td>
-							<td>{l.hits}/{l.total}</td>
-							<td>{l.hits ? Math.round(l.avgMs) + ' ms' : '—'}</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
 			<div class="report-actions">
 				<button class="play" onclick={() => play()}>Try again</button>
 				{#if canIncrease}
@@ -1768,7 +1785,9 @@
 		position: fixed;
 		left: 0;
 		right: 0;
-		bottom: 1.25rem;
+		/* Clear of the home indicator — this is exactly where a thumb reaches for
+		   the pads, and exactly where the system swipe area sits. */
+		bottom: calc(1.25rem + env(safe-area-inset-bottom));
 		z-index: 55;
 		display: flex;
 		justify-content: center;
@@ -2160,7 +2179,12 @@
 		inset: 0;
 		z-index: 50;
 		max-width: none;
-		height: 100vh !important;
+		/* auto, not 100vh: inset:0 already fills the visible viewport and follows
+		   it as mobile browser chrome retracts, whereas 100vh is the height with
+		   the chrome gone and would overflow it by the height of the toolbar —
+		   mid-run, while the compositor is animating. The !important is still
+		   needed to beat the inline lane height the banded modes carry. */
+		height: auto !important;
 		align-items: center;
 		border: none;
 		border-radius: 0;
@@ -2180,7 +2204,10 @@
 	@media (orientation: portrait) {
 		.highway.full {
 			align-items: flex-start;
-			padding-top: 11vh;
+			/* dvh to match the box: the highway is inset:0, i.e. the *visible*
+			   viewport, so a vh-based inset would be measured against a taller box
+			   than the one it is padding. */
+			padding-top: 11dvh;
 		}
 
 		.highway.full .labels {
@@ -2192,12 +2219,35 @@
 	   ?bpm= override is visible while playing. */
 	.hud {
 		position: fixed;
-		top: 1rem;
-		right: 1rem;
+		top: calc(1rem + env(safe-area-inset-top));
+		right: calc(1rem + env(safe-area-inset-right));
+		/* Anchored on both sides so it wraps within the screen instead of growing
+		   off the left edge of it: right-anchored alone, the four controls came to
+		   327px on a 320px phone and the tempo readout was cut in half. */
+		left: calc(1rem + env(safe-area-inset-left));
 		z-index: 60;
 		display: flex;
 		align-items: center;
+		justify-content: flex-end;
+		flex-wrap: wrap;
 		gap: 0.6rem;
+	}
+
+	/* Under 30rem the four controls come to more than the screen is wide. Wrapping
+	   would drop the second row onto the note band — the one part of the screen
+	   that must stay clear — so the words go instead and the glyphs stand in.
+	   Hidden, not removed: each button's accessible name is unchanged. */
+	@media (max-width: 30rem) {
+		.hud-word {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
+		}
 	}
 
 	.hud-tempo {
@@ -2367,8 +2417,9 @@
 		transform: translate(-50%, -50%);
 		z-index: 60;
 		width: min(500px, calc(100vw - 2rem));
-		max-height: 90vh;
-		overflow: auto;
+		max-height: 90dvh;
+		display: flex;
+		flex-direction: column;
 		padding: 1rem 1.25rem;
 		border: 1px solid #2a2a3a;
 		border-radius: 0.5rem;
@@ -2376,9 +2427,60 @@
 		box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
 	}
 
+	.report-body {
+		overflow: auto;
+		/* The scroll lives here rather than on .report so the actions below stay
+		   put; -webkit-overflow-scrolling keeps it momentum-scrolling on iOS. */
+		-webkit-overflow-scrolling: touch;
+	}
+
 	.report-actions {
 		display: flex;
 		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+
+	/* Below the breakpoint the report is the screen, not a card on it: a 500px
+	   dialog centred in a 390px viewport is mostly margin, and its actions end up
+	   wherever the table happens to end. 48rem is MOBILE_BREAKPOINT_REM in
+	   $lib/breakpoints.ts.
+	   Still position: fixed and still an overlay — the frozen highway underneath
+	   must not reflow when this appears or goes (that reflow was a 0.52 CLS). */
+	@media (max-width: 48rem) {
+		.report {
+			/* inset alone: it already resets the top/left the centred card sets, and
+			   re-declaring either as `auto` after it puts the sheet back on its
+			   static position — which reads as a half-height bottom sheet. */
+			inset: 0;
+			transform: none;
+			width: auto;
+			max-height: none;
+			border: none;
+			border-radius: 0;
+			padding: calc(1rem + env(safe-area-inset-top)) calc(1.25rem + env(safe-area-inset-right))
+				calc(1rem + env(safe-area-inset-bottom)) calc(1.25rem + env(safe-area-inset-left));
+		}
+
+		.report-body {
+			flex: 1;
+			min-height: 0;
+		}
+
+		/* Thumb reach: the actions sit at the bottom of the sheet and stay there
+		   however long the per-pad table is. */
+		.report-actions {
+			position: sticky;
+			bottom: 0;
+			padding-top: 0.85rem;
+			margin-top: auto;
+			border-top: 1px solid #2a2a3a;
+			background: #16162a;
+		}
+
+		.report-actions button {
+			flex: 1 1 auto;
+			min-height: 48px;
+		}
 	}
 
 	.done {
