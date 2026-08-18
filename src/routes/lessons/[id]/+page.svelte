@@ -517,14 +517,33 @@
 	// Fetch-only (no AudioContext), so it needs no gesture and can run on visit.
 	// The awaited preload on Play/Listen still guarantees correctness; this only
 	// removes the wait. Runs at low priority and is a no-op once samples are cached.
+	//
+	// It must never run *during* a lesson. `requestIdleCallback` carries a 3 s
+	// timeout, so it fires whether or not the page ever went idle — start a run
+	// inside that window and a few dozen fetches burst through the service worker
+	// while the highway is scrolling. Nothing is lost by cancelling: `play()`
+	// awaits a full preload of exactly these URLs before the first beat, so a run
+	// warms them itself.
+	let cancelWarm: () => void = () => {};
+
 	function warmLessonSamples() {
+		cancelWarm(); // a lesson switch supersedes the previous lesson's warm-up
 		const urls = [
 			...kitNotes.map((n) => drumUrl(kit, n)),
 			...backing.flatMap((t) => t.notes.map((n) => sampleUrl(t.family, t.id, n.note)))
 		];
-		const run = () => void warmUrls(urls);
-		if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 3000 });
-		else setTimeout(run, 500);
+		const run = () => {
+			cancelWarm = () => {};
+			if (playing || demoing) return; // never compete with a run or a preview
+			void warmUrls(urls);
+		};
+		if (typeof requestIdleCallback === 'function') {
+			const id = requestIdleCallback(run, { timeout: 3000 });
+			cancelWarm = () => cancelIdleCallback(id);
+		} else {
+			const id = setTimeout(run, 500);
+			cancelWarm = () => clearTimeout(id);
+		}
 	}
 
 	function bars() {
@@ -916,6 +935,11 @@
 
 	async function play() {
 		if (!parsed || playing) return;
+		// Before the awaits below, not after: `playing` only goes true once they
+		// resolve, so the idle warm-up's 3 s timeout could otherwise still fire
+		// into the preload — or into the first bars — and burst fetches at the
+		// service worker while the highway scrolls.
+		cancelWarm();
 		await enableAudio(); // no-op once audio is already up
 		stopDemo(); // the in-place preview and the real run never overlap
 		await audioCtx?.resume();
@@ -1079,6 +1103,7 @@
 			stopDemo();
 			return;
 		}
+		cancelWarm(); // as in play(): the preview owns the page until it stops
 		await enableAudio();
 		if (!parsed || !audioCtx) return;
 		await audioCtx.resume();
