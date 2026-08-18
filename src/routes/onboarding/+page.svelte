@@ -19,6 +19,7 @@
 	import {
 		Controller,
 		CLOSED_HAT,
+		isDrumNote,
 		OPEN_HAT,
 		type ControllerSummary,
 		type Pad
@@ -300,11 +301,26 @@
 
 		const i = padIndex;
 		controller.setPadNote(i, note);
+		adoptGmSound(i, note);
 		flashHit(i);
 		audition(i);
 
 		captureIndex++;
 		if (captureIndex >= total) finish();
+	}
+
+	/**
+	 * A drum module that names its own pads in GM is telling us more than any
+	 * profile can: the profile was written from a photograph, the module is the
+	 * instrument. So on a kit, a captured note we have a sample for becomes that
+	 * pad's sound, overriding the suggestion.
+	 *
+	 * This is what stops a guessed tom layout (47, 45) from firing the wrong
+	 * drums on a unit that actually sends 45 and 43.
+	 */
+	function adoptGmSound(index: number, note: number) {
+		if (!controller || !isKit) return;
+		if (isDrumNote(note)) controller.setPadSound(index, note);
 	}
 
 	/** Audible confirmation of a capture: the real drum on a kit, a tone on a grid. */
@@ -392,6 +408,7 @@
 			// just played with a foot.
 			if (kickPadIndex >= 0) {
 				controller?.setPadNote(kickPadIndex, note);
+				adoptGmSound(kickPadIndex, note);
 				audition(kickPadIndex);
 			}
 			nextGesture();

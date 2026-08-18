@@ -3,6 +3,13 @@
 
 	const pages = [
 		{
+			href: `${base}/debug/controller`,
+			label: 'Controller',
+			blurb:
+				'What is actually mapped for each controller, a live monitor of what it makes ' +
+				'of your hits, and JSON export/import between origins.'
+		},
+		{
 			href: `${base}/debug/settings`,
 			label: 'Settings',
 			blurb: 'Pad grid, device mapping, kit choice and transport buttons.'

@@ -17,6 +17,7 @@ import OnAir from "./2026-08-07-groove-academy-on-air.svelte";
 import LessonsThatFinish from "./2026-08-08-lessons-that-finish.svelte";
 import PracticeOnEveryDevice from "./2026-08-11-practice-on-every-device.svelte";
 import BringYourKit from "./2026-08-13-bring-your-kit.svelte";
+import PlayWithoutAKit from "./2026-08-17-play-without-a-kit.svelte";
 
 /** Every post body takes the Mastodon URL, so the handle is written once. */
 export type NewsBody = Component<{ mastodon: string }>;
@@ -35,6 +36,16 @@ export type NewsEntry = {
 export const MASTODON = "https://mastodon.social/@groove_academy";
 
 export const NEWS: NewsEntry[] = [
+  {
+    slug: "2026-08-17-play-without-a-kit",
+    date: "2026-08-17",
+    title: "Play without a kit",
+    summary:
+      "Your computer keyboard and a grid of on-screen pads are now instruments " +
+      "the app listens to, so a lesson is playable with no hardware and on a " +
+      "phone for the first time — and the highway arrives from further off.",
+    body: PlayWithoutAKit,
+  },
   {
     slug: "2026-08-13-bring-your-kit",
     date: "2026-08-13",

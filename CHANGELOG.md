@@ -7,6 +7,74 @@ only shows up in how the project is built.
 Announcements for each release live in [`/news`](src/lib/news/); this file is
 the complete list, that one is the readable half.
 
+## v0.1.0 — 17 August 2026
+
+The app stopped needing hardware. Twelve commits.
+
+### User-facing
+
+**Play with no controller at all.** A computer keyboard and a grid of on-screen
+pads are now input sources in their own right, offered on setup's first step
+under "No controller?". Six pads — kick, snare, closed and open hi-hat, crash,
+ride — which is every drum the curriculum leans on. On a keyboard they sit under
+`F G H` with `R T Y` above, bound by **physical key position** rather than the
+printed letter, so the shape holds on AZERTY and Dvorak; `Space` starts and
+resumes, `Escape` pauses and stops on a second press. They are ordinary sources
+rather than a fallback mode: chosen
+from the same device list, edited with the same per-pad dropdown, and recorded in
+your stats under their own name, so keyboard practice stays tellable apart from
+kit practice.
+
+**A touchscreen can play a lesson.** No mobile browser implements Web MIDI, so a
+phone or tablet previously had no way in at all. The on-screen pads lay out 2×3
+to fit a phone and 3×2 wider, sit beside the pattern chart exactly where a kit's
+schematic does, and take the room below the lanes during a run.
+
+**A get-ready cue.** On a touch run, the pad whose note is approaching the hit
+line rings about a beat ahead — you are looking at your fingers, not the highway,
+so the cue goes where your eyes already are. Only touch runs pay for the
+per-frame work.
+
+**A calmer highway.** Notes travel 110 pixels per beat instead of 280, so at any
+tempo they arrive from further off and much more of the pattern is readable
+before it reaches you. Scoring is unaffected: it reads the audio clock and never
+pixels.
+
+**Kit pads that sound like the drums they are.** A drum module that names its
+pads in GM knows more about them than a profile written from a photograph, so on
+a kit a captured note we hold a sample for now becomes that pad's sound,
+overriding the profile's suggestion. The MD-90's toms are corrected against real
+hardware (47/45 → 45/43). Pad grids are untouched — an MPD218's notes are
+addresses, not drums.
+
+**Fixed: revealing a quote's testimonial shoved the buttons away.** It rendered
+in the flow, pushing Like/Dislike down as it appeared. It floats now, and neither
+the quote nor its buttons move.
+
+### Internal
+
+- `/debug/controller`: the stored mapping as a record rather than an
+  interpretation — every pad with the note it listens for and the drum it fires,
+  the hi-hat wiring, the transport bindings, plus a live monitor of what
+  `Controller.handle()` makes of each incoming message. Exports and imports that
+  record as JSON, and **import always re-targets**: a mapping is keyed by MIDI
+  port id and browsers scope that per origin, so the id inside a file cannot be
+  honoured.
+- The production build no longer runs `scripts/check-kits.py`. `.vercelignore`
+  excludes `scripts/`, so the v0.0.4 deploy died on the host with a missing-file
+  error five seconds in; the check stays in `pnpm check`, where authoring checks
+  belong.
+- The WTFPL licence file is removed. No project licence ships with the source for
+  now; the licence mentions left in `THANKS.md` are third-party sample credits.
+- Release process: version numbers stay out of announcements — they live in the
+  annotated tag and this file, and nowhere a reader looks.
+- openspec: a `virtual-controllers` change (proposal, design, six requirements,
+  tasks) written before the work and updated through it; `lessons-layout`
+  archived and a baseline `lessons-catalogue` spec captured from its delta.
+- devenv: agent skills are discovered from the tool-neutral `.agents/skills` and
+  mirrored into `.claude/skills` on shell entry, so one copy serves every
+  assistant; devenv and nixpkgs inputs bumped.
+
 ## v0.0.4 — 13 August 2026
 
 The app stopped assuming what you play it on. Nine commits.
