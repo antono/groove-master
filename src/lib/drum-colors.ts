@@ -16,6 +16,18 @@ const familyHue = new Map<number, string>([
   [42, FAMILY_HUES[0]], // closed hi-hat
   [44, FAMILY_HUES[0]], // pedal hi-hat
   [46, FAMILY_HUES[0]], // open hi-hat
+  // The rest of the cymbals share the hat's hue, because they are the same
+  // family and there are only three. Leaving them to the fallback made a drum's
+  // colour depend on how many lanes the *lesson* had: a crash was the hat hue in
+  // "Crash on 1" (top lane) and the snare's in "Crash, then Ride" (second lane),
+  // which is precisely what a hue-by-family map exists to prevent.
+  [49, FAMILY_HUES[0]], // crash
+  [51, FAMILY_HUES[0]], // ride
+  [52, FAMILY_HUES[0]], // china
+  [53, FAMILY_HUES[0]], // ride bell
+  [55, FAMILY_HUES[0]], // splash
+  [57, FAMILY_HUES[0]], // crash 2
+  [59, FAMILY_HUES[0]], // ride 2
 ]);
 
 export function laneColor(note: number, laneIndex: number): string {
