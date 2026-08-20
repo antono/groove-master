@@ -2,9 +2,10 @@
 
 How Groove Academy's lessons are ordered, why, and where the ladder goes.
 
-Stages 1 and 2 are built to this design; everything past Stage 3 is still a
-plan. `LESSONS.md` is the lesson-by-lesson index and says what is live,
-`AGENTS.md` is the record of how the machinery works.
+Stages 1 to 7 are built to this design (Stage 7 only in part); everything past
+them is still a plan.
+`LESSONS.md` is the lesson-by-lesson index and says what is live, `AGENTS.md` is
+the record of how the machinery works.
 
 ---
 
@@ -138,7 +139,7 @@ Modules are a catalogue heading, not a number: numbering stays two levels and
 runs straight through the stage (`1.1` … `1.9`), so nobody has to say "1.2.1".
 Stages themselves are numbered **within their tier** — every tier restarts at
 Stage 1 — because in the drill-down catalogue a student is always inside a tier,
-and a global "Stage 3 · Subdivision" reads oddly where "Vocabulary · Stage 1"
+and a global "Stage 6 · Subdivision" reads oddly where "Vocabulary · Stage 1"
 does not. The stage part of a lesson number is therefore tier-local too.
 
 The lesson-by-lesson index is [`LESSONS.md`](../LESSONS.md).
@@ -188,8 +189,8 @@ manufacture difficulty by piling on notes.
 
 ## 6. The roadmap
 
-Four tiers, ten stages, thirty modules, three lessons each. This is the shape;
-the lesson-level index — every slug, tier, pattern and status — is
+Four tiers, thirteen stages, three modules each, three lessons per module. This
+is the shape; the lesson-level index — every slug, tier, pattern and status — is
 [`LESSONS.md`](../LESSONS.md).
 
 `[✓]` has lessons shipping today, `[→]` is the next batch to write, `[⊘]` is
@@ -202,46 +203,49 @@ FOUNDATIONS ─ can you keep time and stack two hands?
 │   └── gear & 4×4 layout · hit-don't-press · reading the highway · how to practise
 │
 ├── Stage 1 · Pulse                        one voice at a time; nothing stacks
-│   ├── [✓] The strike            quarters, one hand
-│   ├── [→] Two hands             alternation
-│   ├── [→] One hand, faster      density
-│   └── [→] ◆ Checkpoint 1
+│   ├── [✓] The strike  ├── [✓] Two hands  ├── [✓] One hand, faster  └── [✓] ◆ 1
 │
-└── Stage 2 · The Backbeat                 two and three voices; fixed fingers
-    ├── [→] Trading               two voices, never together
-    ├── [✓] Stacking              voices as one sound
-    ├── [✓] The rock beat         the groove
-    └── [→] ◆ Checkpoint 2
+├── Stage 2 · The Backbeat                 two and three voices; fixed fingers
+│   ├── [✓] Trading  ├── [✓] Stacking  ├── [✓] The rock beat  └── [✓] ◆ 2
+│
+├── Stage 3 · Space                        the notes you do not play
+│   ├── [✓] Holes  ├── [✓] Stop time  ├── [✓] Sparse  └── [✓] ◆ 3
+│
+├── Stage 4 · The Cymbals                  ride, crash, open hat; travel with a reason
+│   ├── [✓] The ride  ├── [✓] The crash  ├── [✓] Open and closed  └── [✓] ◆ 4
+│
+└── Stage 5 · Two Bars                     form: a groove with an end
+    ├── [✓] Question and answer  ├── [✓] Four bars  ├── [✓] The turnaround  └── [✓] ◆ 5
 
 VOCABULARY ─ do you have hands, and things to say with them?
 │
-├── Stage 3 · Subdivision & the grid
-│   ├── Sixteenths  ├── Triplets  ├── Feel  └── ◆ Checkpoint 3
+├── Stage 6 · Subdivision & the grid       two grids, three pads, no open hat
+│   ├── [✓] Sixteenths  ├── [✓] Triplets  ├── [✓] Feel  └── [✓] ◆ 6
 │
-├── Stage 4 · Sticking
-│   ├── Strokes  ├── [✓] The paradiddle  ├── Bigger diddles  └── ◆ Checkpoint 4
+├── Stage 7 · Sticking
+│   ├── Strokes  ├── [✓] The paradiddle  ├── Bigger diddles  └── ◆ 7
 │
-├── Stage 5 · Syncopation & displacement
-│   ├── Pushing  ├── Displacement  ├── Feel shifts  └── ◆ Checkpoint 5
+├── Stage 8 · Syncopation & displacement
+│   ├── Pushing  ├── Displacement  ├── Feel shifts  └── ◆ 8
 │
-└── Stage 6 · Dynamics                                    [⊘ velocity scoring]
-    ├── Accents  ├── Ghost notes  └── Flams               [⊘ sub-grid scoring]
+└── Stage 9 · Dynamics                                     [⊘ velocity scoring]
+    ├── Accents  ├── Ghost notes  └── Flams                [⊘ sub-grid scoring]
 
 MUSIC ─ can you play something someone wants to hear?
 │
-├── Stage 7 · Form & fills                                [⊘ multi-bar phrases]
+├── Stage 10 · Form & fills                                [⊘ 8-bar forms]
 │   ├── Phrasing  ├── Fills  └── Form
 │
-└── Stage 8 · Styles                       one module per style, triad each
+└── Stage 11 · Styles                      one module per style, triad each
     ├── Rock  ├── Funk  ├── Hip-hop  ├── House & disco
     └── Breakbeat & DnB  ├── Jazz  ├── Latin  └── Reggae & afrobeat
 
 MASTERY ─ can you make it your own?
 │
-├── Stage 9 · Independence & polyrhythm
-│   ├── Ostinato  ├── Polyrhythm  └── Odd meters          [⊘ time signatures]
+├── Stage 12 · Independence & polyrhythm
+│   ├── Ostinato  ├── Polyrhythm  └── Odd meters           [⊘ time signatures]
 │
-└── Stage 10 · Performance
+└── Stage 13 · Performance
     ├── Speed  ├── Repertoire  [⊘ long-form]  └── Your own voice
 ```
 
@@ -252,13 +256,21 @@ MASTERY ─ can you make it your own?
 The roadmap outruns the engine in four specific places. Each is a small, bounded
 piece of work that unlocks a whole stage.
 
-| need                | blocks  | what it means                                                      |
-| ------------------- | ------- | ------------------------------------------------------------------ |
-| stage/module/prereq | all     | manifest fields + catalogue headings + a roadmap view              |
-| velocity scoring    | Stage 6 | grade the note-on velocity we already receive and throw away today |
-| multi-bar phrasing  | Stage 7 | generators and the chart assume a 4-bar loop of identical bars     |
-| time signatures     | Stage 9 | `BEATS_PER_BAR = 4` is a constant in the generator and the page    |
-| sub-grid tolerance  | flams   | a fixed ±ms window around a grid position marks a flam as an error |
+| need                  | blocks   | what it means                                                           |
+| --------------------- | -------- | ----------------------------------------------------------------------- |
+| stage/module/prereq   | all      | manifest fields + catalogue headings + a roadmap view                   |
+| velocity scoring      | Stage 9  | grade the note-on velocity we already receive and throw away today      |
+| forms over 4 bars     | Stage 10 | a lesson is 4 bars; an 8-bar form needs the chart and highway to say so |
+| time signatures       | Stage 12 | `BEATS_PER_BAR = 4` is a constant in the generator and the page         |
+| sub-grid tolerance    | flams    | a fixed ±ms window around a grid position marks a flam as an error      |
+| per-note match window | 16ths    | `MATCH_WINDOW_BEATS` is 0.4 beats, wider than a 16th at 0.25            |
+
+**"Multi-bar phrasing" is no longer on this list.** It was, on the belief that
+the generators and the chart assumed a 4-bar loop of identical bars; they do
+not. `per_bar()` has always been able to differ bar by bar, the chart draws
+whatever it is given, and Stage 5 · Two Bars is built entirely out of that. What
+is genuinely missing for Music is length: a lesson is four bars, and an 8-bar
+form has nowhere to go.
 
 Two smaller ones worth doing early because they make existing lessons better
 rather than adding new ones:
@@ -275,8 +287,8 @@ rather than adding new ones:
 ## 8. What was done
 
 The restructure landed: slug ids, stage/module/tier/prereq in the manifest, the
-generator split into `scripts/lessons/`, and Stages 1 and 2 written out in full
-— nineteen playable lessons and two checkpoints where there were five lessons.
+generator split into `scripts/lessons/`, and six stages written out in full —
+fifty-six playable lessons and six checkpoints where there were five lessons.
 
 | was | is                  | stage | module         | tier    | now |
 | --- | ------------------- | ----- | -------------- | ------- | --- |
@@ -289,11 +301,25 @@ generator split into `scripts/lessons/`, and Stages 1 and 2 written out in full
 Every previously shipped lesson landed as a `plain` or the top of a module —
 the diagnosis restated: the old curriculum was all peaks and no approach.
 
-Stage 3 and the rest of Stage 4 are declared as `planned()` slots, so they hold
-their numbers and show in the catalogue as the road ahead. Next up is Stage 3,
-and then the two engine changes that unlock the most: **velocity scoring** (the
-whole of Stage 6) and **mutable lanes**, which turn every existing lesson into
-three drills without writing a note.
+Subdivision then landed whole. It moves exactly one axis — **B, subdivision** — and
+holds every other one still: three pads for all ten lessons, no hand travel, no
+open hat, kick and snare parked on the numbers wherever the point is the hat.
+The two new grids arrive in the order they can be built from each other: 16ths
+(two halved again), triplets (a division that shares nothing with them but the
+beat), then the shuffle, which is a triplet with its middle note removed — a
+relationship the code makes literal, since `triplets_broken` is derived from the
+full triplet rather than written out beside it.
+
+It also cost one new backing line. Every bass in `bass.py` was written on the
+straight grid, and under triplets they stop sorting by support and start simply
+landing on a slot the feel does not have, so the Feel and Triplets modules fade
+`shuffle` → `quarter` → straight instead.
+
+The rest of Sticking is still `planned()` slots, holding their numbers. Next are
+the two engine changes that unlock the most: **velocity scoring** (the whole of
+Stage 9, and the ghost notes the half-time shuffle is currently missing) and
+**mutable lanes**, which turn every existing lesson into three drills without
+writing a note.
 
 ---
 
@@ -304,3 +330,32 @@ three drills without writing a note.
 [trinity]: https://www.trinitycollege.com/resource?id=8831
 [ci]: https://cognitivesciencesociety.org/cogsci20/papers/0469/0469.pdf
 [music-ci]: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4989027/
+
+---
+
+## 9. Foundations grew by three
+
+Foundations shipped as two stages and a question — "can you keep time and stack
+two hands?" — that they only half answered. Two more things belong under it
+before a student is ready for Vocabulary, and one of them is not a rhythm at all.
+
+**Stage 3 · Space** is the notes you do not play. Every pattern in it is Stage 2
+with a beat, a half bar or a whole bar removed. It moves no axis at all in the
+table above, which is the point: a hole is the _absence_ of complexity, and it is
+where a beginner's time actually fails, because inside a run of notes the hands
+cover for the clock.
+
+**Stage 4 · The Cymbals** is the rest of the instrument. Ride, crash and open hat
+— the three pads the on-screen controller ships with that the curriculum had
+never asked for — so it moves **A** (voices) and **G** (hand travel) on rhythms
+the student already owns. A crash is not a rhythm, it is a decision, and it is
+the first one a student makes with a hand rather than a finger.
+
+**Stage 5 · Two Bars** is **H** (form), one bar early. Nothing in it is finer
+than an 8th or off the beat; what is new is that four bars are one thing rather
+than four attempts at the same thing, and that it is possible to play every note
+correctly and still play it wrongly by losing your place.
+
+Inserting them moved every stage number from Subdivision onwards up by three.
+Nothing a student owns moved with it: practice history and tempo ceilings are
+keyed by slug, and the displayed number has always been rendered from position.

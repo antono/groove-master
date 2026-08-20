@@ -121,38 +121,173 @@ sound. Fixed finger positions throughout; no hand travels until 2.9.
 > doubling the subdivision and introducing the first triple stack in one step.
 > 2.5, 2.6 and 2.7 are the rungs that were missing.
 
-## Stage 3 · Subdivision & the grid
+## Stage 3 · Space
+
+**Goal** — the notes you do not play. A groove you already own with a beat, a
+half bar or a whole bar taken out of it, and coming back in exactly on time.
+
+No new pad, no finer grid, no hand travel: every pattern here is Stage 2 with
+something removed. Silence is where a beginner's time actually fails — inside a
+run of notes the hands cover for the clock, and the moment nothing sounds the
+clock is all there is.
+
+### Module: Holes — a beat taken out
+
+| #   | slug                  | tier    | status | pattern                                    | bass       |
+| --- | --------------------- | ------- | ------ | ------------------------------------------ | ---------- |
+| 3.1 | `groove-hole-3`       | plain   | live   | the rock beat with beat 3 emptied          | quarter    |
+| 3.2 | `groove-hole-bar-end` | core    | live   | beat 4 emptied — re-enter on the down-beat | octave     |
+| 3.3 | `holes-walking`       | stretch | live   | the hole moves a beat later each bar       | syncopated |
+
+### Module: Stop time — a bar with nothing in it
+
+| #   | slug                   | tier    | status | pattern                                 | bass       |
+| --- | ---------------------- | ------- | ------ | --------------------------------------- | ---------- |
+| 3.4 | `stop-every-other-bar` | plain   | live   | one bar of groove, one bar of nothing   | quarter    |
+| 3.5 | `stop-and-answer`      | core    | live   | one snare on beat 4 of the empty bar    | riff       |
+| 3.6 | `stops-alternating`    | stretch | live   | two beats on, two off — the halves swap | syncopated |
+
+### Module: Sparse — almost nothing, exactly on time
+
+| #   | slug              | tier    | status | pattern                                | bass       |
+| --- | ----------------- | ------- | ------ | -------------------------------------- | ---------- |
+| 3.7 | `whole-notes`     | plain   | live   | kick and hat on beat 1, nothing else   | quarter    |
+| 3.8 | `half-notes`      | core    | live   | kick on 1, snare on 3, a hat with each | octave     |
+| 3.9 | `sparse-doubling` | stretch | live   | one hit, two, four, eight — same pulse | syncopated |
+
+**◆ Checkpoint 3** `checkpoint-3` — a hole, a whole empty bar, a crawl, a half
+bar: four bars, four different silences.
+
+> The backing bass matters more in this stage than anywhere else in the
+> curriculum, because during a hole it is the only thing left. That is why these
+> lessons fade from `quarter` — a note on every beat you are missing — to
+> `syncopated`, which is no help at all.
+
+## Stage 4 · The Cymbals
+
+**Goal** — the three pads beyond the core three: ride, crash and open hat. The
+same time on a different cymbal, and the first hand travel with a musical reason
+rather than a rhythmic one.
+
+Kick, snare, closed hat, open hat, ride and crash are exactly the six pads the
+on-screen controller ships with, so every lesson here is playable with no
+hardware at all. Toms are not in that set and so are not in the curriculum.
+
+### Module: The ride — a second timekeeper
+
+| #   | slug             | tier    | status | pattern                                 | bass    |
+| --- | ---------------- | ------- | ------ | --------------------------------------- | ------- |
+| 4.1 | `ride-quarters`  | plain   | live   | ride on all four, kick on 1 & 3         | quarter |
+| 4.2 | `rock-beat-ride` | core    | live   | the rock beat with the ride on the 8ths | octave  |
+| 4.3 | `hat-to-ride`    | stretch | live   | two bars hat, two bars ride — travel    | octave  |
+
+### Module: The crash — the note that opens a phrase
+
+| #   | slug              | tier    | status | pattern                                      | bass       |
+| --- | ----------------- | ------- | ------ | -------------------------------------------- | ---------- |
+| 4.4 | `crash-on-one`    | plain   | live   | crash on every down-beat — a three-pad stack | quarter    |
+| 4.5 | `crash-every-two` | core    | live   | crash on bars 1 and 3 — the two-bar phrase   | octave     |
+| 4.6 | `crash-into-ride` | stretch | live   | crash on 1, ride from the "and"              | syncopated |
+
+### Module: Open and closed — the hat that hands the bar over
+
+| #   | slug               | tier    | status | pattern                                 | bass       |
+| --- | ------------------ | ------- | ------ | --------------------------------------- | ---------- |
+| 4.7 | `open-hat-lead-in` | plain   | live   | closed hats with the last 8th opened up | quarter    |
+| 4.8 | `crash-after-open` | core    | live   | the open hat landing on a crash         | octave     |
+| 4.9 | `every-pad`        | stretch | live   | hats and open hat, then ride and crash  | syncopated |
+
+**◆ Checkpoint 4** `checkpoint-4` — one bar each of 4.2 / 4.4 / 4.7 / 4.6: the
+timekeeping hand on a different pad in every bar.
+
+## Stage 5 · Two Bars
+
+**Goal** — a groove with a beginning and an end. Bar 2 answers bar 1, a cymbal
+marks the top of the phrase, and the last two beats hand it back.
+
+Nothing here is finer than an 8th note and nothing lands off the beat, because
+the new axis is **form** (H) and a stage that moved form and subdivision at once
+could not tell the student which one they failed. Music's Stage 10 keeps fills
+and 8-bar form; this is the two-bar unit they are built from.
+
+### Module: Question and answer — bar two replies
+
+| #   | slug            | tier    | status | pattern                                 | bass       |
+| --- | --------------- | ------- | ------ | --------------------------------------- | ---------- |
+| 5.1 | `two-bar-kick`  | plain   | live   | bar 2 adds one kick, on beat 4          | quarter    |
+| 5.2 | `two-bar-snare` | core    | live   | bar 2 puts the snare on 2, 3 and 4      | octave     |
+| 5.3 | `two-bar-both`  | stretch | live   | a crash on bar 1, both answers in bar 2 | syncopated |
+
+### Module: Four bars — a phrase you can hear the end of
+
+| #   | slug             | tier    | status | pattern                                    | bass       |
+| --- | ---------------- | ------- | ------ | ------------------------------------------ | ---------- |
+| 5.4 | `four-bar-crash` | plain   | live   | one crash every four bars                  | quarter    |
+| 5.5 | `four-bar-build` | core    | live   | quarters, 8ths, more kick, then the answer | riff       |
+| 5.6 | `four-bar-drop`  | stretch | live   | bar 4 is its down-beat and nothing else    | syncopated |
+
+### Module: The turnaround — the way back to bar one
+
+| #   | slug                  | tier    | status | pattern                                 | bass       |
+| --- | --------------------- | ------- | ------ | --------------------------------------- | ---------- |
+| 5.7 | `turnaround-snare`    | plain   | live   | the last two beats given to the snare   | quarter    |
+| 5.8 | `turnaround-open-hat` | core    | live   | crash at the top, open hat at the end   | riff       |
+| 5.9 | `full-phrase`         | stretch | live   | all six pads across one four-bar phrase | syncopated |
+
+**◆ Checkpoint 5** `checkpoint-5` — one four-bar phrase: the top, the answer,
+the ride, the turnaround. This closes Foundations.
+
+> These three stages were added after Stages 1 and 2 and before Vocabulary, so
+> every stage number from Subdivision onwards moved up by three. Nothing a
+> student owns moved: history and tempo ceilings are keyed by slug, and the
+> displayed lesson number has always been rendered from position.
+
+## Stage 6 · Subdivision & the grid
 
 **Goal** — the 16th grid and the triplet grid, and a note placed anywhere on
-either.
+either. Three pads throughout — kick, snare and closed hat, and no cymbals at all
+after a whole stage of them — because everything hard here is meant to be
+_where the notes are_.
+No open hat, so the whole stage plays on a kit with no working hi-hat pedal.
 
-### Module: Sixteenths
+### Module: Sixteenths — twice as fine
 
-| #   | slug               | tier    | status | pattern                                          |
-| --- | ------------------ | ------- | ------ | ------------------------------------------------ |
-| 3.1 | `hats-16ths-split` | plain   | todo   | 16th hats shared between the hands, nothing else |
-| 3.2 | `rock-16th-hats`   | core    | todo   | the same over a backbeat                         |
-| 3.3 | `kick-16th-grid`   | stretch | todo   | kick on the "e" and the "a"                      |
+| #   | slug               | tier    | status | pattern                                          | bass       |
+| --- | ------------------ | ------- | ------ | ------------------------------------------------ | ---------- |
+| 6.1 | `hats-16ths-split` | plain   | live   | 16th hats shared between the hands, nothing else | quarter    |
+| 6.2 | `rock-16th-hats`   | core    | live   | the same over kick 1 & 3, snare 2 & 4            | octave     |
+| 6.3 | `kick-16th-grid`   | stretch | live   | 8th hats, kick on the "a" of 1 and the "e" of 3  | syncopated |
 
-### Module: Triplets
+### Module: Triplets — three where there were two
 
-| #   | slug              | tier    | status | pattern                                        |
-| --- | ----------------- | ------- | ------ | ---------------------------------------------- |
-| 3.4 | `triplets-8th`    | plain   | todo   | 8th-note triplets, hand to hand                |
-| 3.5 | `triplet-groove`  | core    | todo   | triplet hats over a backbeat                   |
-| 3.6 | `triplets-broken` | stretch | todo   | the middle note dropped — the shuffle skeleton |
+| #   | slug              | tier    | status | pattern                                                          | bass       |
+| --- | ----------------- | ------- | ------ | ---------------------------------------------------------------- | ---------- |
+| 6.4 | `triplets-8th`    | plain   | live   | 8th-note triplets, hand to hand — the lead hand swaps every beat | shuffle    |
+| 6.5 | `triplet-groove`  | core    | live   | triplet hats over the backbeat — the 12/8 feel                   | quarter    |
+| 6.6 | `triplets-broken` | stretch | live   | the middle note dropped, and the sticking becomes doubles        | syncopated |
 
-### Module: Feel
+### Module: Feel — straight and swung
 
-| #   | slug                | tier    | status | pattern                                                 |
-| --- | ------------------- | ------- | ------ | ------------------------------------------------------- |
-| 3.7 | `shuffle-hats`      | plain   | todo   | swung 8ths on the hat                                   |
-| 3.8 | `shuffle-groove`    | core    | todo   | the full shuffle with kick and backbeat                 |
-| 3.9 | `half-time-shuffle` | stretch | todo   | the shuffle at half time (ghost notes wait for Stage 6) |
+| #   | slug                | tier    | status | pattern                                                 | bass       |
+| --- | ------------------- | ------- | ------ | ------------------------------------------------------- | ---------- |
+| 6.7 | `shuffle-hats`      | plain   | live   | swung 8ths on the hat, one hand                         | shuffle    |
+| 6.8 | `shuffle-groove`    | core    | live   | the full shuffle with kick and backbeat                 | shuffle    |
+| 6.9 | `half-time-shuffle` | stretch | live   | the shuffle at half time (ghost notes wait for Stage 9) | syncopated |
 
-**◆ Checkpoint 3** — straight 16ths / triplets / shuffle / half-time shuffle.
+**◆ Checkpoint 6** `checkpoint-6` — one bar each of 6.2 / 6.5 / 6.8 / 6.9:
+16ths, triplets, shuffle, half-time shuffle, on the same three pads.
 
-## Stage 4 · Sticking
+> **In triplet feel the bass ladder is re-derived, not reused.** Every line in
+> `bass.py` except `shuffle` is written on the straight grid, so under triplets
+> they stop sorting by support: `octave`, `answer` and `syncopated` all land on
+> the "and", a slot a shuffle does not have. That leaves `quarter`, which marks
+> the beat and says nothing about how it is divided, and `shuffle`, which plays
+> the new grid alongside the student. Modules 2 and 3 therefore fade from
+> `shuffle` to `quarter` to a straight line — the same fade, upside down. The
+> checkpoint takes `quarter` because it is the only line that does not lie about
+> one of the two grids it interleaves.
+
+## Stage 7 · Sticking
 
 **Goal** — rudiments, then rudiments inside a groove. _Which_ hand plays a note
 starts to matter as much as when.
@@ -161,33 +296,33 @@ starts to matter as much as when.
 
 | #   | slug            | tier    | status | pattern                     |
 | --- | --------------- | ------- | ------ | --------------------------- |
-| 4.1 | `singles-16ths` | plain   | todo   | single stroke roll in 16ths |
-| 4.2 | `doubles-8ths`  | core    | todo   | R R L L in 8ths             |
-| 4.3 | `doubles-16ths` | stretch | todo   | R R L L in 16ths            |
+| 7.1 | `singles-16ths` | plain   | todo   | single stroke roll in 16ths |
+| 7.2 | `doubles-8ths`  | core    | todo   | R R L L in 8ths             |
+| 7.3 | `doubles-16ths` | stretch | todo   | R R L L in 16ths            |
 
 ### Module: The paradiddle
 
 | #   | slug                    | tier    | status | pattern                                              |
 | --- | ----------------------- | ------- | ------ | ---------------------------------------------------- |
-| 4.4 | `paradiddle-single`     | plain   | live   | R L R R / L R L L in 8ths                            |
-| 4.5 | `paradiddle-groove`     | core    | live   | the paradiddle across hat and snare, kick underneath |
-| 4.6 | `paradiddle-inversions` | stretch | todo   | the four inversions, one per bar                     |
+| 7.4 | `paradiddle-single`     | plain   | live   | R L R R / L R L L in 8ths                            |
+| 7.5 | `paradiddle-groove`     | core    | live   | the paradiddle across hat and snare, kick underneath |
+| 7.6 | `paradiddle-inversions` | stretch | todo   | the four inversions, one per bar                     |
 
 ### Module: Bigger diddles
 
 | #   | slug                | tier    | status | pattern                   |
 | --- | ------------------- | ------- | ------ | ------------------------- |
-| 4.7 | `paradiddle-double` | plain   | todo   | R L R L R R / L R L R L L |
-| 4.8 | `paradiddle-diddle` | core    | todo   | R L R R L L               |
-| 4.9 | `six-stroke-roll`   | stretch | todo   | R L L R R L               |
+| 7.7 | `paradiddle-double` | plain   | todo   | R L R L R R / L R L R L L |
+| 7.8 | `paradiddle-diddle` | core    | todo   | R L R R L L               |
+| 7.9 | `six-stroke-roll`   | stretch | todo   | R L L R R L               |
 
-**◆ Checkpoint 4** — singles / doubles / paradiddle / an inversion.
+**◆ Checkpoint 7** — singles / doubles / paradiddle / an inversion.
 
-> `paradiddle-single` ships today as lesson 3.1, with nothing before it that
+> `paradiddle-single` ships today as lesson 6.1, with nothing before it that
 > ever alternates the hands. Stage 1's `alternating-8ths` and this stage's
 > `singles` and `doubles` are its missing prerequisites.
 
-## Stage 5 · Syncopation & displacement
+## Stage 8 · Syncopation & displacement
 
 **Goal** — playing against the grid without losing it.
 
@@ -195,29 +330,29 @@ starts to matter as much as when.
 
 | #   | slug          | tier    | status | pattern                        |
 | --- | ------------- | ------- | ------ | ------------------------------ |
-| 5.1 | `upbeat-hats` | plain   | todo   | hats on the off-beats only     |
-| 5.2 | `kick-pushed` | core    | todo   | kick on the "and" of 2 and 4   |
-| 5.3 | `all-upbeats` | stretch | todo   | the whole groove on the "and"s |
+| 8.1 | `upbeat-hats` | plain   | todo   | hats on the off-beats only     |
+| 8.2 | `kick-pushed` | core    | todo   | kick on the "and" of 2 and 4   |
+| 8.3 | `all-upbeats` | stretch | todo   | the whole groove on the "and"s |
 
 ### Module: Displacement
 
 | #   | slug                   | tier    | status | pattern                              |
 | --- | ---------------------- | ------- | ------ | ------------------------------------ |
-| 5.4 | `snare-displaced-8th`  | plain   | todo   | backbeat moved to the "and"          |
-| 5.5 | `snare-displaced-16th` | core    | todo   | backbeat on the "a" of 2             |
-| 5.6 | `groove-displaced`     | stretch | todo   | the whole groove shifted a 16th late |
+| 8.4 | `snare-displaced-8th`  | plain   | todo   | backbeat moved to the "and"          |
+| 8.5 | `snare-displaced-16th` | core    | todo   | backbeat on the "a" of 2             |
+| 8.6 | `groove-displaced`     | stretch | todo   | the whole groove shifted a 16th late |
 
 ### Module: Feel shifts
 
 | #   | slug          | tier    | status | pattern                                     |
 | --- | ------------- | ------- | ------ | ------------------------------------------- |
-| 5.7 | `half-time`   | plain   | todo   | one backbeat per bar                        |
-| 5.8 | `double-time` | core    | todo   | the same groove at twice the density        |
-| 5.9 | `feel-switch` | stretch | todo   | half and double time, alternating every bar |
+| 8.7 | `half-time`   | plain   | todo   | one backbeat per bar                        |
+| 8.8 | `double-time` | core    | todo   | the same groove at twice the density        |
+| 8.9 | `feel-switch` | stretch | todo   | half and double time, alternating every bar |
 
-**◆ Checkpoint 5** — pushed / displaced / half / double.
+**◆ Checkpoint 8** — pushed / displaced / half / double.
 
-## Stage 6 · Dynamics · blocked
+## Stage 9 · Dynamics · blocked
 
 We receive note-on velocity and throw it away. Grading it unlocks this whole
 stage — and with it the difference between a beginner's groove and a
@@ -227,56 +362,56 @@ musician's.
 
 | #   | slug                   | tier    | status  | pattern                                |
 | --- | ---------------------- | ------- | ------- | -------------------------------------- |
-| 6.1 | `hat-accents-quarters` | plain   | blocked | accent the numbers, ghost the rest     |
-| 6.2 | `hat-accents-8ths`     | core    | blocked | an accent pattern across 8th hats      |
-| 6.3 | `hat-shaping`          | stretch | blocked | a hat line shaped across the whole bar |
+| 9.1 | `hat-accents-quarters` | plain   | blocked | accent the numbers, ghost the rest     |
+| 9.2 | `hat-accents-8ths`     | core    | blocked | an accent pattern across 8th hats      |
+| 9.3 | `hat-shaping`          | stretch | blocked | a hat line shaped across the whole bar |
 
 ### Module: Ghost notes
 
 | #   | slug              | tier    | status  | pattern                                 |
 | --- | ----------------- | ------- | ------- | --------------------------------------- |
-| 6.4 | `ghost-single`    | plain   | blocked | one ghosted snare between the backbeats |
-| 6.5 | `ghost-funk`      | core    | blocked | the ghost-note funk groove              |
-| 6.6 | `ghost-16th-funk` | stretch | blocked | ghosts on the full 16th grid            |
+| 9.4 | `ghost-single`    | plain   | blocked | one ghosted snare between the backbeats |
+| 9.5 | `ghost-funk`      | core    | blocked | the ghost-note funk groove              |
+| 9.6 | `ghost-16th-funk` | stretch | blocked | ghosts on the full 16th grid            |
 
 ### Module: Flams — also needs sub-grid scoring
 
 | #   | slug          | tier    | status  | pattern                  |
 | --- | ------------- | ------- | ------- | ------------------------ |
-| 6.7 | `flam-snare`  | plain   | blocked | two hands a hair apart   |
-| 6.8 | `flam-accent` | core    | blocked | the flam accent rudiment |
-| 6.9 | `flam-groove` | stretch | blocked | flams on the backbeat    |
+| 9.7 | `flam-snare`  | plain   | blocked | two hands a hair apart   |
+| 9.8 | `flam-accent` | core    | blocked | the flam accent rudiment |
+| 9.9 | `flam-groove` | stretch | blocked | flams on the backbeat    |
 
-## Stage 7 · Form & fills · blocked
+## Stage 10 · Form & fills · blocked
 
 Generators and the chart assume a loop of identical bars. Phrases need bars
 that differ.
 
 ### Module: Phrasing
 
-| #   | slug              | tier    | status  | pattern                    |
-| --- | ----------------- | ------- | ------- | -------------------------- |
-| 7.1 | `two-bar-phrase`  | plain   | blocked | bar 2 answers bar 1        |
-| 7.2 | `crash-on-one`    | core    | blocked | the downbeat of the phrase |
-| 7.3 | `four-bar-phrase` | stretch | blocked | a four-bar shape           |
+| #    | slug              | tier    | status  | pattern                    |
+| ---- | ----------------- | ------- | ------- | -------------------------- |
+| 10.1 | `two-bar-phrase`  | plain   | blocked | bar 2 answers bar 1        |
+| 10.2 | `crash-on-one`    | core    | blocked | the downbeat of the phrase |
+| 10.3 | `four-bar-phrase` | stretch | blocked | a four-bar shape           |
 
 ### Module: Fills
 
-| #   | slug             | tier    | status  | pattern               |
-| --- | ---------------- | ------- | ------- | --------------------- |
-| 7.4 | `fill-one-beat`  | plain   | blocked | a fill on beat 4      |
-| 7.5 | `fill-two-beats` | core    | blocked | half a bar of fill    |
-| 7.6 | `fill-one-bar`   | stretch | blocked | a full bar every four |
+| #    | slug             | tier    | status  | pattern               |
+| ---- | ---------------- | ------- | ------- | --------------------- |
+| 10.4 | `fill-one-beat`  | plain   | blocked | a fill on beat 4      |
+| 10.5 | `fill-two-beats` | core    | blocked | half a bar of fill    |
+| 10.6 | `fill-one-bar`   | stretch | blocked | a full bar every four |
 
 ### Module: Form
 
-| #   | slug                 | tier    | status  | pattern                                |
-| --- | -------------------- | ------- | ------- | -------------------------------------- |
-| 7.7 | `groove-fill-groove` | plain   | blocked | back into the groove without a stumble |
-| 7.8 | `fill-from-rudiment` | core    | blocked | fill vocabulary built from Stage 4     |
-| 7.9 | `eight-bar-form`     | stretch | blocked | a whole section                        |
+| #    | slug                 | tier    | status  | pattern                                |
+| ---- | -------------------- | ------- | ------- | -------------------------------------- |
+| 10.7 | `groove-fill-groove` | plain   | blocked | back into the groove without a stumble |
+| 10.8 | `fill-from-rudiment` | core    | blocked | fill vocabulary built from Stage 7     |
+| 10.9 | `eight-bar-form`     | stretch | blocked | a whole section                        |
 
-## Stage 8 · Styles
+## Stage 11 · Styles
 
 **Goal** — the same skills, spoken in different accents. One module per style,
 each with its own plain / core / stretch. All `todo`.
@@ -292,57 +427,57 @@ each with its own plain / core / stretch. All `todo`.
 | Latin             | bossa nova        | samba               | songo          |
 | Reggae & afrobeat | one-drop          | steppers            | afrobeat       |
 
-## Stage 9 · Independence & polyrhythm
+## Stage 12 · Independence & polyrhythm
 
 ### Module: Ostinato
 
-| #   | slug               | tier    | status | pattern                               |
-| --- | ------------------ | ------- | ------ | ------------------------------------- |
-| 9.1 | `ostinato-vary`    | plain   | todo   | one hand fixed, the other varies      |
-| 9.2 | `ostinato-melodic` | core    | todo   | the free hand moves across pads       |
-| 9.3 | `linear`           | stretch | todo   | linear drumming — nothing ever stacks |
+| #    | slug               | tier    | status | pattern                               |
+| ---- | ------------------ | ------- | ------ | ------------------------------------- |
+| 12.1 | `ostinato-vary`    | plain   | todo   | one hand fixed, the other varies      |
+| 12.2 | `ostinato-melodic` | core    | todo   | the free hand moves across pads       |
+| 12.3 | `linear`           | stretch | todo   | linear drumming — nothing ever stacks |
 
 ### Module: Polyrhythm
 
-| #   | slug              | tier    | status | pattern     |
-| --- | ----------------- | ------- | ------ | ----------- |
-| 9.4 | `three-over-four` | plain   | todo   | 3 against 4 |
-| 9.5 | `four-over-three` | core    | todo   | 4 against 3 |
-| 9.6 | `five-over-four`  | stretch | todo   | 5 against 4 |
+| #    | slug              | tier    | status | pattern     |
+| ---- | ----------------- | ------- | ------ | ----------- |
+| 12.4 | `three-over-four` | plain   | todo   | 3 against 4 |
+| 12.5 | `four-over-three` | core    | todo   | 4 against 3 |
+| 12.6 | `five-over-four`  | stretch | todo   | 5 against 4 |
 
 ### Module: Odd meters — needs time-signature support
 
-| #   | slug                | tier    | status  | pattern                 |
-| --- | ------------------- | ------- | ------- | ----------------------- |
-| 9.7 | `odd-5-4`           | plain   | blocked | 5/4                     |
-| 9.8 | `odd-7-8`           | core    | blocked | 7/8                     |
-| 9.9 | `metric-modulation` | stretch | blocked | the pulse reinterpreted |
+| #    | slug                | tier    | status  | pattern                 |
+| ---- | ------------------- | ------- | ------- | ----------------------- |
+| 12.7 | `odd-5-4`           | plain   | blocked | 5/4                     |
+| 12.8 | `odd-7-8`           | core    | blocked | 7/8                     |
+| 12.9 | `metric-modulation` | stretch | blocked | the pulse reinterpreted |
 
-## Stage 10 · Performance
+## Stage 13 · Performance
 
 ### Module: Speed
 
 | #    | slug               | tier    | status | pattern                              |
 | ---- | ------------------ | ------- | ------ | ------------------------------------ |
-| 10.1 | `one-handed-16ths` | plain   | todo   | 16th hats on one hand under a groove |
-| 10.2 | `finger-rolls`     | core    | todo   | rolls and buzzes                     |
-| 10.3 | `belt-ladder`      | stretch | todo   | every earlier lesson taken to gold   |
+| 13.1 | `one-handed-16ths` | plain   | todo   | 16th hats on one hand under a groove |
+| 13.2 | `finger-rolls`     | core    | todo   | rolls and buzzes                     |
+| 13.3 | `belt-ladder`      | stretch | todo   | every earlier lesson taken to gold   |
 
 ### Module: Repertoire
 
 | #    | slug            | tier    | status  | pattern                             |
 | ---- | --------------- | ------- | ------- | ----------------------------------- |
-| 10.4 | `transcribe`    | plain   | todo    | learn a groove by ear, then play it |
-| 10.5 | `full-song`     | core    | blocked | a song top to bottom                |
-| 10.6 | `trading-fours` | stretch | blocked | improvise the answering bar         |
+| 13.4 | `transcribe`    | plain   | todo    | learn a groove by ear, then play it |
+| 13.5 | `full-song`     | core    | blocked | a song top to bottom                |
+| 13.6 | `trading-fours` | stretch | blocked | improvise the answering bar         |
 
 ### Module: Your own voice
 
 | #    | slug              | tier    | status | pattern                         |
 | ---- | ----------------- | ------- | ------ | ------------------------------- |
-| 10.7 | `own-beat`        | plain   | todo   | build one groove of your own    |
-| 10.8 | `own-fills`       | core    | todo   | a fill vocabulary that is yours |
-| 10.9 | `improvise-a-set` | stretch | todo   | eight bars, no chart            |
+| 13.7 | `own-beat`        | plain   | todo   | build one groove of your own    |
+| 13.8 | `own-fills`       | core    | todo   | a fill vocabulary that is yours |
+| 13.9 | `improvise-a-set` | stretch | todo   | eight bars, no chart            |
 
 ---
 
@@ -358,9 +493,11 @@ banks its BPM and accuracy, so each lesson carries the same ladder:
 | gold   | +50%                 | ≥ 90%                           |
 | black  | +100%                | ≥ 95%                           |
 
-Stage 1 and 2 are written at 60. From Stage 3 the written BPM is the lesson's
-floor, not its ceiling — depth comes from the ladder, never from piling on more
-notes. `stretch` lessons are hard by _pattern_; belts are hard by _tempo_. Keep
+Every lesson written so far is at 60, and the written BPM is the
+lesson's floor rather than its ceiling — depth comes from the ladder, never
+from piling on more notes. Sixteenths at 60 are already the fastest notes in
+the curriculum (as fast as 8ths at 120), which is why the subdivision stage did
+not need a faster tempo to be harder than the one before it. `stretch` lessons are hard by _pattern_; belts are hard by _tempo_. Keep
 the two apart or neither means anything.
 
 ## Bass lines
@@ -408,6 +545,14 @@ of stillness make the answer an event. Best under the dense lessons, where a
 or on beat 3, sparse and syncopated with long decays. Nothing marks the
 down-beat, so the student has to be the one who knows where it is. The natural
 end-of-stage line, replacing `syncopated`.
+
+**4 · Shuffle** — _implemented, live across Stage 6._ The one line written on
+the triplet grid: root on the beat, then a walking note two thirds of the way
+across it, over Am - Am - Dm - E. It is not on the ladder above, because in
+triplet feel that ladder does not sort — see the note under Stage 6. Masking is
+not the objection it usually is here: the line is carrying a _rhythm_, and a
+rhythm survives being blended into the kit in a way a melody does not. Bar 4
+ends on a G#, a semitone under the tonic that follows the last drum hit.
 
 `quarter`, `octave` and `syncopated` are still in use on every other lesson and
 all three are masked by the drums above them. They should retire as the lines
@@ -495,7 +640,7 @@ Three things this buys:
 - **Patterns as positions.** `voices(bars, (KICK, BEATS), (SNARE, BACKBEAT))`
   says once what five hand-rolled bar loops used to, and no lesson re-derives
   `bar * bar_ticks`.
-- **A stage is one file.** Writing Stage 3 touches `stage03_subdivision.py` and
+- **A stage is one file.** Writing Stage 3 touches `stage03_space.py` and
   nothing else; a bad triad can be reverted without reading the rest.
 
 `module()` refuses anything that is not exactly plain / core / stretch, and the

@@ -54,7 +54,7 @@ def paradiddle_groove(bars=4):
 
 
 STAGE = stage(
-    number=4,
+    number=7,
     slug="sticking",
     title="Sticking",
     goal="Rudiments, then rudiments inside a groove. Which hand plays a note "

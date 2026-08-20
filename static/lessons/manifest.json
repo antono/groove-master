@@ -4,25 +4,25 @@
       "slug": "foundations",
       "name": "Foundations",
       "question": "Can you keep time and stack two hands?",
-      "stages": [0, 1, 2]
+      "stages": [0, 1, 2, 3, 4, 5]
     },
     {
       "slug": "vocabulary",
       "name": "Vocabulary",
       "question": "Do you have hands, and things to say with them?",
-      "stages": [3, 4, 5, 6]
+      "stages": [6, 7, 8, 9]
     },
     {
       "slug": "music",
       "name": "Music",
       "question": "Can you play something someone wants to hear?",
-      "stages": [7, 8]
+      "stages": [10, 11]
     },
     {
       "slug": "mastery",
       "name": "Mastery",
       "question": "Can you make it your own?",
-      "stages": [9, 10]
+      "stages": [12, 13]
     }
   ],
   "stages": [
@@ -227,8 +227,308 @@
       }
     },
     {
-      "slug": "subdivision",
+      "slug": "space",
       "number": 3,
+      "tierNumber": 3,
+      "title": "Space",
+      "goal": "The notes you do not play. A groove you already own with a beat, a half bar or a whole bar taken out of it — and coming back in exactly on time.",
+      "modules": [
+        {
+          "slug": "holes",
+          "title": "Holes",
+          "subtitle": "a beat taken out",
+          "lessons": [
+            {
+              "id": "groove-hole-3",
+              "number": "3.1",
+              "name": "The Hole on 3",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "groove-hole-bar-end",
+              "number": "3.2",
+              "name": "The Hole at the Bar Line",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "holes-walking",
+              "number": "3.3",
+              "name": "The Moving Hole",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "stop-time",
+          "title": "Stop time",
+          "subtitle": "a bar with nothing in it",
+          "lessons": [
+            {
+              "id": "stop-every-other-bar",
+              "number": "3.4",
+              "name": "Stop Time",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "stop-and-answer",
+              "number": "3.5",
+              "name": "Stop and Answer",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "stops-alternating",
+              "number": "3.6",
+              "name": "Half On, Half Off",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "sparse",
+          "title": "Sparse",
+          "subtitle": "almost nothing, exactly on time",
+          "lessons": [
+            {
+              "id": "whole-notes",
+              "number": "3.7",
+              "name": "One Hit a Bar",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "half-notes",
+              "number": "3.8",
+              "name": "Two Hits a Bar",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "sparse-doubling",
+              "number": "3.9",
+              "name": "Twice as Many, Every Bar",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "id": "checkpoint-3",
+        "number": "3.◆",
+        "name": "Checkpoint — Space",
+        "tier": "checkpoint",
+        "planned": false
+      }
+    },
+    {
+      "slug": "cymbals",
+      "number": 4,
+      "tierNumber": 4,
+      "title": "The Cymbals",
+      "goal": "The three pads beyond the core three: ride, crash and open hat. The same time on a different cymbal, and the first hand travel that has a musical reason rather than a rhythmic one.",
+      "modules": [
+        {
+          "slug": "the-ride",
+          "title": "The ride",
+          "subtitle": "a second timekeeper",
+          "lessons": [
+            {
+              "id": "ride-quarters",
+              "number": "4.1",
+              "name": "Ride on Every Beat",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "rock-beat-ride",
+              "number": "4.2",
+              "name": "Rock Beat on the Ride",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "hat-to-ride",
+              "number": "4.3",
+              "name": "Hat to Ride",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "the-crash",
+          "title": "The crash",
+          "subtitle": "the note that opens a phrase",
+          "lessons": [
+            {
+              "id": "crash-on-one",
+              "number": "4.4",
+              "name": "Crash on 1",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "crash-every-two",
+              "number": "4.5",
+              "name": "Crash Every Two Bars",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "crash-into-ride",
+              "number": "4.6",
+              "name": "Crash, then Ride",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "open-and-closed",
+          "title": "Open and closed",
+          "subtitle": "the hat that hands the bar over",
+          "lessons": [
+            {
+              "id": "open-hat-lead-in",
+              "number": "4.7",
+              "name": "The Open Hat Lead-In",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "crash-after-open",
+              "number": "4.8",
+              "name": "Open Hat into the Crash",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "every-pad",
+              "number": "4.9",
+              "name": "All Six Pads",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "id": "checkpoint-4",
+        "number": "4.◆",
+        "name": "Checkpoint — The Cymbals",
+        "tier": "checkpoint",
+        "planned": false
+      }
+    },
+    {
+      "slug": "two-bars",
+      "number": 5,
+      "tierNumber": 5,
+      "title": "Two Bars",
+      "goal": "A groove with a beginning and an end. Bar 2 answers bar 1, a cymbal marks the top of the phrase, and the last two beats hand it back — all of it on the same grid Stage 2 finished on.",
+      "modules": [
+        {
+          "slug": "question-and-answer",
+          "title": "Question and answer",
+          "subtitle": "bar two replies",
+          "lessons": [
+            {
+              "id": "two-bar-kick",
+              "number": "5.1",
+              "name": "The Second Bar Answers",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "two-bar-snare",
+              "number": "5.2",
+              "name": "The Snare Answers",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "two-bar-both",
+              "number": "5.3",
+              "name": "Call and Answer",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "four-bars",
+          "title": "Four bars",
+          "subtitle": "a phrase you can hear the end of",
+          "lessons": [
+            {
+              "id": "four-bar-crash",
+              "number": "5.4",
+              "name": "One Crash in Four Bars",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "four-bar-build",
+              "number": "5.5",
+              "name": "The Build",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "four-bar-drop",
+              "number": "5.6",
+              "name": "The Drop",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "the-turnaround",
+          "title": "The turnaround",
+          "subtitle": "the way back to bar one",
+          "lessons": [
+            {
+              "id": "turnaround-snare",
+              "number": "5.7",
+              "name": "The Turnaround",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "turnaround-open-hat",
+              "number": "5.8",
+              "name": "Turnaround with an Open Hat",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "full-phrase",
+              "number": "5.9",
+              "name": "The Whole Phrase",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "id": "checkpoint-5",
+        "number": "5.◆",
+        "name": "Checkpoint — Two Bars",
+        "tier": "checkpoint",
+        "planned": false
+      }
+    },
+    {
+      "slug": "subdivision",
+      "number": 6,
       "tierNumber": 1,
       "title": "Subdivision & the Grid",
       "goal": "The 16th grid and the triplet grid, and a note placed anywhere on either.",
@@ -243,21 +543,21 @@
               "number": "1.1",
               "name": "16ths, Split Hands",
               "tier": "plain",
-              "planned": true
+              "planned": false
             },
             {
               "id": "rock-16th-hats",
               "number": "1.2",
               "name": "Rock Beat, 16th Hats",
               "tier": "core",
-              "planned": true
+              "planned": false
             },
             {
               "id": "kick-16th-grid",
               "number": "1.3",
               "name": "Kick on the \"e\" and the \"a\"",
               "tier": "stretch",
-              "planned": true
+              "planned": false
             }
           ]
         },
@@ -271,21 +571,21 @@
               "number": "1.4",
               "name": "8th-Note Triplets",
               "tier": "plain",
-              "planned": true
+              "planned": false
             },
             {
               "id": "triplet-groove",
               "number": "1.5",
               "name": "Triplet Groove",
               "tier": "core",
-              "planned": true
+              "planned": false
             },
             {
               "id": "triplets-broken",
               "number": "1.6",
               "name": "Broken Triplets",
               "tier": "stretch",
-              "planned": true
+              "planned": false
             }
           ]
         },
@@ -299,30 +599,36 @@
               "number": "1.7",
               "name": "Shuffle Hats",
               "tier": "plain",
-              "planned": true
+              "planned": false
             },
             {
               "id": "shuffle-groove",
               "number": "1.8",
               "name": "The Shuffle",
               "tier": "core",
-              "planned": true
+              "planned": false
             },
             {
               "id": "half-time-shuffle",
               "number": "1.9",
               "name": "Half-Time Shuffle",
               "tier": "stretch",
-              "planned": true
+              "planned": false
             }
           ]
         }
       ],
-      "closing": null
+      "closing": {
+        "id": "checkpoint-6",
+        "number": "1.◆",
+        "name": "Checkpoint — Subdivision & the Grid",
+        "tier": "checkpoint",
+        "planned": false
+      }
     },
     {
       "slug": "sticking",
-      "number": 4,
+      "number": 7,
       "tierNumber": 2,
       "title": "Sticking",
       "goal": "Rudiments, then rudiments inside a groove. Which hand plays a note starts to matter as much as when.",
@@ -830,10 +1136,822 @@
       ]
     },
     {
+      "id": "groove-hole-3",
+      "number": "3.1",
+      "name": "The Hole on 3",
+      "file": "stage-03-space/groove-hole-3.mid",
+      "stage": "space",
+      "module": "holes",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["rock-beat-8th-hats", "eighths-through-rests"],
+      "summary": "The rock beat with beat 3 emptied — one silent beat in the middle of every bar.",
+      "description": "The groove you finished Stage 2 with, minus one beat. Everything goes at once on beat 3 — kick and both hats — so for a whole beat you are playing nothing and the bass is the only thing left marking time. The notes either side of the hole have not moved. If they have moved when you play it, the hole is why.",
+      "hints": [
+        "The hole is a beat you play, not a beat you wait through. Count 3 out loud with the same weight as the beats you are hitting.",
+        "The bass plays a note on every beat, including the one you are missing. Use it — that is what it is there for.",
+        "Coming in early on beat 4 is the usual fault: the hand starts moving during the silence. Keep it still and let the count bring it down.",
+        "Play the whole groove without the hole for a bar first, then take beat 3 out without changing anything else."
+      ]
+    },
+    {
+      "id": "groove-hole-bar-end",
+      "number": "3.2",
+      "name": "The Hole at the Bar Line",
+      "file": "stage-03-space/groove-hole-bar-end.mid",
+      "stage": "space",
+      "module": "holes",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["groove-hole-3"],
+      "summary": "Beat 4 emptied instead, so the silence runs into the bar line and you re-enter on the down-beat.",
+      "description": "The same idea moved one beat later, and it is a different problem. A hole in the middle of the bar is a gap you land after; a hole at the end of it is a gap you have to start out of, with the next down-beat as the first thing you play. This shape is everywhere in real music — the groove stops on the \"and\" of 3 and everyone comes back in together on 1.",
+      "hints": [
+        "The snare on 2 is now the last note of the bar. Everything after it is counting.",
+        "Beat 1 of the next bar is the note this lesson is about. It should land as firmly as if you had been playing right up to it.",
+        "If the down-beat arrives early, you are counting the silence faster than you played the notes. The bass bounces through the hole in 8ths — stay with it.",
+        "Four bars means four re-entries. Getting one right is luck; getting all four right is the lesson."
+      ]
+    },
+    {
+      "id": "holes-walking",
+      "number": "3.3",
+      "name": "The Moving Hole",
+      "file": "stage-03-space/holes-walking.mid",
+      "stage": "space",
+      "module": "holes",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["groove-hole-bar-end"],
+      "summary": "The silent beat moves one later each bar — 2, then 3, then 4, then both 2 and 4.",
+      "description": "Four bars and no two the same. The hole walks through the bar, and the last bar loses both 2 and 4 — the beats the snare was on, so the backbeat vanishes from the bar that leans on it hardest. Nothing about the groove changed; you are simply never allowed to settle into it.",
+      "hints": [
+        "Know which beat is missing before the bar starts. Reading the hole as it arrives is already too late.",
+        "Bar 4 has no snare at all. It will feel like the floor went — that is the exercise, not a mistake.",
+        "The bass is pushing between the beats now and will not mark the missing ones for you. Count them yourself.",
+        "Bars 1 to 3 are one hole each and bar 4 is two. If bar 4 collapses, drill it alone and put the other three back afterwards."
+      ]
+    },
+    {
+      "id": "stop-every-other-bar",
+      "number": "3.4",
+      "name": "Stop Time",
+      "file": "stage-03-space/stop-every-other-bar.mid",
+      "stage": "space",
+      "module": "stop-time",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["groove-hole-bar-end"],
+      "summary": "One bar of groove, one bar of nothing, twice over.",
+      "description": "Four beats of silence is a long time. The groove plays for a bar, stops dead, and comes back exactly one bar later — and there is no hat ticking underneath to hold on to, because the pattern owns its hat and takes it away with everything else. What is left is the bass on the beat and your own counting.",
+      "hints": [
+        "Count the empty bar out loud: \"2, 2, 3, 4\". Saying it is the difference between a rest and a guess.",
+        "Do not stop moving. Keep the hand going through the silent bar without letting it touch the pad, so the pulse never actually stops.",
+        "The bass plays four notes in the empty bar. Land your down-beat with its first note of the next one.",
+        "The lesson ends on a silent bar and one final hit. That last note is scored — it is the whole point."
+      ]
+    },
+    {
+      "id": "stop-and-answer",
+      "number": "3.5",
+      "name": "Stop and Answer",
+      "file": "stage-03-space/stop-and-answer.mid",
+      "stage": "space",
+      "module": "stop-time",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["stop-every-other-bar"],
+      "summary": "The same stop, with one snare on beat 4 of the empty bar — the note that proves you kept counting.",
+      "description": "One note in the middle of the silence, three beats after the groove stopped, with nothing on either side of it. Unlike a down-beat, which can be nudged into place by the bar starting, this one is naked: if the count drifted, everybody hears exactly how far. The bass has become a four-bar riff rather than a metronome, so it is company rather than a crutch.",
+      "hints": [
+        "The answer is on beat 4, the last beat of the empty bar. One snare, nothing with it.",
+        "Count the whole empty bar and put the snare on \"4\" — do not count to three and reach for it.",
+        "A late answer usually means you relaxed on beat 1 of the stop. The count has to run at full attention from the moment the groove ends.",
+        "The riff underneath has a hole of its own in bar 3. When the two silences overlap you are on your own, and that is the bar to check."
+      ]
+    },
+    {
+      "id": "stops-alternating",
+      "number": "3.6",
+      "name": "Half On, Half Off",
+      "file": "stage-03-space/stops-alternating.mid",
+      "stage": "space",
+      "module": "stop-time",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["stop-and-answer"],
+      "summary": "Two beats of groove, two of silence — and the halves swap every bar, so every other bar opens empty.",
+      "description": "The groove plays the first half of bar 1 and the second half of bar 2, which means bar 2 begins with nothing at all and is entered on beat 3 from a standing start. Four beats of rest sit either side of that entry with no lead-in of any kind. It is the hardest entrance in the stage and the most useful one: coming in mid-bar, on time, with no help.",
+      "hints": [
+        "Every entry is a different beat: 1, then 3, then 1, then 3. Know which one is next.",
+        "The mid-bar entry has no down-beat to lean on. Count \"1, 2\" through the silence and play on \"3\".",
+        "The bass pushes off the beat and will pull you early. Your own count is the grid here, not the bass.",
+        "Two beats on is barely enough to settle. Treat each half bar as a phrase you have to place, not as a groove you can fall into."
+      ]
+    },
+    {
+      "id": "whole-notes",
+      "number": "3.7",
+      "name": "One Hit a Bar",
+      "file": "stage-03-space/whole-notes.mid",
+      "stage": "space",
+      "module": "sparse",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["kick-hats-unison"],
+      "summary": "Kick and hat together on beat 1, and nothing at all for the other three.",
+      "description": "Four hits in the whole lesson. It looks like the easiest thing in the app and it is the hardest to land, because three quarters of every bar has to be counted rather than felt — and the only way to know you counted right is whether the next hit is early. Two pads at once, which you have done since Stage 2, so nothing about the hit itself is new.",
+      "hints": [
+        "Count all four beats every bar, out loud. This lesson is the count with a hit stapled to it.",
+        "Rushing is the fault, always. If a bar feels long you are counting too fast — trust the bass, which plays all four beats under you.",
+        "Keep the hand moving through the empty beats without touching the pads, as if you were playing quarters and only one of them landed.",
+        "Both fingers drop together. Three beats of waiting makes it very easy to let the kick arrive first."
+      ]
+    },
+    {
+      "id": "half-notes",
+      "number": "3.8",
+      "name": "Two Hits a Bar",
+      "file": "stage-03-space/half-notes.mid",
+      "stage": "space",
+      "module": "sparse",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["whole-notes"],
+      "summary": "Kick on 1, snare on 3, a hat with each — two hits a bar with a beat of silence between them.",
+      "description": "Half the bar filled and the gaps evenly spaced, which makes a different demand from the last lesson: the two hits have to be the same distance apart every time. This is also the placement that half-time grooves are built on — the backbeat on 3 rather than on 2 and 4 — so it is worth getting the feel of it now, with nothing else happening.",
+      "hints": [
+        "Beat 3 is the snare, not beat 2. The pull towards 2 is strong and it is wrong here.",
+        "The two hits should divide the bar exactly in half. If the snare drifts early, the bar has two long beats and two short ones.",
+        "The hat plays with both hits and nowhere else, so each one is a two-pad stack.",
+        "Beats 2 and 4 are empty and the octave bass bounces through them. Let it fill the gap; do not fill it yourself."
+      ]
+    },
+    {
+      "id": "sparse-doubling",
+      "number": "3.9",
+      "name": "Twice as Many, Every Bar",
+      "file": "stage-03-space/sparse-doubling.mid",
+      "stage": "space",
+      "module": "sparse",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["half-notes", "eighths-weak-hand"],
+      "summary": "One hit, then two, then four, then eight — the same pulse at four densities.",
+      "description": "The bar fills up as the lesson goes: a single hit, then half notes, then quarters, then 8ths, with a kick anchoring beat 1 all the way through. Nothing about the tempo changes, which is the point — the standard fault is to speed up as the bar gets busier and drag when it thins out again, and here you do both inside four bars.",
+      "hints": [
+        "The kick on beat 1 is the same distance apart in all four bars. If it is not, the density is driving your tempo.",
+        "Bar 4 is a plain 8th-note hat line — you played it in Stage 1. If it feels fast, the first three bars were slow.",
+        "Rushing shows up between bars 3 and 4 and dragging between bars 4 and 1 as it wraps round. Check those two joins.",
+        "The bass is no help by design. Keep your own count running underneath all four bars."
+      ]
+    },
+    {
+      "id": "checkpoint-3",
+      "number": "3.◆",
+      "name": "Checkpoint — Space",
+      "file": "stage-03-space/checkpoint-3.mid",
+      "stage": "space",
+      "module": null,
+      "tier": "checkpoint",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": [],
+      "summary": "Four bars, four different silences: a hole, a whole empty bar, a crawl, and a half bar.",
+      "description": "Every kind of gap in the stage, one after another, with no two bars the same shape. Bar 1 has a beat missing, bar 2 has nothing in it at all, bar 3 is down to two hits, and bar 4 plays only its first half. The groove is never the difficulty; knowing where you are when nothing is sounding is. Play this clean and silence has stopped being a problem.",
+      "hints": [
+        "Four bars, four different re-entries. Name each one before it arrives.",
+        "Bar 2 is empty. Count it out loud — it is the only bar where nothing at all reminds you where the beat is.",
+        "Bar 4 stops halfway and the lesson ends on the down-beat after it. That last hit is scored.",
+        "The octave bass runs all the way through. It is your metronome for the whole lesson — never your cue to play."
+      ]
+    },
+    {
+      "id": "ride-quarters",
+      "number": "4.1",
+      "name": "Ride on Every Beat",
+      "file": "stage-04-cymbals/ride-quarters.mid",
+      "stage": "cymbals",
+      "module": "the-ride",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["kick-hats-unison"],
+      "summary": "Ride on all four beats with a kick on 1 and 3 — the hat lesson, moved to a new pad.",
+      "description": "Note for note this is Kick & Hi-Hat from Stage 2 with the hat swapped for the ride, so nothing about the rhythm is new and everything about the geography is. The ride is the other pad a drummer keeps time on, and it is usually the furthest one from where your hand rests. Getting there without looking is the lesson.",
+      "hints": [
+        "Ride on your weak hand, kick on your strong one, exactly as the hat and kick were.",
+        "Find the ride pad before you press Play and leave the finger on it. This lesson never asks the hand to move.",
+        "Beats 1 and 3 are two pads dropping together. Drill that pair before running the loop.",
+        "A ride is a long sound where a closed hat is a short one. Let it ring rather than damping it with the finger."
+      ]
+    },
+    {
+      "id": "rock-beat-ride",
+      "number": "4.2",
+      "name": "Rock Beat on the Ride",
+      "file": "stage-04-cymbals/rock-beat-ride.mid",
+      "stage": "cymbals",
+      "module": "the-ride",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["ride-quarters", "rock-beat-8th-hats"],
+      "summary": "The rock beat with the ride keeping the 8ths instead of the hi-hat.",
+      "description": "The groove that ends Stage 2, played on the ride. This is what almost every rock band does at the chorus and what almost every jazz group does all night: the same time, opened up. Kick and snare have not moved, so anything that falls apart here is the new pad and nothing else.",
+      "hints": [
+        "Play Rock Beat, 8th Hats first, then this. The only difference is which pad the weak hand is on.",
+        "The ride rings into the next note. That is correct — do not shorten the strokes to make it sound like a hat.",
+        "Rides tend to get louder than hats because the pad is further away and the hand travels further. Keep the backbeat above it.",
+        "If the 8ths get uneven, the arm is doing the work. Let the finger bounce from a fixed position."
+      ]
+    },
+    {
+      "id": "hat-to-ride",
+      "number": "4.3",
+      "name": "Hat to Ride",
+      "file": "stage-04-cymbals/hat-to-ride.mid",
+      "stage": "cymbals",
+      "module": "the-ride",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["rock-beat-ride"],
+      "summary": "Two bars on the closed hat, two on the ride — the hand moves on the bar line.",
+      "description": "The verse and the chorus in one loop. The groove is identical for all four bars; only the pad under the timekeeping hand changes, and it changes on the bar line where there is a whole beat of warning. That warning is why this is the stretch of an easy module rather than a hard lesson — and it still takes a few runs before the move stops costing a note.",
+      "hints": [
+        "The move happens between bar 2 and bar 3, and again as the loop wraps back round to bar 1. Two moves, not one.",
+        "The last 8th before the move — the \"and\" of 4 — is the note people drop. Play it on the pad you are leaving, then travel.",
+        "Kick and snare carry straight through the move. If they hesitate, the hands are talking to each other when they should not be.",
+        "Practise the move alone: two bars of hat, two of ride, no kick and no snare, until the hand knows the distance."
+      ]
+    },
+    {
+      "id": "crash-on-one",
+      "number": "4.4",
+      "name": "Crash on 1",
+      "file": "stage-04-cymbals/crash-on-one.mid",
+      "stage": "cymbals",
+      "module": "the-crash",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["rock-beat-8th-hats", "stack-every-beat"],
+      "summary": "The rock beat with a crash on every down-beat — three pads at once, further apart than ever.",
+      "description": "A crash is not timekeeping; it is punctuation, and it lands on the beat everything else already lands on. That makes beat 1 a three-pad stack of crash, hat and kick — a shape you have played since Stage 2, but never with the pads this far apart. The rest of the bar is unchanged.",
+      "hints": [
+        "Crash on the weak hand alongside the hat, kick and snare on the strong one. The weak hand covers two pads and moves only on beat 1.",
+        "All three notes on beat 1 are one movement. If it lands as a roll, the crash is arriving after the hat.",
+        "Get back to the hat for the \"and\" of 1. That eighth is the one that disappears while the hand is still out at the crash.",
+        "A crash is loud by nature — do not add to it. Everything else in the bar should stay where it was."
+      ]
+    },
+    {
+      "id": "crash-every-two",
+      "number": "4.5",
+      "name": "Crash Every Two Bars",
+      "file": "stage-04-cymbals/crash-every-two.mid",
+      "stage": "cymbals",
+      "module": "the-crash",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["crash-on-one"],
+      "summary": "The same groove with a crash only on bars 1 and 3 — the two-bar phrase, made audible.",
+      "description": "Popular music is built in twos and fours, and this is the first lesson where you have to feel that rather than be told it. Nothing in the groove marks the phrase; the cymbal does, on the down-beat of every other bar. Miss one and the loop is still perfectly playable, which is exactly why it is easy to lose.",
+      "hints": [
+        "Count bars as well as beats: one-two-three-four, two-two-three-four, and crash on every odd bar's 1.",
+        "The crash bars and the plain bars are otherwise identical. Nothing else should change when it lands.",
+        "If you find yourself crashing every bar, you are playing the pad rather than the phrase. Drop to two bars of counting with no crash at all, then put it back.",
+        "The lesson ends on a crash — the closing hit repeats whatever beat 1 had, and beat 1 had all three pads."
+      ]
+    },
+    {
+      "id": "crash-into-ride",
+      "number": "4.6",
+      "name": "Crash, then Ride",
+      "file": "stage-04-cymbals/crash-into-ride.mid",
+      "stage": "cymbals",
+      "module": "the-crash",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["crash-every-two", "rock-beat-ride"],
+      "summary": "Crash on the down-beat, ride from the \"and\" — the hand travels inside a single beat.",
+      "description": "The chorus entrance as it is actually played: the crash takes beat 1 and the ride picks the bar up half a beat later. Every move before this one had a bar line to happen on; this one has an eighth note. The kick and snare are the same rock beat they have been all stage, so the travel is the only new thing — and it is plenty.",
+      "hints": [
+        "Crash on 1, ride on the \"and\" — one hand, two pads, half a beat apart. Drill that pair on its own first.",
+        "The ride does not play beat 1 of a crash bar. If you hear both, the hand went to the crash and came back too early.",
+        "Bars 2 and 4 are the plain ride groove. The hand should be resting on the ride for those, not hovering.",
+        "The bass is pushing between the beats and will not mark the down-beat you are crashing on. Count it yourself."
+      ]
+    },
+    {
+      "id": "open-hat-lead-in",
+      "number": "4.7",
+      "name": "The Open Hat Lead-In",
+      "file": "stage-04-cymbals/open-hat-lead-in.mid",
+      "stage": "cymbals",
+      "module": "open-and-closed",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["disco-open-hats"],
+      "summary": "Closed hats through the bar with the last 8th opened up — the most-played hi-hat move there is.",
+      "description": "One note of the hat line moves to the other pad: the \"and\" of 4, the last eighth before the bar turns over. It is there to hand one bar to the next, and it is the single most common thing a hi-hat does in popular music. Disco Open Hats alternated the two pads all bar; this asks for one move, once, at the point the hand is least ready.",
+      "hints": [
+        "Index on the closed hat, middle on the open one, both on the weak hand. The move is one finger, once a bar.",
+        "The open hat is the last note of the bar. Let it ring across the bar line into the down-beat rather than cutting it off.",
+        "Come straight back to the closed pad for beat 1. Landing the down-beat on the open hat is the usual mistake and it is instantly audible.",
+        "Drill the hat hand alone: seven closed, one open, over and over, before adding the kick and snare."
+      ]
+    },
+    {
+      "id": "crash-after-open",
+      "number": "4.8",
+      "name": "Open Hat into the Crash",
+      "file": "stage-04-cymbals/crash-after-open.mid",
+      "stage": "cymbals",
+      "module": "open-and-closed",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["open-hat-lead-in", "crash-on-one"],
+      "summary": "The open hat on the last 8th landing on a crash — one gesture in two halves.",
+      "description": "The two things you just learned are really one thing. The open hat lifts at the end of the bar and the crash lands on the down-beat that follows, so the hand travels open hat, crash, closed hat across three consecutive eighths. Played well it sounds like a single move; played badly it sounds like three separate scrambles.",
+      "hints": [
+        "The sequence is \"open — crash — closed\" on the last 8th, beat 1, and the \"and\" of 1. Practise those three notes alone, out of time.",
+        "The crash is the loud one, so the open hat before it does not need to be. Let it ring rather than hitting it hard.",
+        "The \"and\" of 1 is where this comes apart — the hand is still out at the crash. Get it home early.",
+        "Kick and snare do not move all lesson. If they wobble on beat 1, the strong hand is waiting for the weak one."
+      ]
+    },
+    {
+      "id": "every-pad",
+      "number": "4.9",
+      "name": "All Six Pads",
+      "file": "stage-04-cymbals/every-pad.mid",
+      "stage": "cymbals",
+      "module": "open-and-closed",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["crash-into-ride", "crash-after-open"],
+      "summary": "Two bars of hats with the open lead-in, two of ride opened by a crash — every pad the app guarantees.",
+      "description": "A verse and a chorus in four bars. Bars 1 and 2 are the lead-in groove on the closed hat, the open hat at the end of bar 2 pushes straight into the crash that opens bar 3, and the ride carries bars 3 and 4 before handing back. Kick and snare never move and no rhythm in it is new — every difficulty is which pad, and when.",
+      "hints": [
+        "Learn the map before the notes: hat, hat, ride, ride, with one open hat and one crash at the join.",
+        "The join is the lesson. Open hat on the last 8th of bar 2, crash on the down-beat of bar 3, ride from its \"and\".",
+        "Bar 4 hands back to bar 1: the ride has to be off the pad and onto the closed hat by the next down-beat.",
+        "Play it as two two-bar halves before you play it as four bars. Each half is a groove you already know."
+      ]
+    },
+    {
+      "id": "checkpoint-4",
+      "number": "4.◆",
+      "name": "Checkpoint — The Cymbals",
+      "file": "stage-04-cymbals/checkpoint-4.mid",
+      "stage": "cymbals",
+      "module": null,
+      "tier": "checkpoint",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": [],
+      "summary": "One bar each: the ride groove, a crash on 1, the open-hat lead-in, and a crash into the ride.",
+      "description": "Four bars, and the timekeeping hand is on a different pad in each of them. Kick and snare are the same rock beat throughout — deliberately, so that everything you have to think about is above them. Switching cymbal every bar is harder than any one of these grooves and it is what makes them stick.",
+      "hints": [
+        "Ride, hat, hat-and-open, then ride again with a crash. Know the next bar's pad before the bar line.",
+        "Bars 2 and 3 are both on the closed hat — the only pair that does not move. Use bar 2 to get the hand home.",
+        "The crash in bar 4 takes the down-beat and the ride comes in on the \"and\". That is the one place the hand travels inside a beat.",
+        "Kick and snare never change. If they move when the cymbal does, the hands are leaning on each other."
+      ]
+    },
+    {
+      "id": "two-bar-kick",
+      "number": "5.1",
+      "name": "The Second Bar Answers",
+      "file": "stage-05-two-bars/two-bar-kick.mid",
+      "stage": "two-bars",
+      "module": "question-and-answer",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["rock-beat-8th-hats"],
+      "summary": "Two bars of rock beat, and the second one adds a single kick on beat 4.",
+      "description": "The smallest two-bar phrase there is. Bar 1 is the groove you know; bar 2 is the same groove with one extra kick, on beat 4, landing with the snare that was already there. Nothing moves and nothing is taken away — but the loop is now two bars long rather than one, and playing it as one bar twice is the mistake this lesson exists to catch.",
+      "hints": [
+        "Count bars out loud as well as beats: \"one-two-three-four, two-two-three-four.\"",
+        "The extra kick is on beat 4 of the even bars only, stacked with the snare. One movement, two pads.",
+        "Adding it to every bar is the usual fault, and it sounds fine — which is why you have to count rather than listen.",
+        "Play four bars of the plain groove first, then put the extra kick in on bars 2 and 4 without changing anything else."
+      ]
+    },
+    {
+      "id": "two-bar-snare",
+      "number": "5.2",
+      "name": "The Snare Answers",
+      "file": "stage-05-two-bars/two-bar-snare.mid",
+      "stage": "two-bars",
+      "module": "question-and-answer",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["two-bar-kick"],
+      "summary": "Bar 2 puts the snare on 2, 3 and 4 instead of 2 and 4.",
+      "description": "A bigger answer, and one you can hear from across the room: the second half of bar 2 fills in with the snare, so the phrase leans forward into the bar that follows. The kick and the hat are untouched, which means the strong hand is doing something different in alternate bars while the weak hand does exactly the same thing throughout.",
+      "hints": [
+        "Bar 2's snare is on 2, 3 and 4 — three beats in a row. Bar 1's is on 2 and 4 as usual.",
+        "The hat does not change at all. If it stumbles in bar 2, the weak hand is watching the strong one.",
+        "Beat 3 of bar 2 is the new note: it lands where the kick is, so it is a stack rather than an extra beat.",
+        "Say the answer out loud before playing it: \"bap — bap bap bap.\""
+      ]
+    },
+    {
+      "id": "two-bar-both",
+      "number": "5.3",
+      "name": "Call and Answer",
+      "file": "stage-05-two-bars/two-bar-both.mid",
+      "stage": "two-bars",
+      "module": "question-and-answer",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["two-bar-snare", "crash-on-one"],
+      "summary": "A crash opens bar 1; bar 2 answers with the extra kick and the extra snares together.",
+      "description": "Both halves of the phrase are now marked. Bar 1 is topped by a cymbal, bar 2 thickens through its second half with the kick on 4 and the snare on 2, 3 and 4. Two bars that sound nothing like each other, built entirely from notes that are on the beat, and the bass has stopped marking those beats for you.",
+      "hints": [
+        "Bar 1 starts with a three-pad stack: crash, hat and kick. Bar 2 has no crash at all.",
+        "The answer is four notes thicker than the call. Do not let it get faster as well as busier.",
+        "The bass pushes off the beat now. Every note you play is on one — hold that difference.",
+        "If the two bars start sounding the same, drop the crash for a run and put it back once bar 2 is reliably different."
+      ]
+    },
+    {
+      "id": "four-bar-crash",
+      "number": "5.4",
+      "name": "One Crash in Four Bars",
+      "file": "stage-05-two-bars/four-bar-crash.mid",
+      "stage": "two-bars",
+      "module": "four-bars",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["crash-every-two"],
+      "summary": "Four identical bars of groove with a single crash on the down-beat of the first.",
+      "description": "Nothing in the groove tells you where the phrase begins. One cymbal does, once every four bars, and between them you have to hold your place with nothing but counting. This is the four-bar unit that almost all popular music is built from, and the only way to fail it is to lose track of which bar you are in.",
+      "hints": [
+        "Count bars, not beats: one, two, three, four — crash on the next one.",
+        "Three bars of identical groove between crashes is a long time to keep counting. That is the exercise.",
+        "Crashing early is far more common than crashing late. If in doubt you are probably a bar ahead.",
+        "The groove itself is Stage 2 and should be automatic. If it is taking attention, go back to it before counting bars on top."
+      ]
+    },
+    {
+      "id": "four-bar-build",
+      "number": "5.5",
+      "name": "The Build",
+      "file": "stage-05-two-bars/four-bar-build.mid",
+      "stage": "two-bars",
+      "module": "four-bars",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["four-bar-crash", "rock-beat-quarter-hats"],
+      "summary": "Four bars that get busier: quarter hats, 8th hats, kick on every beat, then the snare answer.",
+      "description": "A phrase with a shape rather than a marker. The hat starts on quarter notes and doubles in bar 2, the kick fills in every beat in bar 3, and bar 4 answers with the snare before the loop turns over. Every one of those bars is a lesson you have already played — the new thing is that they are four parts of one sentence.",
+      "hints": [
+        "Four different bars in a row. Name them before you play: quarters, eighths, four-on-the-floor, answer.",
+        "The tempo must not build with the density. The kick on beat 1 should be exactly as far apart in bar 4 as in bar 1.",
+        "Bar 1 sounds empty after bar 4. Resist filling it — that contrast is what makes the build work.",
+        "The bass is a four-bar riff with a hole in bar 3. Let its shape and yours line up rather than fighting."
+      ]
+    },
+    {
+      "id": "four-bar-drop",
+      "number": "5.6",
+      "name": "The Drop",
+      "file": "stage-05-two-bars/four-bar-drop.mid",
+      "stage": "two-bars",
+      "module": "four-bars",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["four-bar-build", "stop-every-other-bar"],
+      "summary": "Three bars of groove, then a bar with nothing in it but its down-beat.",
+      "description": "Everything stops after beat 1 of bar 4 — one crash, one kick, one hat, and then three beats of nothing before the loop starts again. You held an empty bar back in Space, but not with three bars of momentum pushing you into it, and momentum is exactly what makes a drop hard to leave empty.",
+      "hints": [
+        "Beats 2, 3 and 4 of bar 4 are silent. Count them out loud — they are the lesson.",
+        "The hands want to keep going. Lift them off the pads for the drop rather than hovering over them.",
+        "The down-beat that follows is the one to land. It is the return, and everything before it was setting it up.",
+        "The bass keeps pushing through the empty bar and does not mark the beat. That is not help, it is company."
+      ]
+    },
+    {
+      "id": "turnaround-snare",
+      "number": "5.7",
+      "name": "The Turnaround",
+      "file": "stage-05-two-bars/turnaround-snare.mid",
+      "stage": "two-bars",
+      "module": "the-turnaround",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["two-bar-snare", "eighths-strong-hand"],
+      "summary": "Three bars of groove, then the last two beats of bar 4 given to the snare in 8ths.",
+      "description": "The simplest way to end a phrase: hand the last half bar to the snare. Four 8th notes on beats 3 and 4 of bar 4, with the hat standing down for those two beats — so the hands swap jobs briefly and have to be back in place for the down-beat. Nothing here is faster than the 8ths you played in Stage 1.",
+      "hints": [
+        "The turnaround is four snare 8ths on beats 3 and 4 of the last bar. Count them as \"3 and 4 and\".",
+        "The hat stops for those two beats. Do not try to keep it going underneath — the hand is needed elsewhere.",
+        "Come back to the groove cleanly on the next down-beat. A turnaround that overruns by a note is worse than none.",
+        "Four 8ths on one pad is Stage 1's density. If it feels fast, it is the switch that is costing you, not the notes."
+      ]
+    },
+    {
+      "id": "turnaround-open-hat",
+      "number": "5.8",
+      "name": "Turnaround with an Open Hat",
+      "file": "stage-05-two-bars/turnaround-open-hat.mid",
+      "stage": "two-bars",
+      "module": "the-turnaround",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["turnaround-snare", "open-hat-lead-in"],
+      "summary": "Both ends marked: a crash opens the phrase and an open hat on the last 8th hands it back.",
+      "description": "The phrase gets punctuation at both ends. A crash on the down-beat of bar 1 says where it starts; the snare turnaround runs through beats 3 and 4 of bar 4 and gives its very last eighth to the open hat, which rings across the bar line into the crash. Between those two moments the groove has not changed at all.",
+      "hints": [
+        "The last note of the loop is an open hat, not a snare. It replaces the fourth snare of the turnaround.",
+        "Let the open hat ring into the crash rather than stopping it. The two are one gesture across the bar line.",
+        "That means the weak hand comes back from resting to play the very last eighth. Have it over the pad by beat 4.",
+        "Play bars 3 and 4 alone until the hand-off is reliable, then run the whole phrase."
+      ]
+    },
+    {
+      "id": "full-phrase",
+      "number": "5.9",
+      "name": "The Whole Phrase",
+      "file": "stage-05-two-bars/full-phrase.mid",
+      "stage": "two-bars",
+      "module": "the-turnaround",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["turnaround-open-hat", "every-pad"],
+      "summary": "Four bars with everything Foundations has: crash, hats, ride, a turnaround and an open hat.",
+      "description": "The tier in one loop. A crash opens bar 1, the closed hat carries bars 1 and 2, the ride takes over for bars 3 and 4, and bar 4 hands the phrase back with the snare turnaround and an open hat on the last eighth. Six pads and four different bars — and still not one note that is off the beat or finer than an eighth. Everything hard about it is knowing where you are.",
+      "hints": [
+        "Learn the map first: crash and hat, hat, ride, ride into the turnaround. The rhythm is Stage 2 throughout.",
+        "Two hand moves a loop: hat to ride between bars 2 and 3, ride back to the open hat at the very end.",
+        "The ride stands down for beats 3 and 4 of bar 4 while the snare turns the phrase around. Only the last eighth is a cymbal again.",
+        "Play it as two halves — bars 1 to 2, then bars 3 to 4 — before joining them. Each half is a lesson you have already passed."
+      ]
+    },
+    {
+      "id": "checkpoint-5",
+      "number": "5.◆",
+      "name": "Checkpoint — Two Bars",
+      "file": "stage-05-two-bars/checkpoint-5.mid",
+      "stage": "two-bars",
+      "module": null,
+      "tier": "checkpoint",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": [],
+      "summary": "The stage as one four-bar phrase: the crash on top, the answer, the ride, and the turnaround back to the start.",
+      "description": "Four bars, four jobs. Bar 1 is the top of the phrase, bar 2 answers it, bar 3 moves to the ride, and bar 4 turns the whole thing around and hands it back. This is not four grooves interleaved — it is one phrase, which is exactly what the stage was for, and it closes Foundations. Play it clean and you can keep time, stack your hands, and hold your place in a piece of music.",
+      "hints": [
+        "One phrase, not four bars. If you can hear it as a sentence you will not lose your place in it.",
+        "The pad under the timekeeping hand changes at bar 3 and again at the very last eighth.",
+        "Bar 2 is the only bar with the thick answer — kick on 4, snare on 2, 3 and 4.",
+        "The last eighth is an open hat that rings into the closing crash. That closing hit is scored."
+      ]
+    },
+    {
+      "id": "hats-16ths-split",
+      "number": "1.1",
+      "name": "16ths, Split Hands",
+      "file": "stage-06-subdivision/hats-16ths-split.mid",
+      "stage": "subdivision",
+      "module": "sixteenths",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["alternating-8ths", "eighths-weak-hand"],
+      "summary": "Sixteen closed hats a bar, shared between the hands — the 16th grid on its own.",
+      "description": "The grid gets twice as fine. Sixteen notes a bar, all of them the same pad, and nothing else sounding — so the only question the lesson asks is whether they are even. Two hands share the line, alternating strictly, which is the only way this density is sustainable; one hand playing all sixteen is a later problem. You already played this alternation in 8ths back in Pulse. It is the same movement, twice as often.",
+      "hints": [
+        "Two fingers on the hat pad, one from each hand, strictly alternating. Never let one hand take two in a row — that is a different lesson.",
+        "Count it out loud: \"1 e and a, 2 e and a.\" Four syllables a beat, one note each.",
+        "The beats are what matter. If 1, 2, 3 and 4 land, the three notes between them follow; chase all sixteen equally and none of them land.",
+        "The \"e\" and the \"a\" are the ones that drift, because they are the notes with nothing underneath them. Lumpy usually means those two are early.",
+        "Evenness beats effort here. If every fourth note is louder than the rest, you are playing a quarter-note line with decoration on it."
+      ]
+    },
+    {
+      "id": "rock-16th-hats",
+      "number": "1.2",
+      "name": "Rock Beat, 16th Hats",
+      "file": "stage-06-subdivision/rock-16th-hats.mid",
+      "stage": "subdivision",
+      "module": "sixteenths",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["hats-16ths-split", "rock-beat-8th-hats"],
+      "summary": "The rock beat with the hat line doubled: 16th hats over kick on 1 and 3, snare on 2 and 4.",
+      "description": "The groove from Stage 2 with the hat hand running twice as fast. Kick and snare have not moved a single note — 1 and 3, 2 and 4, exactly where they were — so everything new is in the hat. Every kick and every snare still lands on a hat, and between them sit three hats with nothing else under them at all. That gap is where the beat goes missing.",
+      "hints": [
+        "Two weak-hand fingers alternating on the hat; kick and snare stay on the strong hand where they have always been.",
+        "Start the hat line alone and let it run a full bar before you add anything. It is the constant, and the kick and snare drop into it.",
+        "Only every fourth hat has a drum with it. Count \"1 e and a\" and put the kick and snare on the numbers, never on a syllable.",
+        "A snare that slides onto the \"e\" after beat 2 means you are following the hats instead of counting the beat.",
+        "If the hats thin out to 8ths underneath the snare, the strong hand is stealing the weak one's timing. A bar of hats only, then a bar of everything."
+      ]
+    },
+    {
+      "id": "kick-16th-grid",
+      "number": "1.3",
+      "name": "Kick on the \"e\" and the \"a\"",
+      "file": "stage-06-subdivision/kick-16th-grid.mid",
+      "stage": "subdivision",
+      "module": "sixteenths",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["rock-16th-hats"],
+      "summary": "Kick on the \"a\" of 1 and the \"e\" of 3 — the two 16th slots an 8th-note grid cannot reach.",
+      "description": "The hat drops back to 8ths, because hand speed was the last lesson's problem and placement is this one's. Two of the four kicks land in slots nothing has ever landed on before: the \"a\" of beat 1, which pushes forward into the snare, and the \"e\" of beat 3, which arrives just after the down-beat. Neither of them has a hat on it — they are the first notes in the curriculum that sound completely alone between two other notes.",
+      "hints": [
+        "Everything except two kicks is Stage 2. Play Rock Beat, 8th Hats once, then add them.",
+        "The \"a\" of 1 belongs to beat 2 and arrives before it. Lean it forward into the snare rather than dropping it after the \"and\".",
+        "The \"e\" of 3 belongs to beat 3 and arrives just after it. Kick, then wait — it is a pickup, not a push.",
+        "Both extra kicks fall between two hat notes and never with one. If you hear kick and hat together, it went on the \"and\".",
+        "Keep counting 16ths through the whole bar even though your hat is only playing 8ths. Those two kicks have no other reference.",
+        "The bass pushes on the \"and\" of 2 and 4, which is a slot you are not playing. Let it go past."
+      ]
+    },
+    {
+      "id": "triplets-8th",
+      "number": "1.4",
+      "name": "8th-Note Triplets",
+      "file": "stage-06-subdivision/triplets-8th.mid",
+      "stage": "subdivision",
+      "module": "triplets",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["alternating-8ths-swap"],
+      "summary": "Three notes to a beat, hand to hand — the other way to divide a beat.",
+      "description": "A new grid, not a faster one. Everything so far has split the beat in two and then in two again; this splits it in three, and the two grids meet nowhere except on the beat itself. The hands alternate strictly, and because three notes do not divide between two hands the hand that starts a beat swaps every beat. Snare on the lead hand, closed hat on the other, so you can hear that swap as well as feel it. The bass is playing the same grid with you.",
+      "hints": [
+        "Say it before you play it: \"trip-a-let, trip-a-let.\" Three even syllables a beat — not two fast ones and a slow one.",
+        "Snare on the strong hand, hat on the weak one, strictly alternating. Neither hand ever takes two in a row.",
+        "Snare starts beat 1, hat starts beat 2, snare starts beat 3. That is correct and it is the lesson — do not try to fix it.",
+        "The middle note is the tell. If it sounds like a 16th figure with a note missing, the middle note is sitting too close to the first.",
+        "Play only the four beats first, alternating hands, then fill in the two between each pair without letting the beats move."
+      ]
+    },
+    {
+      "id": "triplet-groove",
+      "number": "1.5",
+      "name": "Triplet Groove",
+      "file": "stage-06-subdivision/triplet-groove.mid",
+      "stage": "subdivision",
+      "module": "triplets",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["triplets-8th", "rock-beat-8th-hats"],
+      "summary": "Triplet hats over the backbeat: three hats a beat, kick on 1 and 3, snare on 2 and 4.",
+      "description": "The triplet grid underneath a groove you already know. Kick and snare stay exactly where they were, and the hat runs three to a beat above them, so every kick and every snare has a hat on it and two more hats fall into the space after it. This is the 12/8 feel behind slow blues and half the ballads ever recorded. The bass has stopped playing triplets with you and gone back to marking the beat — the grid is yours to hold now.",
+      "hints": [
+        "Two weak-hand fingers alternate on the hat pad; the strong hand keeps kick and snare where they have always been.",
+        "Say \"trip-a-let\" on every beat and drop the kick or snare on the \"trip\".",
+        "Every kick and snare lands with the first hat of a triplet, never the second or third. Landing on the middle one means you are early.",
+        "Two hats fall in the space after each kick and snare. Do not let them collapse into one — that is a shuffle, and it is two lessons away.",
+        "If the groove starts sounding straight, the third hat of each triplet is late and glueing itself onto the next beat."
+      ]
+    },
+    {
+      "id": "triplets-broken",
+      "number": "1.6",
+      "name": "Broken Triplets",
+      "file": "stage-06-subdivision/triplets-broken.mid",
+      "stage": "subdivision",
+      "module": "triplets",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["triplet-groove"],
+      "summary": "The middle note of every triplet taken out — and the sticking turns into doubles.",
+      "description": "Take the middle note out of the triplets you played two lessons ago and two things happen at once. What is left sounding is the shuffle skeleton — the first and last note of each triplet — which is what the whole next module is built on. And the strict alternation collapses into pairs: with the middle note gone, each hand plays two in a row. Snare owns beats 1 and 2, hat owns 3 and 4, and the swap in the middle of the bar is the hard part. The bass has gone straight and is no help at all.",
+      "hints": [
+        "Keep counting all three — \"trip-a-let\" — and play only \"trip\" and \"let\". The note you are not playing is what holds the two you are in place.",
+        "Snare, snare, then hat, hat. The strong hand takes beats 1 and 2, the weak hand takes 3 and 4, and the swap on beat 3 is the only difficult moment in the bar.",
+        "Two in a row on one hand is new. Lift the finger between them instead of pressing twice from the same place, or the second one lands as a flam.",
+        "The second note of each pair is late if you are hearing it as an \"and\" — it sits closer to the next beat than to halfway.",
+        "The bass pushes on the \"and\" of 2 and 4, between your two notes and belonging to neither. It is not a note you play."
+      ]
+    },
+    {
+      "id": "shuffle-hats",
+      "number": "1.7",
+      "name": "Shuffle Hats",
+      "file": "stage-06-subdivision/shuffle-hats.mid",
+      "stage": "subdivision",
+      "module": "feel",
+      "tier": "plain",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["triplets-broken"],
+      "summary": "Swung 8ths on the hat: two notes a beat, the second one deliberately late.",
+      "description": "The same rhythm as the last lesson on one pad and one hand, and now it has a name. Two notes a beat: one on the beat, one two thirds of the way to the next. That second note is what a swung 8th is — an off-beat that arrives late on purpose — and placing it consistently late is the entire skill. Nothing else sounds, and the bass swings with you so you can hear when yours does not.",
+      "hints": [
+        "One hand, one pad, and the pair is uneven: \"long, short, long, short.\"",
+        "Say \"hump-ty, dump-ty\" through the bar. The natural rhythm of the words is the feel.",
+        "If it is coming out straight you are splitting the beat in two. Go back to \"trip-a-let\" and play \"trip\" and \"let\" only.",
+        "The swung note is not halfway and it is not an \"and\". It is twice as far from the beat it left as from the one it is heading for.",
+        "The beats themselves have to stay dead even. A shuffle where the beat moves is not a shuffle, it is uneven playing.",
+        "Listen to the bass's late note. When yours lands with it the feel is right; when they come apart, yours has straightened."
+      ]
+    },
+    {
+      "id": "shuffle-groove",
+      "number": "1.8",
+      "name": "The Shuffle",
+      "file": "stage-06-subdivision/shuffle-groove.mid",
+      "stage": "subdivision",
+      "module": "feel",
+      "tier": "core",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["shuffle-hats", "rock-beat-8th-hats"],
+      "summary": "The full shuffle: swung hats over kick on 1 and 3, snare on 2 and 4.",
+      "description": "The backbeat underneath the swung hat line. Kick and snare are on the numbers exactly as they always were, so the only thing carrying the feel is the second hat of each pair — and the moment it straightens, the whole groove turns back into a rock beat. This is one of the two or three grooves that hold up an entire genre on their own.",
+      "hints": [
+        "Hat on the weak hand, kick and snare on the strong. Nothing has moved since Stage 2 except the hat's second note.",
+        "Every kick and every snare lands with a hat that is on the beat. The swung hat is always alone.",
+        "The backbeat is where a shuffle lives. Lean on 2 and 4 and let the swung hats sit under them.",
+        "If it flattens into a rock beat the swung hat has crept forward onto the \"and\". Stop, play a bar of hats alone, start again.",
+        "The bass is swinging too. If its late note and yours are not landing together, one of you is straight, and it is not the bass."
+      ]
+    },
+    {
+      "id": "half-time-shuffle",
+      "number": "1.9",
+      "name": "Half-Time Shuffle",
+      "file": "stage-06-subdivision/half-time-shuffle.mid",
+      "stage": "subdivision",
+      "module": "feel",
+      "tier": "stretch",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": ["shuffle-groove"],
+      "summary": "The shuffle with one snare a bar, on 3 — and a straight bass underneath that will not help you.",
+      "description": "The backbeat moves. Instead of 2 and 4 there is a single snare on beat 3, which halves the feel of the groove without changing its tempo at all — the hat line is note for note the same as the last lesson. The second kick lands on the swung note before beat 3, so it arrives late and drives into the snare. And the bass has gone straight: it pushes on the \"and\"s, a slot the shuffle does not have, and it is there to be ignored. The ghost notes this groove is famous for wait for Stage 6, where the app can hear how hard you hit.",
+      "hints": [
+        "The hats have not changed. Play The Shuffle once, then move the snare.",
+        "One snare a bar, on beat 3. Beat 4 has nothing but a hat, and that empty 4 is where a snare creeps back in out of habit.",
+        "The second kick is on the late note before beat 3, so it lands with a swung hat. If it feels like an \"and\", you have straightened it.",
+        "The bass is playing straight against you. Your hat is the grid, not the bass — lock to it and let the rest go past.",
+        "Half time is a feel, not a speed. Nothing your hands do got slower; you are counting the same four beats you always were."
+      ]
+    },
+    {
+      "id": "checkpoint-6",
+      "number": "1.◆",
+      "name": "Checkpoint — Subdivision & the Grid",
+      "file": "stage-06-subdivision/checkpoint-6.mid",
+      "stage": "subdivision",
+      "module": null,
+      "tier": "checkpoint",
+      "bpm": 60,
+      "bars": 4,
+      "prereq": [],
+      "summary": "One bar each: 16th hats, triplet hats, the shuffle, and the half-time shuffle.",
+      "description": "The same three pads for four bars, and the same kick and snare under three of them. The only thing that changes on each bar line is how the beat is divided: four 16ths, then three triplets, then the swung pair, then the shuffle with its backbeat moved to 3. Switching grids with no warning is much harder than any one of them, and it is what proves you have both grids rather than one grid and a habit. The bass plays plain quarter notes — it is the one line that does not take a side.",
+      "hints": [
+        "The count changes on every bar line and nothing announces it: \"1 e and a\", then \"trip a let\", then the swung pair.",
+        "Bar 1 into bar 2 is the hard one. Sixteen hats become twelve and the beats do not move — let them hold and change only what is between them.",
+        "Bars 3 and 4 are the same hat line. Only the kick and snare move, and the snare moves to beat 3 alone.",
+        "Kick and snare are identical in bars 1, 2 and 3. If they shift when the hat line changes, the hat hand is dragging the other one with it.",
+        "Do not slow down for the shuffle or speed up for the 16ths. One tempo, four grids."
+      ]
+    },
+    {
       "id": "paradiddle-single",
       "number": "2.4",
       "name": "Single Paradiddle",
-      "file": "stage-04-sticking/paradiddle-single.mid",
+      "file": "stage-07-sticking/paradiddle-single.mid",
       "stage": "sticking",
       "module": "the-paradiddle",
       "tier": "plain",
@@ -856,7 +1974,7 @@
       "id": "paradiddle-groove",
       "number": "2.5",
       "name": "Paradiddle Groove",
-      "file": "stage-04-sticking/paradiddle-groove.mid",
+      "file": "stage-07-sticking/paradiddle-groove.mid",
       "stage": "sticking",
       "module": "the-paradiddle",
       "tier": "core",

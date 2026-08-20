@@ -1,8 +1,8 @@
 """Pattern helpers, so a lesson is a list of positions rather than a bar loop.
 
 Positions are **beat offsets inside a bar**, as floats: `0` is the down-beat,
-`1.5` is the "and" of 2, `2.25` is the "e" of 3. Every drum pattern in the
-curriculum is one of two shapes:
+`1.5` is the "and" of 2, `2.25` is the "e" of 3, `2 + 2/3` is the last note of
+beat 3's triplet. Every drum pattern in the curriculum is one of two shapes:
 
     voices(bars, (KICK, [0, 2]), (SNARE, [1, 3]))          every bar the same
     per_bar(bars, lambda i: ...)                           bars that differ
@@ -26,6 +26,15 @@ EIGHTHS = [i / 2 for i in range(8)]
 SIXTEENTHS = [i / 4 for i in range(16)]
 BACKBEAT = [1, 3]  # 2 and 4
 DOWNBEATS = [0, 2]  # 1 and 3
+
+# The other way to divide a beat. PPQ is 480, so a third of a beat is 160 ticks
+# exactly — a triplet lands on the grid rather than near it, and the schematic
+# draws notes at their true beat, so it reads correctly too.
+TRIPLETS = [i / 3 for i in range(12)]  # three to a beat
+# A swung 8th is the first and last note of a triplet, so the second one of each
+# pair arrives two thirds of the way through the beat rather than halfway. This
+# is the shuffle, written out rather than applied as a feel.
+SWUNG = [p for beat in range(BEATS_PER_BAR) for p in (beat, beat + 2 / 3)]
 
 
 def per_bar(bars, voices_for):

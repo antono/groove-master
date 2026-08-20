@@ -8,6 +8,18 @@
     syncopated  pushes between the hits and must be ignored
     dub         leaves the down-beat empty entirely               least support
 
+    shuffle     swings with the student — off this ladder entirely
+
+**In triplet feel the ladder is re-derived, not reused.** Every line above is
+written on the straight grid, so under triplets they no longer sort by support:
+`octave`, `answer` and `syncopated` all land on the "and", a slot a shuffle does
+not have, and they fight the student instead of scaffolding them. That leaves
+`quarter` as the only neutral line — it marks the beat and says nothing about
+how it is divided — and `shuffle`, which plays the new grid alongside the
+student and is therefore the *most* supportive line there is for a feel lesson.
+Stage 3 fades from `shuffle` to `quarter` to a straight line, which is the same
+fade in the opposite direction.
+
 Support that never fades is not support: a module opens on a line that marks
 every beat and a stage ends on one that does not, where holding your own
 against the bass is the exercise rather than an obstacle to the first note
@@ -224,6 +236,51 @@ def octave_bass(bars=4):
     return resolved(events, bars)
 
 
+def shuffle_bass(bars=4):
+    """A boogie shuffle over Am - Am - F - E: root on the beat, a moving note late.
+
+    The only line in this file written on the triplet grid. Two notes a beat —
+    the root on the beat, then the *last* note of the triplet, two thirds of the
+    way across it — which is exactly the rhythm the Feel module is teaching. A
+    student learning to swing needs to hear something else swinging: the late
+    note in the bass and the late note on their hat land together, and when
+    theirs straightens the two come apart audibly.
+
+    Masking is not the concern it is elsewhere. Under a shuffle both of these
+    slots have a hat on them and the line is heard through the kit rather than
+    around it — but the *rhythm* is what it is here to carry, and a rhythm
+    survives being blended in a way a melody does not.
+
+    Harmony is i - i - VI - V rather than the Am - F - C - G the straight lines
+    use: a shuffle is a blues before it is anything else, and E resolving onto A
+    is the cadence the whole feel leans on. The last swung note of bar 4 is a
+    G#, a semitone under the tonic `resolved()` lands on.
+
+    Every note sits inside the rendered bass range (28-60, see
+    `static/bass/manifest.json`). A root below it decodes as a 404 and the line
+    simply loses notes, silently — which is why `make-lessons.py` now checks.
+    """
+    events = [PROGRAM_CHANGE]
+    ROOT_VEL, LATE_VEL = 95, 70
+    ROOT_DUR, LATE_DUR = 280, 140  # both stop short: a shuffle bass is detached
+    # (root, the four notes played late in the bar) — the late notes walk.
+    figures = [
+        (33, [40, 43, 40, 36]),  # Am: A1, then E2 G2 E2 C2
+        (33, [40, 43, 40, 36]),  # Am again
+        (29, [33, 36, 33, 40]),  # F:  F1, then A1 C2 A1 E2 -> the next root's pitch
+        (28, [35, 38, 35, 32]),  # E:  E1, then B1 D2 B1 G#1 -> a semitone under A
+    ]
+    third = PPQ // 3
+    for bar in range(bars):
+        base = bar * BAR_TICKS
+        root, late = figures[bar % len(figures)]
+        for beat in range(BEATS_PER_BAR):
+            at = base + beat * PPQ
+            bass_note(events, at, root, dur=ROOT_DUR, vel=ROOT_VEL)
+            bass_note(events, at + 2 * third, late[beat], dur=LATE_DUR, vel=LATE_VEL)
+    return resolved(events, bars)
+
+
 def syncopated_bass(bars=4):
     """Off-beat bass over Am - Am - F - G: "1, 2-and, 3, 4-and".
 
@@ -249,3 +306,4 @@ RIFF = ("lately", riff_bass)
 QUARTER = ("lately", quarter_bass)
 OCTAVE = ("lately", octave_bass)
 SYNCOPATED = ("lately", syncopated_bass)
+SHUFFLE = ("lately", shuffle_bass)

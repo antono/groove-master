@@ -7,13 +7,24 @@ See LESSONS.md for the lesson-by-lesson index and docs/curriculum.md for why the
 order is what it is.
 """
 
-from . import stage01_pulse, stage02_backbeat, stage03_subdivision, stage04_sticking
+from . import (
+    stage01_pulse,
+    stage02_backbeat,
+    stage03_space,
+    stage04_cymbals,
+    stage05_two_bars,
+    stage06_subdivision,
+    stage07_sticking,
+)
 
 CURRICULUM = [
     stage01_pulse.STAGE,
     stage02_backbeat.STAGE,
-    stage03_subdivision.STAGE,
-    stage04_sticking.STAGE,
+    stage03_space.STAGE,
+    stage04_cymbals.STAGE,
+    stage05_two_bars.STAGE,
+    stage06_subdivision.STAGE,
+    stage07_sticking.STAGE,
 ]
 
 # The journey's top level. Stages group into four tiers, each answering one
@@ -27,24 +38,24 @@ TIERS = [
         "slug": "foundations",
         "name": "Foundations",
         "question": "Can you keep time and stack two hands?",
-        "stages": [0, 1, 2],
+        "stages": [0, 1, 2, 3, 4, 5],
     },
     {
         "slug": "vocabulary",
         "name": "Vocabulary",
         "question": "Do you have hands, and things to say with them?",
-        "stages": [3, 4, 5, 6],
+        "stages": [6, 7, 8, 9],
     },
     {
         "slug": "music",
         "name": "Music",
         "question": "Can you play something someone wants to hear?",
-        "stages": [7, 8],
+        "stages": [10, 11],
     },
     {
         "slug": "mastery",
         "name": "Mastery",
         "question": "Can you make it your own?",
-        "stages": [9, 10],
+        "stages": [12, 13],
     },
 ]

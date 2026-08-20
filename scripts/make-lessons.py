@@ -40,12 +40,13 @@ that same beat (see bass.resolved) and the two finish together. build_lesson()
 adds it to every lesson — it is scored, and the transport runs a beat past it
 so it can be played.
 
-GUIDE-HAT RULE: a lesson whose pattern has no hi-hat of its own gets one added,
-playing 8ths underneath at low velocity. On a kit the hat is the voice that
-never stops and everything else is heard against it; without one the student is
-counting in silence between their own hits. build_lesson() detects the absence
-and adds the track — a lesson that plays a hat already is left alone, and a
-lesson that wants a different timekeeper should put a real one in its pattern.
+GUIDE-HAT RULE: a lesson whose pattern has no timekeeper of its own gets a
+hi-hat added, playing 8ths underneath at low velocity. On a kit the hat is the
+voice that never stops and everything else is heard against it; without one the
+student is counting in silence between their own hits. build_lesson() detects
+the absence and adds the track. A pattern that already plays a hat — or a ride,
+which does the same job — is left alone; a lesson that wants a different
+timekeeper should put a real one in its pattern.
 
 Re-run after adding or editing a lesson:
   python3 scripts/make-lessons.py
@@ -63,14 +64,19 @@ from lessons.grids import close_on_downbeat, guide_hats  # noqa: E402
 from lessons.midi import (  # noqa: E402
     CLOSED_HH,
     OPEN_HH,
+    RIDE,
     build_track,
     count_in_sticks,
     notes_in,
     write_midi,
 )
 
-# A lesson counts as having a hat if it strikes either of these itself.
-HAT_NOTES = {CLOSED_HH, OPEN_HH}
+# A lesson already keeps its own time if it strikes any of these. The rule is
+# about the *job*, not the pad: a ride playing 8ths is the voice that never
+# stops just as much as a hat is, and adding a guide hat under one would put two
+# timekeepers in the same bar. A crash is not on this list — it is an accent, and
+# a pattern that only crashes still has nothing running underneath it.
+TIMEKEEPER_NOTES = {CLOSED_HH, OPEN_HH, RIDE}
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "static", "lessons")
@@ -113,6 +119,40 @@ def stage_dir(stage):
     return f"stage-{stage['number']:02d}-{stage['slug']}"
 
 
+def bass_range():
+    """The notes `render-bass.py` actually rendered, or None if it never ran."""
+    try:
+        with open(os.path.join(ROOT, "static", "bass", "manifest.json")) as f:
+            man = json.load(f)
+        return man["lo"], man["hi"]
+    except (OSError, KeyError, ValueError):
+        return None
+
+
+def check_bass_range(lesson, bass_id, events):
+    """Fail on a bass note that was never rendered.
+
+    A backing note outside the rendered range is a 404 at playback and nothing
+    else: no error the student sees, no gap in the drums, just a line quietly
+    missing some of its notes. It is invisible in the MIDI, invisible on the
+    chart (backing is never drawn), and only shows up in the dev server's log —
+    so it gets caught here, where the line is written.
+    """
+    span = bass_range()
+    if not span:
+        return  # samples not rendered on this machine; nothing to check against
+    lo, hi = span
+    out = sorted(
+        {raw[1] for _t, _o, raw in events if raw[0] & 0xF0 == 0x90 and raw[2]}
+        - set(range(lo, hi + 1))
+    )
+    if out:
+        raise SystemExit(
+            f"{lesson['slug']}: bass '{bass_id}' plays {out}, "
+            f"outside the rendered range {lo}-{hi}"
+        )
+
+
 def build_lesson(lesson, out_dir, rel_dir):
     """Write one lesson's MIDI and return the fields derived from it."""
     bars = lesson["bars"]
@@ -132,13 +172,14 @@ def build_lesson(lesson, out_dir, rel_dir):
         # Every lesson counts in — see COUNT-IN RULE at the top of this file.
         build_track("count-in", count_events, count_length),
     ]
-    # A lesson with no hat of its own borrows one — see GUIDE-HAT RULE above.
-    if not notes_in(drum_events) & HAT_NOTES:
+    # A lesson with no timekeeper of its own borrows one — see GUIDE-HAT RULE.
+    if not notes_in(drum_events) & TIMEKEEPER_NOTES:
         guide_events, _ = guide_hats(bars)
         tracks.append(build_track("guide", guide_events, length))
     if lesson.get("bass"):
         bass_id, builder = lesson["bass"]
         bass_events, _ = builder(bars)
+        check_bass_range(lesson, bass_id, bass_events)
         tracks.append(build_track(f"bass:{bass_id}", bass_events, length))
 
     write_midi(os.path.join(out_dir, f"{lesson['slug']}.mid"), tracks)

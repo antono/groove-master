@@ -39,6 +39,7 @@ scripts/
     stage01_pulse.py       one file per stage: patterns and prose side by side
     stage02_backbeat.py
     …
+    stage07_sticking.py
 static/lessons/            GENERATED — never edit by hand
   manifest.json
   stage-01-pulse/kick-quarters.mid
@@ -68,7 +69,7 @@ tiers whose stages are not written yet.
 that order. That is deliberate: a module missing a tier is a module that has not
 been thought through. Fill the gap with `planned()` rather than dropping it.
 
-Currently: 4 stages, 21 playable lessons, 17 planned slots.
+Currently: 7 stages, 62 playable lessons, 7 planned slots.
 
 ## Ids are permanent
 
@@ -137,8 +138,16 @@ writing your own produces a double.
   line after the last bar, so the phrase lands rather than running out. It is
   scored, and the transport runs a beat past it so it can be played — see
   `TAIL_BEATS` in `$lib/midi.ts`. A stacked down-beat closes as the same stack.
-- **The guide hat.** Only when the pattern has no hi-hat of its own: closed
-  hats on the 8ths, well under the kit, audible but never shown or scored.
+- **The guide hat.** Only when the pattern has no timekeeper of its own: closed
+  hats on the 8ths, well under the kit, audible but never shown or scored. A
+  ride counts as a timekeeper and a crash does not — the rule is about the job,
+  not the pad — so a ride groove is left alone and a crash-only pattern still
+  borrows a hat.
+
+  It also means **a lesson about silence must own its timekeeper**. A hatless
+  pattern with holes in it gets 8th-note hats laid over the holes, which is
+  exactly the help the lesson is trying to withhold; Stage 3's sparse lessons
+  put a hat on their own down-beats for that reason.
 
 The bass lands its own resolution on that same closing beat (below), so the hit
 and the tonic finish together.
@@ -149,14 +158,23 @@ Create `scripts/lessons/stageNN_<slug>.py` exporting a `STAGE = stage(...)`, the
 add it to `CURRICULUM` in `scripts/lessons/__init__.py`. Those two edits are the
 whole job — nothing else in the tree knows how many stages there are.
 
+**Inserting one in the middle costs a renumber**, because a stage's global
+`number` is its position: the stages after it shift up, their files are renamed
+to match, and `TIERS` is rewritten. That is a mechanical change and it is safe —
+the number only picks the MIDI directory and the tier — but do it in one pass,
+and remember that the displayed stage number is tier-local and derived, so a
+tier that gains a stage renumbers only itself on screen. Slugs never move, so no
+student loses history or a tempo ceiling. Foundations gained Space, The Cymbals
+and Two Bars this way; everything from Subdivision on moved up by three.
+
 Give every stage a `closing=checkpoint(...)`: one bar of each pattern from that
 stage, built with `cycle_bars()`. Practising one pattern until it is smooth
 feels productive and retains poorly; interleaving competing patterns feels worse
 and retains far better, so the checkpoint is where a stage is actually passed.
 
-Stages 1 and 2 have theirs. Stages 3 and 4 do not yet — they are still being
-filled in, and a checkpoint over patterns that are mostly `planned()` would have
-nothing to interleave.
+Every stage has one except Sticking, which is still being filled in — a
+checkpoint over patterns that are mostly `planned()` would have nothing to
+interleave.
 
 ## Writing patterns
 
@@ -171,13 +189,27 @@ Positions are **beat offsets inside a bar**, as floats. `0` is the down-beat,
 | `sticking(bars, lead, other, positions, "RLRR")` | rudiments                                   |
 | `cycle_bars(bars, patterns)`                     | one bar of each — checkpoints               |
 
-Named position sets: `BEATS`, `OFFBEATS`, `EIGHTHS`, `SIXTEENTHS`, `BACKBEAT`
+Named position sets: `BEATS`, `OFFBEATS`, `EIGHTHS`, `SIXTEENTHS`, `TRIPLETS`
+(three to a beat), `SWUNG` (the first and last of each triplet), `BACKBEAT`
 (2 and 4), `DOWNBEATS` (1 and 3). Drum notes: `KICK`, `SNARE`, `CLOSED_HH`,
-`OPEN_HH`, `SIDE_STICK` — the count-in owns the side stick.
+`OPEN_HH`, `CRASH`, `RIDE`, `SIDE_STICK` — the count-in owns the side stick.
+
+**Those seven are the whole palette, deliberately.** Kick, snare, closed hat,
+open hat, crash and ride are exactly the pads the on-screen controller ships
+with (`DEFAULT_PADS` in `$lib/virtual-input.ts`), so a lesson built from them is
+playable by someone who has no hardware at all. Toms are rendered and mapped,
+but nothing in the curriculum uses one — reaching for a pad the fallback
+controller does not have makes the lesson unplayable for a whole class of
+student, silently, at the moment they press Play.
+
+Triplets land on the grid rather than near it: `PPQ` is 480, so a third of a
+beat is exactly 160 ticks, and the schematic draws every note at its true beat
+rather than snapping it to a step, so a swung 8th reads as a swung 8th.
 
 ## Choosing a backing bass
 
-`bass.py` exports five lines, ordered by how much they help the student:
+`bass.py` exports six lines. Five are on the straight grid and are ordered by
+how much they help the student:
 
 | line         | does                                            | most → least support |
 | ------------ | ----------------------------------------------- | -------------------- |
@@ -186,6 +218,14 @@ Named position sets: `BEATS`, `OFFBEATS`, `EIGHTHS`, `SIXTEENTHS`, `BACKBEAT`
 | `QUARTER`    | the root on every beat                          |                      |
 | `OCTAVE`     | bounces on the 8ths, still rooted on the beat   |                      |
 | `SYNCOPATED` | pushes between the hits and must be ignored     | least                |
+
+`SHUFFLE` is the sixth and is off that ladder: it is written on the triplet
+grid, so under a swung lesson it is the _most_ supportive line there is, and
+under a straight one it is simply wrong. In triplet feel the ladder above stops
+sorting at all — `ANSWER`, `OCTAVE` and `SYNCOPATED` all land on the "and",
+which a shuffle does not have — so a triplet or shuffle lesson picks from
+`SHUFFLE` (swings with you), `QUARTER` (neutral: marks the beat, says nothing
+about how it is divided) and a straight line (resists you), in that order.
 
 **Support that never fades is not support.** A module opens on a line that marks
 every beat and a stage ends on one that does not, where holding your own against

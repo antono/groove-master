@@ -19,6 +19,11 @@ BEATS_PER_BAR = 4
 # student is about to play. (GM 31 "Sticks" would read better still, but
 # render-drums.py only renders 35-70.)
 KICK, SNARE, CLOSED_HH, OPEN_HH, SIDE_STICK = 36, 38, 42, 46, 37
+# The cymbals. These three plus the four above are exactly the pads the on-screen
+# controller ships with (`DEFAULT_PADS` in $lib/virtual-input.ts), so a lesson
+# built from them is playable by someone who has no controller at all. Toms are
+# deliberately not in that set, and so not in the curriculum.
+CRASH, RIDE = 49, 51
 
 
 def varint(n):
