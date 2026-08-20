@@ -197,8 +197,15 @@ input[type="range"] {
  *
  * The overlay does prevent selecting the card's text. That is the accepted
  * cost; a card is something you go to, not something you quote.
+ *
+ * **Anchors only, deliberately.** "stretch" is also a curriculum word — the
+ * third lesson of every module — so a lesson card renders `class="tier stretch"`
+ * on its badge. Unqualified, this rule gave that badge a full-card overlay of
+ * its own, painted after the real link and swallowing every click on it: the
+ * stretch lesson of every module was unreachable from the catalogue. The
+ * element selector keeps a name collision from becoming a dead card.
  */
-.stretch::after {
+a.stretch::after {
   content: "";
   position: absolute;
   inset: 0;
