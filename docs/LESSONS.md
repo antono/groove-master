@@ -208,18 +208,26 @@ rather than snapping it to a step, so a swung 8th reads as a swung 8th.
 
 ## Choosing a backing bass
 
-`bass.py` exports six lines. Five are on the straight grid and are ordered by
-how much they help the student:
+`bass.py` exports eight lines. Seven are on the straight grid and are ordered
+by how much they help the student:
 
-| line         | does                                            | most → least support |
-| ------------ | ----------------------------------------------- | -------------------- |
-| `ANSWER`     | replies on every off-beat, strictly diatonic    | most                 |
-| `RIFF`       | a hook in the gaps, with rests and a turnaround |                      |
-| `QUARTER`    | the root on every beat                          |                      |
-| `OCTAVE`     | bounces on the 8ths, still rooted on the beat   |                      |
-| `SYNCOPATED` | pushes between the hits and must be ignored     | least                |
+| line         | does                                            | instrument | most → least support |
+| ------------ | ----------------------------------------------- | ---------- | -------------------- |
+| `ANSWER`     | replies on every off-beat, strictly diatonic    | finger     | most                 |
+| `RIFF`       | a hook in the gaps, with rests and a turnaround | finger     |                      |
+| `QUARTER`    | the root on every beat, walking home in bar 4   | picked     |                      |
+| `OCTAVE`     | bounces on the 8ths, still rooted on the beat   | synth1     |                      |
+| `PEDAL`      | one long root, then a scramble in the back half | synth2     |                      |
+| `SYNCOPATED` | pushes between the hits and must be ignored     | synth2     |                      |
+| `DUB`        | never plays the down-beat at all                | finger     | least                |
 
-`SHUFFLE` is the sixth and is off that ladder: it is written on the triplet
+Each constant pairs its line with an instrument, so the curriculum does not
+sound like one bass practising forever; a stage that wants a different colour
+can pass `bass=("synth1", riff_bass)` directly. The two electric basses are
+real recordings and stop at A2/A#2 — `make-lessons.py` checks every line
+against the chosen bass's own rendered range, not the global one.
+
+`SHUFFLE` is the eighth and is off that ladder: it is written on the triplet
 grid, so under a swung lesson it is the _most_ supportive line there is, and
 under a straight one it is simply wrong. In triplet feel the ladder above stops
 sorting at all — `ANSWER`, `OCTAVE` and `SYNCOPATED` all land on the "and",

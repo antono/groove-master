@@ -197,18 +197,33 @@ def answer_bass(bars=4):
 
 
 def quarter_bass(bars=4):
-    """Root on every beat over Am - Am - F - G, one chord per bar.
+    """Root on every beat over Am - Am - F - G, walking home through bar 4.
 
     A plain quarter-note pulse: it doubles the beat the student is chasing
     instead of syncopating against it, which is what an early lesson needs.
+    Two things keep it from being a metronome with a pitch. The down-beat of
+    each bar is leant on and the other three notes sit under it, the way a
+    player marks the bar without being asked; and bar 4 walks G - B - D - E up
+    the chord — still one note per beat, still nothing off the grid, but the
+    last bar audibly heads home instead of stamping the same pitch four times.
+    The E falls a fifth onto the A that opens bar 1, the oldest cadence there
+    is.
     """
     events = [PROGRAM_CHANGE]
+    ROOT_VEL, STEP_VEL = 96, 78
     roots = [33, 33, 29, 31]  # A1, A1, F1, G1
+    walk = [31, 35, 38, 40]  # G1, B1, D2, E2 — chord tones, up and over
     for bar in range(bars):
         base = bar * BAR_TICKS
-        root = roots[bar % len(roots)]
-        for beat in range(BEATS_PER_BAR):
-            bass_note(events, base + beat * PPQ, root, dur=360)
+        if bar % 4 == 3:
+            for beat, note in enumerate(walk):
+                vel = ROOT_VEL if beat == 0 else 84
+                bass_note(events, base + beat * PPQ, note, dur=360, vel=vel)
+        else:
+            root = roots[bar % len(roots)]
+            for beat in range(BEATS_PER_BAR):
+                vel = ROOT_VEL if beat == 0 else STEP_VEL
+                bass_note(events, base + beat * PPQ, root, dur=360, vel=vel)
     return resolved(events, bars)
 
 
@@ -216,9 +231,15 @@ def octave_bass(bars=4):
     """Disco/house octave bounce over Am - F - C - G, one chord per bar.
 
     Root on the down-beats, octave-up on the off-beats, with a chromatic
-    approach note on the last 8th leading into the next bar's root.
+    approach note on the last 8th leading into the next bar's root. The floor
+    notes are leant on and the bounces sit lighter and shorter above them —
+    the pump comes from that see-saw, not from the notes alone; played flat it
+    is an octave exercise, not disco. The very last off-beat of the loop drops
+    the bounce for a fifth, so the run into bar 1 is a little run and not just
+    a step.
     """
     events = [PROGRAM_CHANGE]
+    FLOOR_VEL, BOUNCE_VEL, PUSH_VEL = 94, 70, 84
     roots = [33, 29, 36, 31]  # A1, F1, C2, G1
     eighth = PPQ // 2
     for bar in range(bars):
@@ -227,12 +248,14 @@ def octave_bass(bars=4):
         nxt = roots[(bar + 1) % len(roots)]
         for i, pos in enumerate(range(0, BAR_TICKS, eighth)):
             if i == 7:
-                note = nxt - 1  # chromatic approach into the next root
+                note, dur, vel = nxt - 1, 160, PUSH_VEL  # chromatic approach
+            elif i == 6 and bar % len(roots) == len(roots) - 1:
+                note, dur, vel = root + 7, 160, PUSH_VEL  # fifth: the run home
             elif i % 2 == 0:
-                note = root  # down-beat: root
+                note, dur, vel = root, 210, FLOOR_VEL  # down-beat: the floor
             else:
-                note = root + 12  # off-beat: octave up
-            bass_note(events, base + pos, note, dur=180)
+                note, dur, vel = root + 12, 150, BOUNCE_VEL  # off-beat: bounce
+            bass_note(events, base + pos, note, dur=dur, vel=vel)
     return resolved(events, bars)
 
 
@@ -286,7 +309,43 @@ def syncopated_bass(bars=4):
 
     Beats 1 and 3 stay anchored so the down-beat is never in doubt, while the
     pushes on the "and" of 2 and 4 keep the line from just doubling the drums.
-    The last off-beat walks a semitone into the next bar's root.
+    The anchors are leant on and the pushes sit lighter — a push that is as
+    loud as the beat it is pushing against stops being a push and starts being
+    an argument. The last off-beat of each bar walks a semitone into the next
+    root, except at the very end of the loop, where the single push splits
+    into a two-note enclosure — B above, G# below — closing on the A like a
+    door.
+    """
+    events = [PROGRAM_CHANGE]
+    ANCHOR_VEL, PUSH_VEL = 92, 72
+    roots = [33, 33, 29, 31]  # A1, A1, F1, G1
+    sixteenth = PPQ // 4
+    for bar in range(bars):
+        base = bar * BAR_TICKS
+        root = roots[bar % len(roots)]
+        nxt = roots[(bar + 1) % len(roots)]
+        bass_note(events, base, root, dur=300, vel=ANCHOR_VEL)  # beat 1
+        bass_note(events, base + 3 * PPQ // 2, root + 12, dur=180, vel=PUSH_VEL)
+        bass_note(events, base + 2 * PPQ, root, dur=300, vel=ANCHOR_VEL)  # beat 3
+        if bar % len(roots) == len(roots) - 1:
+            # the enclosure: over, under, home — the loop's own full stop
+            bass_note(events, base + 14 * sixteenth, nxt + 2, dur=100, vel=PUSH_VEL)
+            bass_note(events, base + 15 * sixteenth, nxt - 1, dur=110, vel=86)
+        else:
+            bass_note(events, base + 7 * PPQ // 2, nxt - 1, dur=180, vel=80)
+    return resolved(events, bars)
+
+
+def pedal_bass(bars=4):
+    """One long root across the first half of the bar, then a scramble home.
+
+    The pedal is the line for a lesson that needs harmonic ground without a
+    rhythmic crutch: the root sounds once, on the down-beat, and *holds* —
+    beats 2 is never marked at all — then the second half of the bar wakes up
+    with the fifth on 3, a ghosted octave pickup, and an approach note into
+    the next bar. Half the bar is a drone and half is motion, which is what
+    puts it below `octave` on the support ladder: the long note confirms where
+    beat 1 was, and after that the student is on their own until beat 3.
     """
     events = [PROGRAM_CHANGE]
     roots = [33, 33, 29, 31]  # A1, A1, F1, G1
@@ -294,16 +353,51 @@ def syncopated_bass(bars=4):
         base = bar * BAR_TICKS
         root = roots[bar % len(roots)]
         nxt = roots[(bar + 1) % len(roots)]
-        bass_note(events, base + 0 * PPQ, root, dur=300)  # beat 1: root
-        bass_note(events, base + 3 * PPQ // 2, root + 12, dur=200)  # 2-and: octave
-        bass_note(events, base + 2 * PPQ, root, dur=300)  # beat 3: root
-        bass_note(events, base + 7 * PPQ // 2, nxt - 1, dur=200)  # 4-and: approach
+        bass_note(events, base, root, dur=900, vel=95)  # the pedal itself
+        bass_note(events, base + 2 * PPQ, root + 7, dur=300, vel=80)  # fifth on 3
+        bass_note(events, base + 11 * PPQ // 4, root + 12, dur=110, vel=58)  # ghost
+        bass_note(events, base + 7 * PPQ // 2, nxt - 1, dur=200, vel=76)  # approach
     return resolved(events, bars)
 
 
-ANSWER = ("lately", answer_bass)
-RIFF = ("lately", riff_bass)
-QUARTER = ("lately", quarter_bass)
-OCTAVE = ("lately", octave_bass)
-SYNCOPATED = ("lately", syncopated_bass)
-SHUFFLE = ("lately", shuffle_bass)
+def dub_bass(bars=4):
+    """A dub line over Am - Am - F - G that never plays the down-beat.
+
+    The least supportive line on the straight grid, and the one that teaches
+    the most about owning beat 1: every bar opens with silence where the root
+    should be, and the root lands half a beat late — the classic dub drop.
+    From there the bar is sparse and behind the beat by temperament: the fifth
+    on 3 (the one beat it does mark, reggae's own anchor), a ghosted octave,
+    and a soft approach into the next bar's late root. A student who leans on
+    this line falls over, which is the point of the lessons it is written for
+    — by the time it appears, the down-beat has to be theirs.
+    """
+    events = [PROGRAM_CHANGE]
+    roots = [33, 33, 29, 31]  # A1, A1, F1, G1
+    for bar in range(bars):
+        base = bar * BAR_TICKS
+        root = roots[bar % len(roots)]
+        nxt = roots[(bar + 1) % len(roots)]
+        bass_note(events, base + PPQ // 2, root, dur=450, vel=90)  # the late root
+        bass_note(events, base + 2 * PPQ, root + 7, dur=300, vel=80)  # fifth on 3
+        bass_note(events, base + 11 * PPQ // 4, root + 12, dur=120, vel=60)  # ghost
+        bass_note(events, base + 7 * PPQ // 2, nxt - 1, dur=200, vel=72)  # approach
+    return resolved(events, bars)
+
+
+# Each line is bound to its own instrument, so the curriculum does not sound
+# like one bass practising forever. The pairing follows the line's character —
+# the conversational lines sit on the real electric basses, the machine lines
+# on the synths — and it respects each SoundFont's rendered range: the two
+# electric basses are real recordings and stop at A2/A#2 (see
+# static/bass/manifest.json), which `make-lessons.py` checks per lesson. A
+# stage that wants a different colour can pair any builder with any rendered
+# id: `bass=("synth1", riff_bass)` is a legal lesson field.
+ANSWER = ("finger", answer_bass)  # call-and-response wants a hand, not an envelope
+RIFF = ("finger", riff_bass)  # ghosts and accents read best on the real thing
+QUARTER = ("picked", quarter_bass)  # the pick's front edge marks the beat
+OCTAVE = ("synth1", octave_bass)  # disco bounce, disco machine
+PEDAL = ("synth2", pedal_bass)  # the DX7 holds a drone without decaying away
+SYNCOPATED = ("synth2", syncopated_bass)  # the pushes want punch, not warmth
+DUB = ("finger", dub_bass)  # deep, round, and behind the beat
+SHUFFLE = ("picked", shuffle_bass)  # a boogie is guitar-band music

@@ -119,12 +119,22 @@ def stage_dir(stage):
     return f"stage-{stage['number']:02d}-{stage['slug']}"
 
 
-def bass_range():
-    """The notes `render-bass.py` actually rendered, or None if it never ran."""
+def bass_ranges():
+    """Per-bass rendered ranges from the manifest, or None if it never ran.
+
+    Not every bass covers the same notes: the electric basses are real
+    recordings and stop where the instrument's neck does, while the synths run
+    the full span. `render-bass.py` audits every render and writes each bass's
+    true range, which is what a line has to be checked against — the global
+    span would pass a note the chosen bass cannot play.
+    """
     try:
         with open(os.path.join(ROOT, "static", "bass", "manifest.json")) as f:
             man = json.load(f)
-        return man["lo"], man["hi"]
+        return {
+            b["id"]: (b.get("lo", man["lo"]), b.get("hi", man["hi"]))
+            for b in man["basses"]
+        }
     except (OSError, KeyError, ValueError):
         return None
 
@@ -138,10 +148,12 @@ def check_bass_range(lesson, bass_id, events):
     chart (backing is never drawn), and only shows up in the dev server's log —
     so it gets caught here, where the line is written.
     """
-    span = bass_range()
-    if not span:
+    ranges = bass_ranges()
+    if ranges is None:
         return  # samples not rendered on this machine; nothing to check against
-    lo, hi = span
+    if bass_id not in ranges:
+        raise SystemExit(f"{lesson['slug']}: bass '{bass_id}' was never rendered")
+    lo, hi = ranges[bass_id]
     out = sorted(
         {raw[1] for _t, _o, raw in events if raw[0] & 0xF0 == 0x90 and raw[2]}
         - set(range(lo, hi + 1))
@@ -149,7 +161,7 @@ def check_bass_range(lesson, bass_id, events):
     if out:
         raise SystemExit(
             f"{lesson['slug']}: bass '{bass_id}' plays {out}, "
-            f"outside the rendered range {lo}-{hi}"
+            f"outside its rendered range {lo}-{hi}"
         )
 
 

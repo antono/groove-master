@@ -30,7 +30,9 @@ public domain dedication. Attribution is not legally required — it is given he
 with thanks.
 
 - **Samples taken (all basses):** notes MIDI 28–60 (E1–C4), rendered to
-  `static/bass/<id>/<note>.oga` via `scripts/render-bass.py`.
+  `static/bass/<id>/<note>.oga` via `scripts/render-bass.py`. The two electric
+  basses are real recordings and cover only the instrument's own range (picked
+  28–46, finger 28–45); notes outside it are not shipped.
 
 ### Lately Bass
 
@@ -54,4 +56,22 @@ with thanks.
 - **Author:** roberto@zenvoid.org, for the FreePats project.
 - **Source file:** `soundfonts/SynthBass2.sf2`
   ([download](https://github.com/freepats/synth-bass-2)).
+- **License:** CC0 1.0 (public domain).
+
+### Picked Bass
+
+- **What it is:** a real Yamaha RBX bass guitar, played with a pick
+  ("Picked Bass YR").
+- **Author:** Andrea Biasior, with edits by roberto@zenvoid.org for FreePats.
+- **Source file:** `soundfonts/PickedBassYR.sf2`
+  ([download](https://github.com/freepats/electric-bass-YR)).
+- **License:** CC0 1.0 (public domain).
+
+### Finger Bass
+
+- **What it is:** the same Yamaha RBX bass guitar, played fingerstyle
+  ("Finger Bass YR").
+- **Author:** Andrea Biasior, with edits by roberto@zenvoid.org for FreePats.
+- **Source file:** `soundfonts/FingerBassYR.sf2`
+  ([download](https://github.com/freepats/electric-bass-YR)).
 - **License:** CC0 1.0 (public domain).

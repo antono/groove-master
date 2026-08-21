@@ -2,15 +2,33 @@
   "basses": [
     {
       "id": "lately",
-      "name": "Lately Bass"
+      "name": "Lately Bass",
+      "lo": 28,
+      "hi": 60
     },
     {
       "id": "synth1",
-      "name": "Synth Bass 1"
+      "name": "Synth Bass 1",
+      "lo": 28,
+      "hi": 60
     },
     {
       "id": "synth2",
-      "name": "Synth Bass 2"
+      "name": "Synth Bass 2",
+      "lo": 28,
+      "hi": 60
+    },
+    {
+      "id": "picked",
+      "name": "Picked Bass",
+      "lo": 28,
+      "hi": 46
+    },
+    {
+      "id": "finger",
+      "name": "Finger Bass",
+      "lo": 28,
+      "hi": 45
     }
   ],
   "lo": 28,

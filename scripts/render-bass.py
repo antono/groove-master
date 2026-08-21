@@ -10,6 +10,14 @@ Outputs:
   static/bass/<id>/<note>.oga   one file per note, per bass
   static/bass/manifest.json     basses + note range
 
+Not every SoundFont covers the whole range: the two electric basses (real
+Yamaha RBX recordings) stop where the instrument's neck does, and fluidsynth
+renders a note outside the key range as silence while still exiting 0. Every
+render is therefore audited with sox; silent files are deleted and each bass's
+true range is written to the manifest, which is what `make-lessons.py` checks a
+lesson's line against — per bass, so a line written for a synth cannot silently
+lose notes when played on the electric.
+
 Re-run after changing the SoundFonts or range:
   python3 scripts/render-bass.py
 """
@@ -31,6 +39,8 @@ BASSES = [
     {"id": "lately", "name": "Lately Bass", "sf2": "LatelyBass.sf2"},
     {"id": "synth1", "name": "Synth Bass 1", "sf2": "SynthBass1.sf2"},
     {"id": "synth2", "name": "Synth Bass 2", "sf2": "SynthBass2.sf2"},
+    {"id": "picked", "name": "Picked Bass", "sf2": "PickedBassYR.sf2"},
+    {"id": "finger", "name": "Finger Bass", "sf2": "FingerBassYR.sf2"},
 ]
 
 
@@ -64,6 +74,17 @@ def render(sf2, note, dest):
     )
 
 
+def is_silent(path):
+    """True if the render has no signal — a note the SoundFont never mapped."""
+    out = subprocess.run(
+        ["sox", path, "-n", "stat"], capture_output=True, text=True
+    ).stderr
+    for line in out.splitlines():
+        if line.startswith("Maximum amplitude"):
+            return float(line.split(":")[1]) < 0.001
+    return True
+
+
 def main():
     os.makedirs(TMP, exist_ok=True)
     notes = list(range(LO, HI + 1))
@@ -74,14 +95,26 @@ def main():
             sys.exit(f"SoundFont not found: {sf2}")
         dest_dir = os.path.join(OUT, bass["id"])
         os.makedirs(dest_dir, exist_ok=True)
+        audible = []
         for note in notes:
-            render(sf2, note, os.path.join(dest_dir, f"{note}.oga"))
-        catalogue.append({"id": bass["id"], "name": bass["name"]})
-        print(f"rendered {bass['name']} ({len(notes)} notes)")
+            dest = os.path.join(dest_dir, f"{note}.oga")
+            render(sf2, note, dest)
+            if is_silent(dest):
+                os.remove(dest)
+            else:
+                audible.append(note)
+        if not audible:
+            sys.exit(f"{bass['id']}: every note rendered silent")
+        lo, hi = audible[0], audible[-1]
+        if audible != list(range(lo, hi + 1)):
+            sys.exit(f"{bass['id']}: holes inside the range {lo}-{hi}: {audible}")
+        catalogue.append({"id": bass["id"], "name": bass["name"], "lo": lo, "hi": hi})
+        print(f"rendered {bass['name']} ({len(audible)} notes, {lo}-{hi})")
 
     manifest = {"basses": catalogue, "lo": LO, "hi": HI}
     with open(os.path.join(OUT, "manifest.json"), "w") as f:
         json.dump(manifest, f, indent=2)
+        f.write("\n")  # prettier insists, and the pre-commit hook enforces it
     print(f"wrote {os.path.join(OUT, 'manifest.json')}")
 
 
