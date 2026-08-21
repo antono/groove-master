@@ -7,6 +7,107 @@ only shows up in how the project is built.
 Announcements for each release live in [`/news`](src/lib/news/); this file is
 the complete list, that one is the readable half.
 
+## v0.2.0 — 22 August 2026
+
+Forty more lessons, and an app you can install. Ten commits.
+
+### User-facing
+
+**Forty new lessons — 22 playable become 62.** Four stages that were slots in
+the catalogue are now written out.
+
+- **Foundations 3 · Space** — the notes you do not play. Every pattern is a
+  Stage 2 groove with a beat, a half bar or a whole bar taken out of it, and
+  coming back in exactly on time. It adds no new limb and no finer grid on
+  purpose: silence is where a beginner's time actually fails, because inside a
+  run of notes the hands cover for the clock.
+- **Foundations 4 · The Cymbals** — ride, crash and open hat on rhythms you
+  already own. The palette is exactly the six pads the on-screen controller
+  ships with, so every lesson in the stage is playable with no hardware.
+- **Foundations 5 · Two Bars** — form. Bar 2 answers bar 1, a crash marks the
+  top of a four-bar phrase, and the last two beats hand it back. Nothing finer
+  than an 8th and nothing off the beat, so knowing where you are is the only
+  new thing being asked.
+- **Vocabulary 1 · Subdivision & the Grid** — 16ths, triplets, and the feel
+  between them, ending on the shuffle and the half-time shuffle. "Broken
+  Triplets" is derived from the full triplet by dropping every middle note, so
+  the shuffle being a triplet with a hole in it is true by construction rather
+  than by assertion.
+
+Inserting three stages renumbers everything from Subdivision on, but nothing you
+own moves with it: practice history and remembered tempos are keyed by lesson
+slug, and the displayed number has always been rendered from position.
+
+**The app installs.** Add Groove Academy to a home screen or a dock and it opens
+in its own window with no browser furniture. Installing precaches your kit, the
+basses, the lessons and the main pages — about a megabyte, not all twelve kits —
+so a practice session survives a dead connection; a route you have never opened
+lands on an offline page that says so rather than a browser error. App shortcuts
+go straight to **Continue lesson**, **Stats** and **News**.
+
+**A phone layout, not a shrunken desktop one.** Below 48rem the nav folds into a
+full-screen menu (Escape closes it, so does following a link, and the page
+behind it stops scrolling); tiers, stages, lessons and news posts are tappable
+across their whole face; the result screen fills the screen with its buttons in
+thumb reach; touch targets are 44px on coarse pointers, and nothing scrolls
+sideways at 320px.
+
+**The highway really does shrink in portrait now.** It was documented to and
+never did — the narrow constant was 110 pixels per beat, identical to the wide
+one. At 78 the lookahead goes from about 2½ beats to about 3½. The transport HUD
+also came to 327px on a 320px phone and hung off the left edge; under 30rem it
+drops its words for glyphs, keeping the words in the accessible name.
+
+**Every module's third lesson was unreachable from the catalogue.** "stretch" is
+a curriculum word as well as a CSS one, so the rule that makes a card clickable
+was matching the _stretch_ badge too and laying a dead overlay over the card.
+Clicks on it went nowhere.
+
+**Cymbals have a colour of their own.** A crash or a ride used to fall through to
+the by-lane fallback, so the same drum was the hat's colour in one lesson and the
+snare's in the next, depending on how many lanes the lesson had. All seven
+cymbals now share the hat's hue, which is what a colour-by-family map is for.
+
+**Nothing fetches samples while you are playing.** The idle warm-up carries a 3 s
+timeout and so fires whether or not the page ever went idle — start a run inside
+that window and a few dozen requests burst through while the highway is
+scrolling. It is now cancelled by Play and by Listen, and nothing is lost: a run
+preloads exactly those samples before its first beat anyway.
+
+### Internal
+
+- `make-lessons.py` fails on a backing note outside the rendered bass range. One
+  was a 404 at playback and nothing else — invisible in the MIDI, invisible on
+  the chart, visible only in the dev server's log.
+- Lesson-authoring additions: a `SHUFFLE` bass line, the only one written on the
+  triplet grid (in triplet feel the straight ladder stops sorting by support, so
+  the feel modules fade shuffle → quarter → straight); `TRIPLETS` and `SWUNG`
+  position sets, PPQ 480 being divisible by three so a triplet lands _on_ the
+  grid; `CRASH` and `RIDE` note constants.
+- The guide-hat rule becomes a timekeeper rule: a ride does the hat's job and no
+  longer gets a guide hat laid over it; a crash does not, and still does.
+- `docs/highway-jitter-rca.md` — the highway stutter on one Linux laptop is GPU
+  power management, not the app: on battery the integrated GPU idles at 300 MHz
+  of a 950 MHz ceiling and misses the 16.7 ms composite deadline. The one real
+  defect found on the way (the idle warm-up above) is fixed.
+- `TODO.md` records the audit written alongside Foundations 3–5, each item
+  reproduced. Top of the list: `MATCH_WINDOW_BEATS` is 0.4 while a 16th is 0.25
+  beats away and a triplet 0.33, so a doubled hat in a 16th run claims the next
+  note instead of scoring as an extra.
+- `scripts/render-icons.sh` renders the icon set; committed rather than wired
+  into the build, like `check-kits.py` — `.vercelignore` excludes `scripts/`.
+- `$lib/analytics.ts` tracks the install funnel as three events; `$lib/pwa.svelte.ts`,
+  `$lib/offline-set.ts`, `$lib/breakpoints.ts` and `$lib/install-strip.svelte` are new.
+- Page documents are network-first with an `/offline` floor, matched on path
+  rather than `request.mode` — the warm-up uses an ordinary `fetch()`, so keying
+  off "navigate" would have cached nothing.
+- `/lessons/continue` resolves "my next lesson" client-side and replaces itself
+  in history, so a fixed shortcut URL can point at it and Back still works. It
+  shares `continueTarget()` with the landing button, so "continue" cannot come to
+  mean two different lessons. `continue` joins the reserved lesson slugs.
+- openspec: `virtual-controllers`, `mobile-ux`, `edrum-support` and
+  `sync-local-data` archived and their specs synced into `openspec/specs/`.
+
 ## v0.1.0 — 17 August 2026
 
 The app stopped needing hardware. Twelve commits.

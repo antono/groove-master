@@ -18,6 +18,7 @@ import LessonsThatFinish from "./2026-08-08-lessons-that-finish.svelte";
 import PracticeOnEveryDevice from "./2026-08-11-practice-on-every-device.svelte";
 import BringYourKit from "./2026-08-13-bring-your-kit.svelte";
 import PlayWithoutAKit from "./2026-08-17-play-without-a-kit.svelte";
+import FortyNewLessons from "./2026-08-22-forty-new-lessons.svelte";
 
 /** Every post body takes the Mastodon URL, so the handle is written once. */
 export type NewsBody = Component<{ mastodon: string }>;
@@ -36,6 +37,16 @@ export type NewsEntry = {
 export const MASTODON = "https://mastodon.social/@groove_academy";
 
 export const NEWS: NewsEntry[] = [
+  {
+    slug: "2026-08-22-forty-new-lessons",
+    date: "2026-08-22",
+    title: "Forty new lessons, and an app to play them in",
+    summary:
+      "22 playable lessons become 62: Foundations grows to five stages with " +
+      "Space, The Cymbals and Two Bars, Vocabulary opens on 16ths, triplets " +
+      "and the shuffle — and Groove Academy installs to a home screen.",
+    body: FortyNewLessons,
+  },
   {
     slug: "2026-08-17-play-without-a-kit",
     date: "2026-08-17",
