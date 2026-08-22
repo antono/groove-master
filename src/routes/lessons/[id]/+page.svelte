@@ -950,6 +950,19 @@
 			player?.preload(kit, kitNotes),
 			...backing.map((t) => backingPlayer?.preload(t.family, t.id, t.notes.map((n) => n.note)))
 		]);
+		rewind();
+		playing = true;
+		if (selected) lessonStarted(selected.id);
+		// The highway only exists during a session, so let it mount before the
+		// scroll and the clock start from it.
+		await tick();
+		launchClock();
+	}
+
+	// Wind a run back to its count-in: the score, every scheduler cursor and the
+	// transport all return to where play() found them. Shared with restart() so a
+	// second attempt cannot start from a different state than a first one.
+	function rewind() {
 		resetScoring();
 		backingCursors = backing.map(() => 0);
 		countInCursor = 0;
@@ -957,15 +970,27 @@
 		report = null;
 		beatPos = -COUNT_IN;
 		startBeat = -COUNT_IN;
-		playing = true;
 		paused = false;
-		if (selected) lessonStarted(selected.id);
-		// The highway only exists during a session, so let it mount before the
-		// scroll and the clock start from it.
-		await tick();
+	}
+
+	// Start the clock and the scroll from `startBeat`. Split out of play() because
+	// the highway must already be mounted when this runs.
+	function launchClock() {
 		startAudioTime = audioCtx?.currentTime ?? 0;
 		startScroll(startBeat);
 		startScheduler();
+	}
+
+	// Throw away the run in progress and play the lesson again from the count-in,
+	// without leaving the highway. Nothing is filed: a session only reaches the
+	// practice history from finish(), so an abandoned attempt scores nothing and
+	// leaves no record. Audio is already up and the samples already decoded, so
+	// unlike play() this needs no awaits — the count-in starts on the click.
+	function restart() {
+		if (!playing) return;
+		stopScheduler();
+		rewind();
+		launchClock();
 	}
 
 	// Freeze the transport mid-lesson; resume restarts the compositor scroll
@@ -1547,6 +1572,9 @@
 				{#if paused}▶ <span class="hud-word">Resume</span>{:else}❚❚ <span class="hud-word"
 						>Pause</span
 					>{/if}
+			</button>
+			<button class="restart-btn" onclick={restart} title="Drop the score and start over">
+				↻ <span class="hud-word">Restart</span>
 			</button>
 			<button class="exit" onclick={stop}>■ <span class="hud-word">Stop</span></button>
 		</div>
@@ -2247,8 +2275,8 @@
 		top: calc(1rem + env(safe-area-inset-top));
 		right: calc(1rem + env(safe-area-inset-right));
 		/* Anchored on both sides so it wraps within the screen instead of growing
-		   off the left edge of it: right-anchored alone, the four controls came to
-		   327px on a 320px phone and the tempo readout was cut in half. */
+		   off the left edge of it: right-anchored alone, the controls came to 327px
+		   on a 320px phone and the tempo readout was cut in half. */
 		left: calc(1rem + env(safe-area-inset-left));
 		z-index: 60;
 		display: flex;
@@ -2258,7 +2286,7 @@
 		gap: 0.6rem;
 	}
 
-	/* Under 30rem the four controls come to more than the screen is wide. Wrapping
+	/* Under 30rem the controls come to more than the screen is wide. Wrapping
 	   would drop the second row onto the note band — the one part of the screen
 	   that must stay clear — so the words go instead and the glyphs stand in.
 	   Hidden, not removed: each button's accessible name is unchanged. */
@@ -2305,6 +2333,24 @@
 		border: 1px solid #579;
 		border-radius: 0.3rem;
 		cursor: pointer;
+	}
+
+	/* Neither Pause nor Stop: restarting is a neutral act, so it reads like the
+	   view control rather than competing with the red exit for attention. */
+	.restart-btn {
+		padding: 0.5em 1em;
+		font-size: 1rem;
+		font-weight: bold;
+		color: #cdd;
+		background: #2a2a3e;
+		border: 1px solid var(--border-strong);
+		border-radius: 0.3rem;
+		cursor: pointer;
+	}
+
+	.restart-btn:hover {
+		color: #fff;
+		background: #34344a;
 	}
 
 	.view-btn {
