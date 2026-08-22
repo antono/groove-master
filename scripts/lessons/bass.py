@@ -385,6 +385,96 @@ def dub_bass(bars=4):
     return resolved(events, bars)
 
 
+def pump_bass(bars=4):
+    """Straight-8th root drive over Am - Am - F - G — the rock engine.
+
+    A style line, off the support ladder the way `shuffle` is: under a rock
+    lesson the 8th-note drive *is* the genre, and the fact that every note
+    lands with a hat is not masking but blend — the rhythm is carried through
+    the kit, and rhythm survives blending in a way a melody does not. Beats
+    leant on, off-beats tucked under them and cut shorter, which is the
+    difference between a band and a sequencer. The last two 8ths of the loop
+    step B - G# up into the A, so bar 4 audibly turns the corner.
+    """
+    events = [PROGRAM_CHANGE]
+    BEAT_VEL, OFF_VEL = 94, 72
+    roots = [33, 33, 29, 31]  # A1, A1, F1, G1
+    eighth = PPQ // 2
+    for bar in range(bars):
+        base = bar * BAR_TICKS
+        root = roots[bar % len(roots)]
+        nxt = roots[(bar + 1) % len(roots)]
+        last = bar % len(roots) == len(roots) - 1
+        for i in range(8):
+            if last and i == 6:
+                note = root + 4  # the third: B under a G bar, aimed at the A
+            elif i == 7:
+                note = nxt - 1  # chromatic approach into the next root
+            else:
+                note = root
+            on_beat = i % 2 == 0
+            bass_note(
+                events,
+                base + i * eighth,
+                note,
+                dur=210 if on_beat else 150,
+                vel=BEAT_VEL if on_beat else OFF_VEL,
+            )
+    return resolved(events, bars)
+
+
+def funk_bass(bars=4):
+    """A one-chord 16th line on Am7 — the interlock, not the ladder.
+
+    Funk does not change chord; it changes *where you are inside the beat*, so
+    this line sits on A minor 7 for its whole length and does all its talking
+    rhythmically. Written as a two-bar phrase — statement, then an answer that
+    opens a hole across beat 3 and drops to the low E — with a busier fourth
+    bar that closes on G#, a semitone under home. Ghosts are well under the
+    accents: on a line this syncopated, flat velocity would read as random
+    instead of funky. Nothing lands exactly on 2 or 4, so the student's own
+    backbeat is always heard alone.
+    """
+    events = [PROGRAM_CHANGE]
+    # Am7 tones: A1 33, C2 36, E2 40, G2 43, A2 45, G1 31, E1 28.
+    figures = [
+        [  # bar 1 — the statement.
+            (0.00, 33, 240, 100),
+            (0.75, 33, 100, 58),  # ghost, pushing at beat 2
+            (1.25, 36, 140, 80),
+            (1.75, 38, 100, 66),  # D2, a passing note into the E
+            (2.00, 40, 200, 88),
+            (2.75, 43, 110, 70),
+            (3.25, 40, 130, 76),
+            (3.75, 31, 110, 84),  # G1 pickup into the next A
+        ],
+        [  # bar 2 — the answer: fewer notes, a hole, and the low drop.
+            (0.00, 33, 220, 96),
+            (0.50, 45, 100, 64),  # octave pop
+            (1.50, 43, 160, 84),
+            (1.75, 40, 100, 60),  # ghost
+            (2.50, 36, 160, 80),
+            (3.50, 28, 200, 86),  # E1: the floor falls out, into bar 3
+        ],
+        None,  # bar 3 repeats bar 1
+        [  # bar 4 — the turnaround, busiest of the four.
+            (0.00, 33, 220, 96),
+            (0.75, 33, 100, 58),
+            (1.50, 36, 140, 80),
+            (2.25, 38, 110, 74),
+            (2.50, 40, 130, 84),
+            (3.25, 43, 110, 80),
+            (3.75, 32, 110, 86),  # G#1, a semitone under home
+        ],
+    ]
+    figures[2] = figures[0]
+    for bar in range(bars):
+        base = bar * BAR_TICKS
+        for pos, note, dur, vel in figures[bar % len(figures)]:
+            bass_note(events, base + round(pos * PPQ), note, dur=dur, vel=vel)
+    return resolved(events, bars)
+
+
 # Each line is bound to its own instrument, so the curriculum does not sound
 # like one bass practising forever. The pairing follows the line's character —
 # the conversational lines sit on the real electric basses, the machine lines
@@ -401,3 +491,5 @@ PEDAL = ("synth2", pedal_bass)  # the DX7 holds a drone without decaying away
 SYNCOPATED = ("synth2", syncopated_bass)  # the pushes want punch, not warmth
 DUB = ("finger", dub_bass)  # deep, round, and behind the beat
 SHUFFLE = ("picked", shuffle_bass)  # a boogie is guitar-band music
+PUMP = ("picked", pump_bass)  # rock 8ths want the pick's front edge
+FUNK = ("synth1", funk_bass)  # the interlock wants punch and a fast attack

@@ -69,7 +69,9 @@ tiers whose stages are not written yet.
 that order. That is deliberate: a module missing a tier is a module that has not
 been thought through. Fill the gap with `planned()` rather than dropping it.
 
-Currently: 7 stages, 62 playable lessons, 7 planned slots.
+Currently: 10 stages, 92 playable lessons, 7 planned slots. (Stage numbers 8
+and 9 are designed but unwritten, so `CURRICULUM` jumps from 7 to 10 — numbers
+are stable, not positional.)
 
 ## Ids are permanent
 

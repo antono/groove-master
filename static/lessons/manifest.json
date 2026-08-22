@@ -16,13 +16,13 @@
       "slug": "music",
       "name": "Music",
       "question": "Can you play something someone wants to hear?",
-      "stages": [10, 11]
+      "stages": [10, 11, 12]
     },
     {
       "slug": "mastery",
       "name": "Mastery",
       "question": "Can you make it your own?",
-      "stages": [12, 13]
+      "stages": [13, 14]
     }
   ],
   "stages": [
@@ -719,6 +719,306 @@
         }
       ],
       "closing": null
+    },
+    {
+      "slug": "form",
+      "number": 10,
+      "tierNumber": 1,
+      "title": "Form & Fills",
+      "goal": "A groove that says something: down-beats moved early, fills that announce the change, and eight-bar pieces with a beginning, a middle and an end.",
+      "modules": [
+        {
+          "slug": "the-push",
+          "title": "The push",
+          "subtitle": "the down-beat, early",
+          "lessons": [
+            {
+              "id": "push-into-one",
+              "number": "1.1",
+              "name": "The Push",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "push-with-crash",
+              "number": "1.2",
+              "name": "Crash the Push",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "pushed-stop",
+              "number": "1.3",
+              "name": "Push, Then Silence",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "fills",
+          "title": "Fills",
+          "subtitle": "two beats that announce the change",
+          "lessons": [
+            {
+              "id": "fill-two-beats",
+              "number": "1.4",
+              "name": "The 16th Fill",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "fill-with-kick",
+              "number": "1.5",
+              "name": "Kick in the Fill",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "fill-broken",
+              "number": "1.6",
+              "name": "The Broken Fill",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "song-form",
+          "title": "Song form",
+          "subtitle": "eight bars with a shape",
+          "lessons": [
+            {
+              "id": "verse-chorus",
+              "number": "1.7",
+              "name": "Verse / Chorus",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "eight-bar-build",
+              "number": "1.8",
+              "name": "The Build",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "the-arrangement",
+              "number": "1.9",
+              "name": "The Arrangement",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "id": "checkpoint-10",
+        "number": "1.◆",
+        "name": "Checkpoint — Form & Fills",
+        "tier": "checkpoint",
+        "planned": false
+      }
+    },
+    {
+      "slug": "radio",
+      "number": 11,
+      "tierNumber": 2,
+      "title": "Styles: The Radio",
+      "goal": "Rock, funk and hip-hop — one skeleton, three vocabularies. The snare stays on 2 and 4 while the kick learns to speak each genre, at each genre's own tempo.",
+      "modules": [
+        {
+          "slug": "rock",
+          "title": "Rock",
+          "subtitle": "the kick that drives",
+          "lessons": [
+            {
+              "id": "rock-drive",
+              "number": "2.1",
+              "name": "Driving Rock",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "rock-anthem",
+              "number": "2.2",
+              "name": "The Anthem",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "rock-sixteens",
+              "number": "2.3",
+              "name": "Sixteenth Drive",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "funk",
+          "title": "Funk",
+          "subtitle": "the one, and everything after it",
+          "lessons": [
+            {
+              "id": "funk-one",
+              "number": "2.4",
+              "name": "On the One",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "funk-open-hat",
+              "number": "2.5",
+              "name": "The Bark",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "funk-displaced",
+              "number": "2.6",
+              "name": "The Pickup Snare",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "hip-hop",
+          "title": "Hip-hop",
+          "subtitle": "the lazy pocket",
+          "lessons": [
+            {
+              "id": "boom-bap",
+              "number": "2.7",
+              "name": "Boom Bap",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "head-nod",
+              "number": "2.8",
+              "name": "The Head Nod",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "trap-half-time",
+              "number": "2.9",
+              "name": "Half-Time Hats",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "id": "checkpoint-11",
+        "number": "2.◆",
+        "name": "Checkpoint — The Radio",
+        "tier": "checkpoint",
+        "planned": false
+      }
+    },
+    {
+      "slug": "dancefloor",
+      "number": 12,
+      "tierNumber": 3,
+      "title": "Styles: The Dancefloor",
+      "goal": "House, breaks and reggae — three skeletons, not one. The hat leaves the beat, the snare leaves the backbeat, and beat 1 learns to be empty on purpose.",
+      "modules": [
+        {
+          "slug": "house",
+          "title": "House",
+          "subtitle": "the pump",
+          "lessons": [
+            {
+              "id": "house-pump",
+              "number": "3.1",
+              "name": "The House Pump",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "house-skip",
+              "number": "3.2",
+              "name": "The Skip",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "house-drop",
+              "number": "3.3",
+              "name": "The Drop",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "breaks",
+          "title": "Breaks",
+          "subtitle": "the snare starts moving",
+          "lessons": [
+            {
+              "id": "the-breakbeat",
+              "number": "3.4",
+              "name": "The Breakbeat",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "break-displaced",
+              "number": "3.5",
+              "name": "Snare off the Grid",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "two-step",
+              "number": "3.6",
+              "name": "The Two-Step",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        },
+        {
+          "slug": "reggae",
+          "title": "Reggae",
+          "subtitle": "the empty one",
+          "lessons": [
+            {
+              "id": "one-drop",
+              "number": "3.7",
+              "name": "The One Drop",
+              "tier": "plain",
+              "planned": false
+            },
+            {
+              "id": "skank",
+              "number": "3.8",
+              "name": "The Skank",
+              "tier": "core",
+              "planned": false
+            },
+            {
+              "id": "steppers",
+              "number": "3.9",
+              "name": "Steppers",
+              "tier": "stretch",
+              "planned": false
+            }
+          ]
+        }
+      ],
+      "closing": {
+        "id": "checkpoint-12",
+        "number": "3.◆",
+        "name": "Checkpoint — The Dancefloor",
+        "tier": "checkpoint",
+        "planned": false
+      }
     }
   ],
   "lessons": [
@@ -1990,6 +2290,606 @@
         "Keep saying \"pa-ra-did-dle\" through it. The kick is not part of the word, and the moment you start counting the kicks instead, the doubles go.",
         "The doubles are still the lesson: two snares across beat 2 and its \"and\", two hats across beat 4 and its \"and\". Neither of them has a kick on it, so they should be the steadiest thing in the bar.",
         "If a double turns into a single, you are almost certainly putting the missing energy into the kick. Play a bar with no kick at all, then add it back one beat at a time."
+      ]
+    },
+    {
+      "id": "push-into-one",
+      "number": "1.1",
+      "name": "The Push",
+      "file": "stage-10-form/push-into-one.mid",
+      "stage": "form",
+      "module": "the-push",
+      "tier": "plain",
+      "bpm": 84,
+      "bars": 4,
+      "prereq": ["two-bar-kick", "kick-snare-8ths"],
+      "summary": "Every other bar's first kick arrives half a beat early, and the down-beat it left is empty.",
+      "description": "One note moves and everything changes. The kick that belonged to beat 1 of the even bars plays on the \"and\" of 4 before them instead, so the accent lands ahead of the bar line and the bar line itself is silent in the drums. This is the push — the single most common thing pop, rock and funk do to a groove — and the whole trick is that the hat keeps playing beat 1 as if nothing happened.",
+      "hints": [
+        "The pushed kick is the last 8th of the odd bars. Count \"4 and\" and play the kick on the \"and\".",
+        "Beat 1 of the even bars has a hat and nothing else. Putting a kick back there is the mistake this lesson exists to catch.",
+        "The hat does not move all lesson. If it hiccups at the bar line, the pushed kick is dragging it.",
+        "The bass still marks every beat, including the one your kick abandoned. Lean on it through the empty down-beat."
+      ]
+    },
+    {
+      "id": "push-with-crash",
+      "number": "1.2",
+      "name": "Crash the Push",
+      "file": "stage-10-form/push-with-crash.mid",
+      "stage": "form",
+      "module": "the-push",
+      "tier": "core",
+      "bpm": 84,
+      "bars": 4,
+      "prereq": ["push-into-one", "crash-every-two"],
+      "summary": "The crash lands with the pushed kick and rings across the bar line.",
+      "description": "How a push is actually played: the cymbal comes with the early kick, not after it, and rings over the bar line so the empty down-beat still has sound above it. The hat stands down for that one beat — its note is the crash, moved early. Two pads a hand and half a beat of warning: this is the crash-into-ride travel from The Cymbals, aimed at a bar line.",
+      "hints": [
+        "Kick and crash on the \"and\" of 4 are one motion, two hands. Drill that single stack before running the loop.",
+        "The bar after the push opens with no hat — the crash is still ringing. First hat back is the \"and\" of 1.",
+        "Do not crash beat 1 as well. The whole point is that the accent already happened.",
+        "If the crash keeps landing on 4 instead of its \"and\", you are hearing it as the end of the bar rather than the start of the next one. It belongs to bar 2."
+      ]
+    },
+    {
+      "id": "pushed-stop",
+      "number": "1.3",
+      "name": "Push, Then Silence",
+      "file": "stage-10-form/pushed-stop.mid",
+      "stage": "form",
+      "module": "the-push",
+      "tier": "stretch",
+      "bpm": 84,
+      "bars": 4,
+      "prereq": ["push-with-crash", "stop-every-other-bar"],
+      "summary": "Push into a whole empty bar, hold it, and come back with a fill.",
+      "description": "The hit-and-hold, straight off a thousand records: bar 2 throws its last 8th forward with kick and crash together, bar 3 is nothing at all while the cymbal rings, and bar 4 re-enters on the down-beat and runs a snare figure home. You held an empty bar in Space — but not one you were thrown into by an accent, and not one you had to leave *into a fill*. Both edges of the silence are musical now, and both are yours.",
+      "hints": [
+        "The empty bar starts half a beat after the push. Count it in full — the crash ringing is not the count.",
+        "Re-entry is a plain down-beat with three beats of silence behind it. It wants to be early; do not let it.",
+        "Beat 4 of the last bar is a four-note snare run. It ends the phrase — do not let it become the next one's count-in.",
+        "The bass pushes through the silent bar and will not mark it for you. Your own count is the only clock in bar 3."
+      ]
+    },
+    {
+      "id": "fill-two-beats",
+      "number": "1.4",
+      "name": "The 16th Fill",
+      "file": "stage-10-form/fill-two-beats.mid",
+      "stage": "form",
+      "module": "fills",
+      "tier": "plain",
+      "bpm": 84,
+      "bars": 4,
+      "prereq": ["turnaround-snare", "hats-16ths-split"],
+      "summary": "Three bars of groove, then beats 3 and 4 go to the snare in 16ths, landing on a crash.",
+      "description": "The working drummer's first fill: eight snare 16ths across the last two beats of the phrase, into the crash that opens the next one. It is the turnaround from Two Bars at twice the density, and it has a job now — a fill is an announcement that the phrase is ending, and the crash is what it announces. Split the 16ths between your hands, exactly as you learned them.",
+      "hints": [
+        "The fill is two beats, not three. Groove through beat 2 — starting the fill early is the classic giveaway.",
+        "Two hands share the 16ths, strictly alternating, lead hand first. One hand playing eight is a different and harder lesson.",
+        "The crash is the fill's last note in spirit: land it as the down-beat, with the kick, and get straight back to the hat.",
+        "If the fill rushes, the crash arrives early and the whole next bar is dragged in with it. The fill must sit inside the same tempo as the groove."
+      ]
+    },
+    {
+      "id": "fill-with-kick",
+      "number": "1.5",
+      "name": "Kick in the Fill",
+      "file": "stage-10-form/fill-with-kick.mid",
+      "stage": "form",
+      "module": "fills",
+      "tier": "core",
+      "bpm": 84,
+      "bars": 4,
+      "prereq": ["fill-two-beats", "kick-16th-grid"],
+      "summary": "The same fill with the kick taking the last 16th of each beat: R L R K, R L R K.",
+      "description": "Three snares and a kick, twice over. On a kit the foot takes the note a tom would — the fill gets a floor under it — and your hands get one 16th of rest they did not have before. The kick notes are the ones everybody rushes: the foot wants to land with a hand, and here it must land after one, alone, twice.",
+      "hints": [
+        "Say the sticking before you play it: \"R L R foot, R L R foot.\"",
+        "The kick is the fourth 16th of each fill beat, alone. If you hear kick and snare together, the foot came early.",
+        "The hands do not change from the last lesson — they just skip every fourth note. Play the full snare fill once, then give those notes away.",
+        "Land the crash with the kick on the next down-beat, same as before. The fill changed; the landing did not."
+      ]
+    },
+    {
+      "id": "fill-broken",
+      "number": "1.6",
+      "name": "The Broken Fill",
+      "file": "stage-10-form/fill-broken.mid",
+      "stage": "form",
+      "module": "fills",
+      "tier": "stretch",
+      "bpm": 84,
+      "bars": 4,
+      "prereq": ["fill-with-kick"],
+      "summary": "A fill with holes in it: two dotted notes, then two 16ths slamming the door.",
+      "description": "Four notes where there were eight — on beat 3, off the 8th grid, and a pair of 16ths at the very end. A broken fill is harder than a busy one for the same reason Space was harder than the Backbeat: the notes you leave out still have to be exactly the right length, and there is no run of 16ths to carry your hand from one to the next. This is the fill as syncopation, and it is the one that sounds like a drummer rather than an exercise.",
+      "hints": [
+        "Count the full 16 grid — \"3 e and a 4 e and a\" — and play only \"3\", \"a\", \"and\", \"a\".",
+        "The second note is the hard one: off the 8th grid, alone, a dotted 8th after the first. If it lands on the \"and\" the fill has straightened.",
+        "The last two notes are a pair, tight, into the crash. They are the door slamming — do not let them splay.",
+        "Keep the hand moving through the holes the way you did in Space: the silences are played, just not sounded."
+      ]
+    },
+    {
+      "id": "verse-chorus",
+      "number": "1.7",
+      "name": "Verse / Chorus",
+      "file": "stage-10-form/verse-chorus.mid",
+      "stage": "form",
+      "module": "song-form",
+      "tier": "plain",
+      "bpm": 84,
+      "bars": 8,
+      "prereq": ["full-phrase", "checkpoint-5"],
+      "summary": "Eight bars, one shape: four of verse on the hat, four of chorus on the ride.",
+      "description": "The first eight-bar lesson in the app. Four bars of verse on the closed hat, an open hat to hand the section over, a crash into four bars of chorus on the ride, and a snare turnaround to bring it home. Every bar is a lesson you have already passed — what is new is that each one happens once, in order, and the only way to play it right is to know which bar you are in for all eight of them.",
+      "hints": [
+        "Learn the map before the notes: verse, verse, verse, hand-over, chorus top, chorus, chorus, turnaround.",
+        "Count bars all the way to eight. Four-bar habits will try to crash in the middle of the verse.",
+        "The open hat at the end of bar 4 and the crash on bar 5 are one gesture across the bar line — the same join you built in The Cymbals.",
+        "The turnaround bar is the only one where the ride stops. Its snare run hands the form back to bar 1."
+      ]
+    },
+    {
+      "id": "eight-bar-build",
+      "number": "1.8",
+      "name": "The Build",
+      "file": "stage-10-form/eight-bar-build.mid",
+      "stage": "form",
+      "module": "song-form",
+      "tier": "core",
+      "bpm": 84,
+      "bars": 8,
+      "prereq": ["verse-chorus", "four-bar-build"],
+      "summary": "Eight bars that add one layer every two: from bare kick and quarter hats to a fill that spends it all.",
+      "description": "An arrangement in miniature. Two bars of kick under quarter hats, two with the backbeat in, two of the full rock beat, one of four-on-the-floor, and a 16th fill to cash it in. You built across four bars in Two Bars; doubled, the build gets slow enough to feel like a real song getting louder — and slow enough that keeping the tempo flat while the music grows becomes the entire exercise. The bass holds one long note per bar and will not push you anywhere.",
+      "hints": [
+        "The kick on beat 1 is identical in all eight bars. It is your tempo meter — if bar 7's kick is closer to bar 8's than bar 1's was to bar 2's, the build rushed.",
+        "Each new layer enters on an odd bar. Know what you are adding before the bar line, not at it.",
+        "Bars 1 and 2 sound almost empty and are the hardest to keep honest. Do not fill them early.",
+        "The fill is the release of everything the build wound up. Spend it, land the crash-less down-beat, and the loop starts thin again — that contrast is the piece."
+      ]
+    },
+    {
+      "id": "the-arrangement",
+      "number": "1.9",
+      "name": "The Arrangement",
+      "file": "stage-10-form/the-arrangement.mid",
+      "stage": "form",
+      "module": "song-form",
+      "tier": "stretch",
+      "bpm": 84,
+      "bars": 8,
+      "prereq": ["eight-bar-build", "pushed-stop", "fill-broken"],
+      "summary": "Intro, verse, fill, chorus, push, ending — a whole song in eight bars.",
+      "description": "The stage in one piece. A crash over bare hats to open, two bars of verse, a 16th fill into a chorus that rides over four-on-the-floor, a push at the end of the chorus's last bar, and an ending: silence, one snare pickup on beat 4, and the final hit. Every module of this stage appears exactly once — which is what makes it an arrangement rather than a medley, and what makes losing your place cost more than missing a note.",
+      "hints": [
+        "Eight different jobs in eight bars. Name them out loud before the first run: intro, verse, verse, fill, chorus, chorus, push, ending.",
+        "Bar 1 is hats and one crash — an intro, not a groove. Resist starting the kick early.",
+        "The push at the end of bar 7 throws you into the quietest bar of the piece. Land the crash, then play almost nothing.",
+        "The last bar is one snare, on 4, alone. It sets up the closing hit the way a singer takes a breath — place it, don't sneak it."
+      ]
+    },
+    {
+      "id": "checkpoint-10",
+      "number": "1.◆",
+      "name": "Checkpoint — Form & Fills",
+      "file": "stage-10-form/checkpoint-10.mid",
+      "stage": "form",
+      "module": null,
+      "tier": "checkpoint",
+      "bpm": 84,
+      "bars": 4,
+      "prereq": [],
+      "summary": "One bar each: the pushed top, the empty-one landing, the ride chorus, and the 16th fill.",
+      "description": "Four bars, four jobs from the stage: a bar that pushes its ending, a bar that opens with no kick at all, a chorus bar on the ride over the floor, and the 16th fill to bring it round. Every join between them is one of the joins the stage taught, and the loop only sounds like music if all four land as one phrase.",
+      "hints": [
+        "Bar 1 ends early — the push — and bar 2 opens without a kick. That pair is the stage in two bars.",
+        "The hand moves to the ride for bar 3 and back off it for the fill. Two travels, both on bar lines.",
+        "The fill lands on the closing crash of the loop. Keep it inside the tempo the groove set.",
+        "If you lose the form, do not chase it mid-bar. Wait for the crash and come in at the top."
+      ]
+    },
+    {
+      "id": "rock-drive",
+      "number": "2.1",
+      "name": "Driving Rock",
+      "file": "stage-11-radio/rock-drive.mid",
+      "stage": "radio",
+      "module": "rock",
+      "tier": "plain",
+      "bpm": 92,
+      "bars": 4,
+      "prereq": ["rock-beat-8th-hats", "kick-snare-8ths"],
+      "summary": "The rock beat with one kick added on the \"and\" of 3 — the engine under fifty years of guitar music.",
+      "description": "One note turns the schoolroom rock beat into a song: a kick on the \"and\" of 3, driving out of the second snare toward the bar line. The bass pumps straight 8ths under you — the first time the backing plays a genre rather than a scaffold — and the two of you are the rhythm section, which is what this whole stage is about.",
+      "hints": [
+        "The new kick is on the \"and\" of 3, right after the snare. Boom — bap — boom-boom — bap.",
+        "It lands with a hat, like every other kick here. If it sounds alone, it slid to a 16th slot.",
+        "Lock your kick to the bass's 8ths: every kick you play has a bass note under it. When they flam, you moved.",
+        "Keep the backbeat the loudest thing in the bar. The extra kick is drive, not an accent."
+      ]
+    },
+    {
+      "id": "rock-anthem",
+      "number": "2.2",
+      "name": "The Anthem",
+      "file": "stage-11-radio/rock-anthem.mid",
+      "stage": "radio",
+      "module": "rock",
+      "tier": "core",
+      "bpm": 88,
+      "bars": 4,
+      "prereq": ["rock-drive", "rock-beat-ride"],
+      "summary": "Ride 8ths, a crash every two bars, and the kick pulling on the \"and\" of 2.",
+      "description": "The chorus sound: time on the ride, a crash marking every second bar, and the kick's second note moved to the \"and\" of 2 — before the mid-bar snare instead of after it, so the groove pulls into the back half of the bar where Driving Rock pushed out of it. Same three voices, opposite lean. Hearing that difference is the lesson.",
+      "hints": [
+        "The kick pattern is 1, \"and of 2\", 3. Say \"boom — and-boom-boom\" against the backbeat before you play it.",
+        "The crash replaces nothing — it stacks on the odd bars' down-beat over the ride line's first note.",
+        "Ride rings are part of the sound. Do not shorten the strokes to tidy it.",
+        "Play Driving Rock, then this, back to back. Push, then pull. If they feel the same, the kick is drifting to its old slot."
+      ]
+    },
+    {
+      "id": "rock-sixteens",
+      "number": "2.3",
+      "name": "Sixteenth Drive",
+      "file": "stage-11-radio/rock-sixteens.mid",
+      "stage": "radio",
+      "module": "rock",
+      "tier": "stretch",
+      "bpm": 84,
+      "bars": 4,
+      "prereq": ["rock-anthem", "kick-16th-grid"],
+      "summary": "Five kicks a bar, two of them off the 8th grid: the \"a\" of 1 and the \"a\" of 4.",
+      "description": "The kick learns 16ths while everything above it stays in 8ths. The \"a\" of 1 doubles the opening — boom-ba — and the \"a\" of 4 is a pickup that belongs to the *next* bar, thrown across the line the way Subdivision taught. Five kicks, none of them with a snare, both off-grid notes sounding completely alone between hats.",
+      "hints": [
+        "Count 16ths all bar: the kicks are \"1, a, 3, and, a-of-4\". The hats never leave the 8ths.",
+        "The \"a\" of 1 is tight behind beat 1 — a double, not an echo. If there is daylight between them, it is late.",
+        "The \"a\" of 4 belongs to the next bar. Lean it forward into the down-beat; landing it lazily makes it an extra note instead of a pickup.",
+        "Nothing in the hands changed from the plain rock beat. If the hats stumble, they are watching the foot."
+      ]
+    },
+    {
+      "id": "funk-one",
+      "number": "2.4",
+      "name": "On the One",
+      "file": "stage-11-radio/funk-one.mid",
+      "stage": "radio",
+      "module": "funk",
+      "tier": "plain",
+      "bpm": 92,
+      "bars": 4,
+      "prereq": ["kick-16th-grid", "rock-beat-8th-hats"],
+      "summary": "The funk kick: on the one, answered on the \"a\" of 1, driving on the \"and\" of 3.",
+      "description": "Funk puts everything on the one and then spends the rest of the bar answering it. The kick states beat 1, doubles itself a 16th and a half later, and drives at the second snare — while the bass plays a proper 16th funk line that interlocks with you instead of following you. Your hits and its notes take turns almost everywhere; when the pocket is right you can hear the two parts breathe.",
+      "hints": [
+        "The kick answer is on the \"a\" of 1 — a 16th slot, later than the \"and\". If it lands with a hat, it straightened.",
+        "Beat 1 is sacred in funk. Whatever else wobbles, the one lands — that is the genre in a sentence.",
+        "The bass is busier than you are. Do not chase it; hold the backbeat still and let it move around you.",
+        "Play the kick pattern alone against the bass line before adding hats and snare. The interlock is the lesson."
+      ]
+    },
+    {
+      "id": "funk-open-hat",
+      "number": "2.5",
+      "name": "The Bark",
+      "file": "stage-11-radio/funk-open-hat.mid",
+      "stage": "radio",
+      "module": "funk",
+      "tier": "core",
+      "bpm": 92,
+      "bars": 4,
+      "prereq": ["funk-one", "open-hat-lead-in"],
+      "summary": "The hat opens for one 8th on the \"and\" of 2 — funk's most recognisable move.",
+      "description": "One note of the hat line opens, mid-bar: the \"and\" of 2, barking between the first snare and beat 3, closed again by the next note. The open-hat moves you know live at the bar line and hand phrases over; this one lives in the middle of the bar and *is* the phrase. One finger swaps pads for one 8th and comes straight home.",
+      "hints": [
+        "Index on closed, middle on open, and the move is \"and of 2\" only. Everything else in the hat line is home.",
+        "Let the bark ring into beat 3 and let beat 3's closed hat cut it — that choke is the sound, not something to avoid.",
+        "The kick under the bark does not change. If the foot hiccups when the hat opens, the two hands are wired together somewhere they should not be.",
+        "Too many barks means the finger is defaulting to the open pad. Seven closed, one open, every bar."
+      ]
+    },
+    {
+      "id": "funk-displaced",
+      "number": "2.6",
+      "name": "The Pickup Snare",
+      "file": "stage-11-radio/funk-displaced.mid",
+      "stage": "radio",
+      "module": "funk",
+      "tier": "stretch",
+      "bpm": 88,
+      "bars": 4,
+      "prereq": ["funk-open-hat"],
+      "summary": "A third snare on the \"a\" of 4 — the pickup that leans every bar into the next.",
+      "description": "The backbeat grows a tail: one snare on the \"a\" of 4, a 16th before the bar line, every bar. It is not a fill — it is a placed note that makes the bar lean forward, and it is the first snare in the curriculum that does not land on a number. Between it and the bass's own pickup, the end of every bar is now a conversation you are part of rather than a line you wait through.",
+      "hints": [
+        "The pickup is on the \"a\" of 4 — after the last hat, before the down-beat, alone. Nothing sounds with it.",
+        "It is quieter in spirit than the backbeat: a lean, not a hit. Placed right it pulls the next bar in.",
+        "If it lands on the \"and\" of 4 it collides with the hat and turns into a march. Later than the \"and\", earlier than the one.",
+        "The down-beat after it still belongs to the kick. Snare-then-kick across the bar line, two sounds, in order, every time."
+      ]
+    },
+    {
+      "id": "boom-bap",
+      "number": "2.7",
+      "name": "Boom Bap",
+      "file": "stage-11-radio/boom-bap.mid",
+      "stage": "radio",
+      "module": "hip-hop",
+      "tier": "plain",
+      "bpm": 90,
+      "bars": 4,
+      "prereq": ["kick-16th-grid"],
+      "summary": "Kick on 1, tucked behind the snare on the \"a\" of 2, driving on the \"and\" of 3.",
+      "description": "The sound of a sampled break under a rapper: boom on the one, bap on the backbeat, and the kick's middle note *tucked* — on the \"a\" of 2, right behind the first snare, where it thickens the bap instead of answering it. The riff bass loops underneath like the sample it is standing in for. Head down, tempo modest, nothing showy: the pocket is the whole genre.",
+      "hints": [
+        "The tucked kick is a 16th after the first snare — \"bap-boom\", almost one sound. Daylight between them is too much.",
+        "Do not rush the tuck into the snare. It follows the bap; it never warns of it.",
+        "The groove sits behind its own hats by feel. Keep the hat line dead straight and let the kick and snare be heavy on it.",
+        "The bass is a four-bar loop with a hole in bar 3 — know it the way you would know the sample."
+      ]
+    },
+    {
+      "id": "head-nod",
+      "number": "2.8",
+      "name": "The Head Nod",
+      "file": "stage-11-radio/head-nod.mid",
+      "stage": "radio",
+      "module": "hip-hop",
+      "tier": "core",
+      "bpm": 86,
+      "bars": 4,
+      "prereq": ["boom-bap"],
+      "summary": "Kick doubled on the \"and\" of 1, landing again just after beat 3 — the stumble that nods.",
+      "description": "Two kicks at the top — boom-boom — then nothing from the foot until just *after* the second snare's beat: the \"e\" of 3, a 16th late, the stumble that makes a head nod. The \"e\" is the same slot you learned in Subdivision's kick grid, and it is doing here exactly what it did there: arriving after the beat instead of before it, and sounding alone.",
+      "hints": [
+        "The opening is a pair: 1 and its \"and\", both kick. Even, deliberate, no flam.",
+        "The \"e\" of 3 lands a 16th after beat 3's hat. It is a landing, not a push — let the beat happen, then place it.",
+        "Beat 4 has nothing but the hat. The foot wants to fill it; the genre says no.",
+        "If the groove feels stiff, the \"e\" has crept onto beat 3 itself. Play a bar of hats and count \"3-e\" out loud to re-seat it."
+      ]
+    },
+    {
+      "id": "trap-half-time",
+      "number": "2.9",
+      "name": "Half-Time Hats",
+      "file": "stage-11-radio/trap-half-time.mid",
+      "stage": "radio",
+      "module": "hip-hop",
+      "tier": "stretch",
+      "bpm": 72,
+      "bars": 4,
+      "prereq": ["head-nod", "rock-16th-hats", "half-notes"],
+      "summary": "Sixteenth hats over a snare on 3 alone — the modern half-time shape.",
+      "description": "The hat grid doubles while the snare halves: sixteen hats a bar, split between the hands, over one snare on beat 3 and a kick on 1 and the \"a\" of 2. The bar feels enormous and busy at the same time — that contradiction is the modern half-time sound, and holding both halves of it at once is the stretch. The bass holds long dark roots and leaves all the motion to you.",
+      "hints": [
+        "Both hands on the hat, strictly alternating, exactly as 16ths, Split Hands taught. The snare on 3 is the lead hand borrowing one note.",
+        "One snare a bar. The empty beat 4 will beg for a second one — half-time lives or dies on refusing it.",
+        "The kick's second note is the \"a\" of 2, tucked between hats. If it lands with one, it straightened to the \"and\".",
+        "Keep the hats even and quiet-minded; the groove is heavy *under* them, not in them."
+      ]
+    },
+    {
+      "id": "checkpoint-11",
+      "number": "2.◆",
+      "name": "Checkpoint — The Radio",
+      "file": "stage-11-radio/checkpoint-11.mid",
+      "stage": "radio",
+      "module": null,
+      "tier": "checkpoint",
+      "bpm": 88,
+      "bars": 4,
+      "prereq": [],
+      "summary": "One bar each: driving rock, the funk one, boom bap, and half-time hats.",
+      "description": "Four genres in four bars, sharing a snare and almost nothing else. The kick pattern changes at every bar line and the hat grid doubles for the last bar — switching vocabularies mid-phrase is harder than speaking any one of them, and it is what proves the kick placements are yours rather than one habit wearing four names.",
+      "hints": [
+        "Name the bars before you play: drive, funk, boom bap, half-time.",
+        "The snare is on 2 and 4 for three bars and on 3 alone for the last. That switch is where the loop usually dies.",
+        "Bar 4 doubles the hat grid. Both hands in, exactly as 16ths were drilled — do not try to take it one-handed at this tempo.",
+        "The funk bass runs underneath all four bars. In bar 1 you drive against it, in bar 2 you interlock with it — hear the difference."
+      ]
+    },
+    {
+      "id": "house-pump",
+      "number": "3.1",
+      "name": "The House Pump",
+      "file": "stage-12-dancefloor/house-pump.mid",
+      "stage": "dancefloor",
+      "module": "house",
+      "tier": "plain",
+      "bpm": 118,
+      "bars": 4,
+      "prereq": ["disco-open-hats", "four-on-the-floor"],
+      "summary": "Kick on every beat, open hat on every \"and\", clap on 2 and 4 — and no closed hat at all.",
+      "description": "Disco Open Hats with the closed pad taken away: the hat hand plays *only* the off-beats now, one pad, landing exactly between the kicks. Four to the floor under it, the snare clapping 2 and 4, the octave bass bouncing along — the engine of every house record since 1985, at the tempo it actually runs. Placing a hand that never plays a beat is harder than alternating two pads; that is the whole lesson.",
+      "hints": [
+        "The hat hand never lands on a number. If a hat and a kick ever sound together, the hand has drifted onto the beat.",
+        "Let the foot be the metronome and place the hats exactly halfway between its notes — the see-saw is the pump.",
+        "The open hats want to ring into the next kick. Even, unhurried, every one the same length.",
+        "The bass octaves land with your hats, note for note. When you are truly between the kicks, you and the bass are one instrument."
+      ]
+    },
+    {
+      "id": "house-skip",
+      "number": "3.2",
+      "name": "The Skip",
+      "file": "stage-12-dancefloor/house-skip.mid",
+      "stage": "dancefloor",
+      "module": "house",
+      "tier": "core",
+      "bpm": 116,
+      "bars": 4,
+      "prereq": ["house-pump", "kick-16th-grid"],
+      "summary": "Closed hats tucked on the \"a\" of 2 and the \"a\" of 4 — the garage skip inside the pump.",
+      "description": "Two closed hats slip into the pump, on the \"a\" of 2 and the \"a\" of 4 — a 16th after the open hat, a 16th before the kick. The skip is what turns straight house into something that swings its hips, and it asks the hat hand to do the open-closed travel from Disco at double speed, twice a bar, off the grid the openers sit on.",
+      "hints": [
+        "The skip notes are the \"a\" slots — later than the open hat, earlier than the kick, touching neither.",
+        "Open on the \"and\", closed on the \"a\": the pair is one gesture, out and back, twice a bar.",
+        "If the skip lands with the kick it has become a 16th too late; the kick should always sound alone.",
+        "Keep the skips light. They are the shaker in the mix, not a second backbeat."
+      ]
+    },
+    {
+      "id": "house-drop",
+      "number": "3.3",
+      "name": "The Drop",
+      "file": "stage-12-dancefloor/house-drop.mid",
+      "stage": "dancefloor",
+      "module": "house",
+      "tier": "stretch",
+      "bpm": 120,
+      "bars": 4,
+      "prereq": ["house-pump", "stop-every-other-bar"],
+      "summary": "Three bars of pump, then the floor vanishes — open hats alone until a snare build snaps it back.",
+      "description": "The DJ's move, played by hand: every fourth bar the kick and the clap vanish, the off-beat hats keep running alone, and beat 4 fills with four snare 16ths that slam the floor back in. The only thing keeping time through the drop never plays a beat — you are holding the bar from its off-beats, which is Space's final exam at 120.",
+      "hints": [
+        "The hats do not stop, speed up, or move to the beat during the drop. Same hand, same slots, no floor under them.",
+        "The snare build starts ON beat 4, not before it. Three empty beats of hats first — count them.",
+        "The kick's return on the next down-beat is the whole payoff. Land it with the bass's root and the room moves.",
+        "If you cannot tell whether your hats drifted onto the beat during the drop, the returning kick will tell you: hat-with-kick means they did."
+      ]
+    },
+    {
+      "id": "the-breakbeat",
+      "number": "3.4",
+      "name": "The Breakbeat",
+      "file": "stage-12-dancefloor/the-breakbeat.mid",
+      "stage": "dancefloor",
+      "module": "breaks",
+      "tier": "plain",
+      "bpm": 96,
+      "bars": 4,
+      "prereq": ["kick-16th-grid", "two-bar-kick"],
+      "summary": "A two-bar break: bar 2 shifts the kick to the \"e\" of 3 and adds a snare pickup.",
+      "description": "The shape every breakbeat record is chopped from. Bar 1 is the b-boy skeleton — kick on 1, snares on 2 and 4, a kick driving on the \"and\" of 3. Bar 2 answers: the driving kick lands a 16th earlier, on the \"e\", and the bar ends with a snare pickup on the \"a\" of 4. Two bars that rhyme without repeating, over a funk bass that knows the break as well as you do.",
+      "hints": [
+        "Learn the two bars as call and answer, not as eight beats. Bar 1 drives, bar 2 stumbles and picks up.",
+        "Bar 2's kick is on the \"e\" of 3 — just after the beat, alone between hats. It is the head-nod slot from The Radio.",
+        "The pickup snare ends bar 2 and leans into bar 1. Place it; the loop turns on it.",
+        "If the two bars come out identical, you are playing the one you know twice. Count bars out loud until the answer bar is a habit."
+      ]
+    },
+    {
+      "id": "break-displaced",
+      "number": "3.5",
+      "name": "Snare off the Grid",
+      "file": "stage-12-dancefloor/break-displaced.mid",
+      "stage": "dancefloor",
+      "module": "breaks",
+      "tier": "core",
+      "bpm": 94,
+      "bars": 4,
+      "prereq": ["the-breakbeat", "funk-displaced"],
+      "summary": "Beat 4's snare moves to the \"a\" of 3, and the empty 4 it leaves is the funkiest thing in the bar.",
+      "description": "Displacement proper: the backbeat's second half arrives a 16th and a half early — on the \"a\" of 3 — and beat 4, where every ear expects a snare, holds nothing but a hat. The kick tucks in on the \"a\" of 2 to answer it, and bar 2 adds one more snare on the \"and\" of 4 to fold the phrase back over. The note you do not play on 4 is the lesson.",
+      "hints": [
+        "The displaced snare is on the \"a\" of 3: after beat 3's hat, before 4's. It sounds alone, always.",
+        "Beat 4 is empty and will scream for a snare. Refusing it is the exercise — the hat there must sound naked.",
+        "Snare on 2 has not moved. One anchor, one wanderer: if both drift the bar has no spine.",
+        "The funk bass leaves the same slots open it always did. When your displaced snare and its notes take turns cleanly, the displacement is seated."
+      ]
+    },
+    {
+      "id": "two-step",
+      "number": "3.6",
+      "name": "The Two-Step",
+      "file": "stage-12-dancefloor/two-step.mid",
+      "stage": "dancefloor",
+      "module": "breaks",
+      "tier": "stretch",
+      "bpm": 160,
+      "bars": 4,
+      "prereq": ["the-breakbeat", "eighths-weak-hand"],
+      "summary": "Drum & bass's two-step: five voices' worth of energy from three, at 160.",
+      "description": "The notes are nothing you have not played for months: kick on 1 and the \"and\" of 3, snares on 2 and 4, hats in 8ths. The tempo is the lesson — 160 beats a minute, the floor of real drum & bass, where the hat hand's 8ths run at a speed Pulse never asked of it and every spare motion costs a note. The bass holds long subs and leaves the speed entirely to you.",
+      "hints": [
+        "Strip every stroke to its minimum: fingers bounce, nothing lifts higher than it must. At this speed technique is the groove.",
+        "The hat hand carries the tempo; the kick and snare just visit. If the 8ths survive, everything survives.",
+        "Do not tense as the bar ends. The loop is the same four notes forever — the moment your wrist locks, the next bar pays for it.",
+        "The snare on 2 and 4 should feel *slow* against the hats. Half your speed lives in letting it."
+      ]
+    },
+    {
+      "id": "one-drop",
+      "number": "3.7",
+      "name": "The One Drop",
+      "file": "stage-12-dancefloor/one-drop.mid",
+      "stage": "dancefloor",
+      "module": "reggae",
+      "tier": "plain",
+      "bpm": 76,
+      "bars": 4,
+      "prereq": ["half-notes", "stop-every-other-bar"],
+      "summary": "Kick and snare together on 3, hats in 8ths — and beat 1 empty, every bar, on purpose.",
+      "description": "The only major drum tradition where beat 1 is deliberately silent. Everything lands on 3 — kick and snare together, one sound, the drop — and the bar line passes with nothing but a hat. The dub bass skips the down-beat too, so nobody in the band plays the one: it exists only in your count. Every stage since Space has been preparing you to hold a beat nobody marks; this is the groove that is *made of* that.",
+      "hints": [
+        "The drop on 3 is kick and snare as one sound — the stack you have played since Stage 2, now the whole groove.",
+        "Beat 1 gets a hat and nothing else. Putting a kick there flips the bar into rock and it stops being reggae instantly.",
+        "In a real reggae band that snare is a cross-stick — play it as a placed knock, not a backbeat crack.",
+        "The bass lands half a beat after the silent one. If you wait for it to find bar 1, you are a half beat late everywhere — your count owns the one."
+      ]
+    },
+    {
+      "id": "skank",
+      "number": "3.8",
+      "name": "The Skank",
+      "file": "stage-12-dancefloor/skank.mid",
+      "stage": "dancefloor",
+      "module": "reggae",
+      "tier": "core",
+      "bpm": 76,
+      "bars": 4,
+      "prereq": ["one-drop"],
+      "summary": "The one drop with the hats moved to the off-beats: nothing in the bar lands on a number except the drop.",
+      "description": "The hat hand moves to the \"and\"s — the skank, the upstroke of a reggae guitar written for a hat — and now literally nothing lands on a number except the drop on 3. No drum, no hat, no bass note marks beat 1, 2 or 4. The whole bar hangs off your internal clock and one stack in its middle, which is why a band that can play this can play anything slowly.",
+      "hints": [
+        "Hats on the \"and\"s only. The house pump taught this hand position — here it is half the tempo and twice as exposed.",
+        "With nothing on the beats, rushing the skank is undetectable until the drop lands early. Check yourself against beat 3, every bar.",
+        "The drop is the only down-stroke in the bar. Let it be heavy; everything else is lift.",
+        "If the bar turns inside out — skank notes becoming the beats — stop and count two bars out loud before re-entering. It happens to everyone once."
+      ]
+    },
+    {
+      "id": "steppers",
+      "number": "3.9",
+      "name": "Steppers",
+      "file": "stage-12-dancefloor/steppers.mid",
+      "stage": "dancefloor",
+      "module": "reggae",
+      "tier": "stretch",
+      "bpm": 78,
+      "bars": 4,
+      "prereq": ["skank", "four-on-the-floor"],
+      "summary": "The kick returns to all four beats under the skank — reggae's other engine.",
+      "description": "After two lessons of empty down-beats the floor comes back: kick on every beat, the drop's snare still on 3, the hats still skanking the \"and\"s. Foot on every number, hand never on one — full four-limb independence in miniature, and the exact opposite job in each limb. The dub bass still avoids beat 1, so your kick is now the only voice in the whole band that plays it.",
+      "hints": [
+        "Foot on the numbers, hand on the \"and\"s, and never the twain: no note in this groove has two voices except the drop on 3.",
+        "The kick is a heartbeat, not four accents. Keep it under the skank the way the house pump kept the floor under the hats.",
+        "Beat 3 stacks kick and snare — the drop survives inside the pulse. It should still be the loudest moment in the bar.",
+        "Your kick on 1 is the only note anyone plays there. The whole band is leaning on you — place it like it matters, because it does."
+      ]
+    },
+    {
+      "id": "checkpoint-12",
+      "number": "3.◆",
+      "name": "Checkpoint — The Dancefloor",
+      "file": "stage-12-dancefloor/checkpoint-12.mid",
+      "stage": "dancefloor",
+      "module": null,
+      "tier": "checkpoint",
+      "bpm": 104,
+      "bars": 4,
+      "prereq": [],
+      "summary": "One bar each: the house pump, the break's answer bar, the two-step, and the one drop.",
+      "description": "Four dancefloors in four bars. The hat hand changes job at every bar line — off-beats, 8ths, 8ths, 8ths — the kick goes from every beat to almost none, and the last bar empties beat 1 entirely. One tempo holds all four, faster than reggae likes and slower than the two-step wants, which is exactly the discomfort a working drummer gets paid for.",
+      "hints": [
+        "Bar 1's hats are off the beat and bar 2's are on the 8ths. That first join is the hardest hand move in the loop.",
+        "Bar 2 is the break's *answer* bar — kick on the \"e\" of 3, pickup snare at the end. Do not play the plain bar there.",
+        "Bar 4 has nothing on beat 1. After three bars of floor, leaving it empty is the checkpoint inside the checkpoint.",
+        "The octave bass pumps through all four bars without taking sides. Lock the changing drums to its unchanging grid."
       ]
     }
   ]

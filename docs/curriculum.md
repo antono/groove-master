@@ -233,19 +233,23 @@ VOCABULARY ─ do you have hands, and things to say with them?
 
 MUSIC ─ can you play something someone wants to hear?
 │
-├── Stage 10 · Form & fills                                [⊘ 8-bar forms]
-│   ├── Phrasing  ├── Fills  └── Form
+├── Stage 10 · Form & Fills                eight-bar lessons unlock here
+│   ├── [✓] The push  ├── [✓] Fills  ├── [✓] Song form  └── [✓] ◆ 10
 │
-└── Stage 11 · Styles                      one module per style, triad each
-    ├── Rock  ├── Funk  ├── Hip-hop  ├── House & disco
-    └── Breakbeat & DnB  ├── Jazz  ├── Latin  └── Reggae & afrobeat
+├── Stage 11 · Styles: The Radio           rock, funk, hip-hop — the kick as vocabulary
+│   ├── [✓] Rock  ├── [✓] Funk  ├── [✓] Hip-hop  └── [✓] ◆ 11
+│
+└── Stage 12 · Styles: The Dancefloor      house, breaks, reggae — new skeletons
+    ├── [✓] House  ├── [✓] Breaks  ├── [✓] Reggae  └── [✓] ◆ 12
+    (Jazz, Latin and the ghost/brush styles wait on velocity scoring
+     and swung 16ths, and belong to a later styles stage.)
 
 MASTERY ─ can you make it your own?
 │
-├── Stage 12 · Independence & polyrhythm
+├── Stage 13 · Independence & polyrhythm
 │   ├── Ostinato  ├── Polyrhythm  └── Odd meters           [⊘ time signatures]
 │
-└── Stage 13 · Performance
+└── Stage 14 · Performance
     ├── Speed  ├── Repertoire  [⊘ long-form]  └── Your own voice
 ```
 
@@ -256,14 +260,14 @@ MASTERY ─ can you make it your own?
 The roadmap outruns the engine in four specific places. Each is a small, bounded
 piece of work that unlocks a whole stage.
 
-| need                  | blocks   | what it means                                                           |
-| --------------------- | -------- | ----------------------------------------------------------------------- |
-| stage/module/prereq   | all      | manifest fields + catalogue headings + a roadmap view                   |
-| velocity scoring      | Stage 9  | grade the note-on velocity we already receive and throw away today      |
-| forms over 4 bars     | Stage 10 | a lesson is 4 bars; an 8-bar form needs the chart and highway to say so |
-| time signatures       | Stage 12 | `BEATS_PER_BAR = 4` is a constant in the generator and the page         |
-| sub-grid tolerance    | flams    | a fixed ±ms window around a grid position marks a flam as an error      |
-| per-note match window | 16ths    | `MATCH_WINDOW_BEATS` is 0.4 beats, wider than a 16th at 0.25            |
+| need                  | blocks   | what it means                                                              |
+| --------------------- | -------- | -------------------------------------------------------------------------- |
+| stage/module/prereq   | all      | manifest fields + catalogue headings + a roadmap view                      |
+| velocity scoring      | Stage 9  | grade the note-on velocity we already receive and throw away today         |
+| ~~forms over 4 bars~~ | ~~10~~   | resolved: `bars=8` just works — chart, highway and scoring never assumed 4 |
+| time signatures       | Stage 12 | `BEATS_PER_BAR = 4` is a constant in the generator and the page            |
+| sub-grid tolerance    | flams    | a fixed ±ms window around a grid position marks a flam as an error         |
+| per-note match window | 16ths    | `MATCH_WINDOW_BEATS` is 0.4 beats, wider than a 16th at 0.25               |
 
 **"Multi-bar phrasing" is no longer on this list.** It was, on the belief that
 the generators and the chart assumed a 4-bar loop of identical bars; they do

@@ -15,8 +15,14 @@ from . import (
     stage05_two_bars,
     stage06_subdivision,
     stage07_sticking,
+    stage10_form,
+    stage11_radio,
+    stage12_dancefloor,
 )
 
+# Stages 8 and 9 (Syncopation, Dynamics) are designed but unwritten — see
+# docs/curriculum.md §6 — so the list jumps from 7 to 10. Stage numbers are
+# stable, not positional: writing 8 later inserts it without renaming anything.
 CURRICULUM = [
     stage01_pulse.STAGE,
     stage02_backbeat.STAGE,
@@ -25,6 +31,9 @@ CURRICULUM = [
     stage05_two_bars.STAGE,
     stage06_subdivision.STAGE,
     stage07_sticking.STAGE,
+    stage10_form.STAGE,
+    stage11_radio.STAGE,
+    stage12_dancefloor.STAGE,
 ]
 
 # The journey's top level. Stages group into four tiers, each answering one
@@ -50,12 +59,12 @@ TIERS = [
         "slug": "music",
         "name": "Music",
         "question": "Can you play something someone wants to hear?",
-        "stages": [10, 11],
+        "stages": [10, 11, 12],
     },
     {
         "slug": "mastery",
         "name": "Mastery",
         "question": "Can you make it your own?",
-        "stages": [12, 13],
+        "stages": [13, 14],
     },
 ]

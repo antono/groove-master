@@ -382,102 +382,167 @@ musician's.
 | 9.8 | `flam-accent` | core    | blocked | the flam accent rudiment |
 | 9.9 | `flam-groove` | stretch | blocked | flams on the backbeat    |
 
-## Stage 10 · Form & fills · blocked
+## Stage 10 · Form & Fills
 
-Generators and the chart assume a loop of identical bars. Phrases need bars
-that differ.
+**Goal** — a groove that says something: down-beats moved early, fills that
+announce the change, and eight-bar pieces with a beginning, a middle and an
+end. The first stage of Music, and the first with **eight-bar lessons** — the
+chart and highway always drew whatever they were given, and eight bars is
+where a verse and a chorus can both live.
 
-### Module: Phrasing
+### Module: The push — the down-beat, early
 
-| #    | slug              | tier    | status  | pattern                    |
-| ---- | ----------------- | ------- | ------- | -------------------------- |
-| 10.1 | `two-bar-phrase`  | plain   | blocked | bar 2 answers bar 1        |
-| 10.2 | `crash-on-one`    | core    | blocked | the downbeat of the phrase |
-| 10.3 | `four-bar-phrase` | stretch | blocked | a four-bar shape           |
+| #    | slug              | tier    | status | pattern                                            | bass       |
+| ---- | ----------------- | ------- | ------ | -------------------------------------------------- | ---------- |
+| 10.1 | `push-into-one`   | plain   | live   | every other bar's first kick arrives half early    | quarter    |
+| 10.2 | `push-with-crash` | core    | live   | the crash lands with the push and rings through 1  | riff       |
+| 10.3 | `pushed-stop`     | stretch | live   | push into an empty bar, return with a snare figure | syncopated |
 
-### Module: Fills
+### Module: Fills — two beats that announce the change
 
-| #    | slug             | tier    | status  | pattern               |
-| ---- | ---------------- | ------- | ------- | --------------------- |
-| 10.4 | `fill-one-beat`  | plain   | blocked | a fill on beat 4      |
-| 10.5 | `fill-two-beats` | core    | blocked | half a bar of fill    |
-| 10.6 | `fill-one-bar`   | stretch | blocked | a full bar every four |
+| #    | slug             | tier    | status | pattern                                          | bass       |
+| ---- | ---------------- | ------- | ------ | ------------------------------------------------ | ---------- |
+| 10.4 | `fill-two-beats` | plain   | live   | snare 16ths across beats 3–4, into a crash       | quarter    |
+| 10.5 | `fill-with-kick` | core    | live   | R L R K, R L R K — the foot takes every fourth   | riff       |
+| 10.6 | `fill-broken`    | stretch | live   | dotted spacing, then two 16ths slamming the door | syncopated |
 
-### Module: Form
+### Module: Song form — eight bars with a shape
 
-| #    | slug                 | tier    | status  | pattern                                |
-| ---- | -------------------- | ------- | ------- | -------------------------------------- |
-| 10.7 | `groove-fill-groove` | plain   | blocked | back into the groove without a stumble |
-| 10.8 | `fill-from-rudiment` | core    | blocked | fill vocabulary built from Stage 7     |
-| 10.9 | `eight-bar-form`     | stretch | blocked | a whole section                        |
+| #    | slug              | tier    | status | pattern                                            | bass       |
+| ---- | ----------------- | ------- | ------ | -------------------------------------------------- | ---------- |
+| 10.7 | `verse-chorus`    | plain   | live   | 8 bars: hat verse, open-hat hand-over, ride chorus | riff       |
+| 10.8 | `eight-bar-build` | core    | live   | 8 bars adding a layer every two, spent on a fill   | pedal      |
+| 10.9 | `the-arrangement` | stretch | live   | intro · verse · fill · chorus · push · ending      | syncopated |
 
-## Stage 11 · Styles
+**◆ Checkpoint 10** `checkpoint-10` — the pushed top, the empty-one landing,
+the ride chorus, and the 16th fill, one bar each.
 
-**Goal** — the same skills, spoken in different accents. One module per style,
-each with its own plain / core / stretch. All `todo`.
+## Stage 11 · Styles: The Radio
 
-| module            | plain             | core                | stretch        |
-| ----------------- | ----------------- | ------------------- | -------------- |
-| Rock              | straight 8ths     | 16th hats           | punk           |
-| Funk              | 16th kick         | "the one"           | ghost funk     |
-| Hip-hop           | boom bap          | laid-back placement | trap hats      |
-| House & disco     | four on the floor | open hats           | shuffled house |
-| Breakbeat & DnB   | the amen          | chopped amen        | two-step       |
-| Jazz              | the ride pattern  | ride + comping      | brushes        |
-| Latin             | bossa nova        | samba               | songo          |
-| Reggae & afrobeat | one-drop          | steppers            | afrobeat       |
+**Goal** — rock, funk and hip-hop: one skeleton (snare on 2 and 4, hats in
+8ths), three kick vocabularies, each at its genre's own tempo. The first
+lessons whose manifest BPM is chosen by style rather than by the ladder — and
+the first where the backing bass plays the genre with you (`pump` for rock,
+the 16th `funk` interlock, the riff and the dark pedal for hip-hop).
 
-## Stage 12 · Independence & polyrhythm
+### Module: Rock — the kick that drives
+
+| #    | slug            | tier    | status | pattern                                           | bass |
+| ---- | --------------- | ------- | ------ | ------------------------------------------------- | ---- |
+| 11.1 | `rock-drive`    | plain   | live   | kick 1, 3 and the "and" of 3 · 92 BPM             | pump |
+| 11.2 | `rock-anthem`   | core    | live   | ride 8ths, crash each 2 bars, kick pulls on 2-and | pump |
+| 11.3 | `rock-sixteens` | stretch | live   | five kicks, two off the 8th grid ("a" of 1 and 4) | pump |
+
+### Module: Funk — the one, and everything after it
+
+| #    | slug             | tier    | status | pattern                                          | bass |
+| ---- | ---------------- | ------- | ------ | ------------------------------------------------ | ---- |
+| 11.4 | `funk-one`       | plain   | live   | kick 1, "a" of 1, "and" of 3 under straight hats | funk |
+| 11.5 | `funk-open-hat`  | core    | live   | the hat barks open on the "and" of 2             | funk |
+| 11.6 | `funk-displaced` | stretch | live   | a third snare on the "a" of 4 — the pickup       | funk |
+
+### Module: Hip-hop — the lazy pocket
+
+| #    | slug             | tier    | status | pattern                                          | bass  |
+| ---- | ---------------- | ------- | ------ | ------------------------------------------------ | ----- |
+| 11.7 | `boom-bap`       | plain   | live   | kick tucked on the "a" of 2 behind the snare     | riff  |
+| 11.8 | `head-nod`       | core    | live   | kick doubled on 1-and, landing on the "e" of 3   | riff  |
+| 11.9 | `trap-half-time` | stretch | live   | 16th hats, snare on 3 alone, kick 1 and "a" of 2 | pedal |
+
+**◆ Checkpoint 11** `checkpoint-11` — driving rock, the funk one, boom bap and
+half-time hats, one bar each, over the funk bass.
+
+## Stage 12 · Styles: The Dancefloor
+
+**Goal** — house, breaks and reggae: three skeletons, not one. The hat leaves
+the beat, the snare leaves the backbeat, and beat 1 learns to be empty on
+purpose. Reggae closes the curriculum's oldest thread — the one drop is a
+groove _made of_ the silence Space taught, over a `dub` bass that skips the
+down-beat too.
+
+### Module: House — the pump
+
+| #    | slug         | tier    | status | pattern                                            | bass   |
+| ---- | ------------ | ------- | ------ | -------------------------------------------------- | ------ |
+| 12.1 | `house-pump` | plain   | live   | four-floor kick, open hats off-beat only · 118 BPM | octave |
+| 12.2 | `house-skip` | core    | live   | closed hats tucked on the "a" of 2 and 4           | octave |
+| 12.3 | `house-drop` | stretch | live   | bar 4 loses the floor; a snare build snaps it back | octave |
+
+### Module: Breaks — the snare starts moving
+
+| #    | slug              | tier    | status | pattern                                                 | bass  |
+| ---- | ----------------- | ------- | ------ | ------------------------------------------------------- | ----- |
+| 12.4 | `the-breakbeat`   | plain   | live   | a two-bar break; bar 2 shifts the kick, adds pickup     | funk  |
+| 12.5 | `break-displaced` | core    | live   | beat 4's snare moves to the "a" of 3                    | funk  |
+| 12.6 | `two-step`        | stretch | live   | drum & bass's two-step at 160 — the tempo is the lesson | pedal |
+
+### Module: Reggae — the empty one
+
+| #    | slug       | tier    | status | pattern                                             | bass |
+| ---- | ---------- | ------- | ------ | --------------------------------------------------- | ---- |
+| 12.7 | `one-drop` | plain   | live   | kick + snare on 3, beat 1 empty every bar           | dub  |
+| 12.8 | `skank`    | core    | live   | hats move off-beat: nothing lands on a number but 3 | dub  |
+| 12.9 | `steppers` | stretch | live   | the kick returns to all four beats under the skank  | dub  |
+
+**◆ Checkpoint 12** `checkpoint-12` — the pump, the break's answer bar, the
+two-step and the one drop, one bar each at one uncomfortable tempo.
+
+> Jazz, Latin and the ghost-note funk and brushes variants from the original
+> styles sketch are not dropped — they wait on the same engine work Stage 9
+> does (velocity scoring, and swung 16ths on the grid), and belong to a later
+> styles stage once those land.
+
+## Stage 13 · Independence & polyrhythm
 
 ### Module: Ostinato
 
 | #    | slug               | tier    | status | pattern                               |
 | ---- | ------------------ | ------- | ------ | ------------------------------------- |
-| 12.1 | `ostinato-vary`    | plain   | todo   | one hand fixed, the other varies      |
-| 12.2 | `ostinato-melodic` | core    | todo   | the free hand moves across pads       |
-| 12.3 | `linear`           | stretch | todo   | linear drumming — nothing ever stacks |
+| 13.1 | `ostinato-vary`    | plain   | todo   | one hand fixed, the other varies      |
+| 13.2 | `ostinato-melodic` | core    | todo   | the free hand moves across pads       |
+| 13.3 | `linear`           | stretch | todo   | linear drumming — nothing ever stacks |
 
 ### Module: Polyrhythm
 
 | #    | slug              | tier    | status | pattern     |
 | ---- | ----------------- | ------- | ------ | ----------- |
-| 12.4 | `three-over-four` | plain   | todo   | 3 against 4 |
-| 12.5 | `four-over-three` | core    | todo   | 4 against 3 |
-| 12.6 | `five-over-four`  | stretch | todo   | 5 against 4 |
+| 13.4 | `three-over-four` | plain   | todo   | 3 against 4 |
+| 13.5 | `four-over-three` | core    | todo   | 4 against 3 |
+| 13.6 | `five-over-four`  | stretch | todo   | 5 against 4 |
 
 ### Module: Odd meters — needs time-signature support
 
 | #    | slug                | tier    | status  | pattern                 |
 | ---- | ------------------- | ------- | ------- | ----------------------- |
-| 12.7 | `odd-5-4`           | plain   | blocked | 5/4                     |
-| 12.8 | `odd-7-8`           | core    | blocked | 7/8                     |
-| 12.9 | `metric-modulation` | stretch | blocked | the pulse reinterpreted |
+| 13.7 | `odd-5-4`           | plain   | blocked | 5/4                     |
+| 13.8 | `odd-7-8`           | core    | blocked | 7/8                     |
+| 13.9 | `metric-modulation` | stretch | blocked | the pulse reinterpreted |
 
-## Stage 13 · Performance
+## Stage 14 · Performance
 
 ### Module: Speed
 
 | #    | slug               | tier    | status | pattern                              |
 | ---- | ------------------ | ------- | ------ | ------------------------------------ |
-| 13.1 | `one-handed-16ths` | plain   | todo   | 16th hats on one hand under a groove |
-| 13.2 | `finger-rolls`     | core    | todo   | rolls and buzzes                     |
-| 13.3 | `belt-ladder`      | stretch | todo   | every earlier lesson taken to gold   |
+| 14.1 | `one-handed-16ths` | plain   | todo   | 16th hats on one hand under a groove |
+| 14.2 | `finger-rolls`     | core    | todo   | rolls and buzzes                     |
+| 14.3 | `belt-ladder`      | stretch | todo   | every earlier lesson taken to gold   |
 
 ### Module: Repertoire
 
 | #    | slug            | tier    | status  | pattern                             |
 | ---- | --------------- | ------- | ------- | ----------------------------------- |
-| 13.4 | `transcribe`    | plain   | todo    | learn a groove by ear, then play it |
-| 13.5 | `full-song`     | core    | blocked | a song top to bottom                |
-| 13.6 | `trading-fours` | stretch | blocked | improvise the answering bar         |
+| 14.4 | `transcribe`    | plain   | todo    | learn a groove by ear, then play it |
+| 14.5 | `full-song`     | core    | blocked | a song top to bottom                |
+| 14.6 | `trading-fours` | stretch | blocked | improvise the answering bar         |
 
 ### Module: Your own voice
 
 | #    | slug              | tier    | status | pattern                         |
 | ---- | ----------------- | ------- | ------ | ------------------------------- |
-| 13.7 | `own-beat`        | plain   | todo   | build one groove of your own    |
-| 13.8 | `own-fills`       | core    | todo   | a fill vocabulary that is yours |
-| 13.9 | `improvise-a-set` | stretch | todo   | eight bars, no chart            |
+| 14.7 | `own-beat`        | plain   | todo   | build one groove of your own    |
+| 14.8 | `own-fills`       | core    | todo   | a fill vocabulary that is yours |
+| 14.9 | `improvise-a-set` | stretch | todo   | eight bars, no chart            |
 
 ---
 
