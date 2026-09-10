@@ -27,6 +27,7 @@ vite.config.ts.timestamp-*
 
 # Devenv
 .devenv
+.direnv
 .pre-commit-config.yaml
 
 # AI
@@ -40,4 +41,3 @@ opencode.json
 # Python bytecode from scripts/lessons
 __pycache__/
 *.pyc
-.env*
