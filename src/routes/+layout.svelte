@@ -49,6 +49,7 @@
 
 	const MASTODON = 'https://mastodon.social/@groove_academy';
 	const TELEGRAM = 'https://t.me/the_groove_academy';
+	const GITHUB = 'https://github.com/antono/groove.academy';
 
 	// Pull the current kit's samples into the service-worker cache while the page
 	// is idle, so the first pad press is never waiting on a download. After the
@@ -247,10 +248,11 @@
 		<!-- rel="me" is load-bearing, not decoration: Mastodon fetches the URL in the
 		     profile's Website field and only shows it as verified if it finds a link
 		     back to the account. That URL is the site root, so this lives in the
-		     layout rather than on /news alone. Telegram asks for nothing of the
-		     kind, so it is a plain link. -->
+		     layout rather than on /news alone. Telegram and GitHub ask for nothing
+		     of the kind, so they are plain links. -->
 		<a href={MASTODON} target="_blank" rel="me noopener">Mastodon</a>
 		<a href={TELEGRAM} target="_blank" rel="noopener">Telegram</a>
+		<a href={GITHUB} target="_blank" rel="noopener">GitHub</a>
 	</footer>
 </div>
 
